@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>身体健康释放</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; display: block; overflow: hidden; }
+
+.card {
+  position: relative; z-index: 1;
+  width: 100vw; height: 100vh; height: 100dvh;
+  background: #e8f2ee;
+  overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 20%, rgba(200,235,220,0.7) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 15%, rgba(215,235,225,0.55) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 50% 85%, rgba(235,245,225,0.6) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 70%, rgba(210,230,220,0.5) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 10% 75%, rgba(225,240,230,0.55) 0%, transparent 55%);
+  filter: blur(32px);
+  pointer-events: none;
+}
+
+#questionEl {
+  position: absolute; left: 0; right: 0;
+  text-align: center;
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px; letter-spacing: 2px;
+  color: rgba(40, 80, 60, 0.85); line-height: 2;
+  z-index: 30; opacity: 0; pointer-events: none;
+  transition: opacity 0.6s ease;
+  padding: 0 28px;
+}
+#questionEl.visible { opacity: 1; }
+#questionEl em { font-style: normal; color: rgba(40, 140, 90, 0.95); font-size: 15px; }
+
+#sectionLabel {
+  position: absolute; left: 0; right: 0; text-align: center;
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 10px; letter-spacing: 4px;
+  color: rgba(60, 120, 90, 0.6); z-index: 30; pointer-events: none;
+}
+
+/* Target name display */
+#targetName {
+  position: absolute; left: 0; right: 0; text-align: center;
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 14px; letter-spacing: 4px;
+  color: rgba(40, 100, 70, 0.8); z-index: 30; pointer-events: none;
+  opacity: 0; transition: opacity 0.5s ease;
+}
+#targetName.visible { opacity: 1; }
+
+/* Input overlay for section 4 */
+#inputOverlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(235,248,242,0.95); backdrop-filter: blur(20px);
+  flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+}
+#inputOverlay.show { display: flex; }
+#inputOverlay p {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 14px;
+  letter-spacing: 2px; color: rgba(40,80,60,0.8); text-align: center;
+  line-height: 2; padding: 0 32px;
+}
+#targetInput {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 16px;
+  letter-spacing: 2px; color: rgba(40,80,60,0.9);
+  border: none; border-bottom: 1px solid rgba(60,140,100,0.4);
+  background: transparent; text-align: center;
+  padding: 8px 16px; outline: none; width: 200px;
+}
+#targetInput::placeholder { color: rgba(60,140,100,0.3); }
+#confirmBtn {
+  padding: 10px 40px; border-radius: 99px;
+  border: 1px solid rgba(60,140,100,0.4);
+  background: rgba(210,240,225,0.7);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px;
+  letter-spacing: 3px; color: rgba(40,80,60,0.9);
+  cursor: pointer;
+}
+#confirmBtn:hover { background: rgba(190,230,210,0.9); }
+
+/* Inline reflection input — rectangular, centered at chest */
+#reflectBox {
+  position: absolute; left: 50%;
+  transform: translateX(-50%);
+  width: 65%; max-width: 260px;
+  z-index: 31; opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+#reflectBox.visible { opacity: 1; pointer-events: auto; }
+#reflectInputWrap {
+  width: 100%;
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.65);
+  box-shadow: 0 2px 16px rgba(180,100,140,0.1), inset 0 1px 0 rgba(255,255,255,0.6);
+  border-radius: 14px; padding: 10px 12px;
+}
+#reflectInput {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 16px;
+  letter-spacing: 1px; color: rgba(100,40,70,0.9);
+  border: none; background: transparent; outline: none;
+  width: 100%; text-align: left; resize: none;
+  min-height: 56px; line-height: 1.8;
+}
+#reflectInput::placeholder { color: rgba(60,140,100,0.35); }
+#reflectNext {
+  padding: 8px 32px; border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.6);
+  background: rgba(235,250,242,0.5);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 2px 10px rgba(60,140,100,0.1), inset 0 1px 0 rgba(255,255,255,0.5);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 12px;
+  letter-spacing: 2px; color: rgba(40,100,65,0.8);
+  cursor: pointer;
+}
+#reflectNext:hover { background: rgba(210,240,225,0.7); }
+@keyframes heartPulse {
+  0%,100% { opacity: 0.5; r: 58; }
+  50%      { opacity: 0.88; r: 72; }
+}
+#svgHeartGlow { animation: heartPulse 3s ease-in-out infinite; }
+
+/* Release ripple */
+@keyframes rippleRelease {
+  0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0.75; }
+  100% { transform: translate(-50%,-50%) scale(4.5); opacity: 0; }
+}
+.ripple-el {
+  position: absolute; border-radius: 50%; pointer-events: none; z-index: 6;
+  background: radial-gradient(circle, rgba(80,180,130,0.6) 0%, rgba(60,160,110,0) 70%);
+  animation: rippleRelease 1.5s ease-out forwards;
+  transform-origin: center center;
+}
+
+.act-btn {
+  position: absolute; z-index: 30;
+  padding: 8px 24px; border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(240, 250, 245, 0.45);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 2px 12px rgba(60,140,100,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px;
+  letter-spacing: 2px; color: rgba(40, 90, 60, 0.9);
+  cursor: pointer; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.act-btn.visible { opacity: 1; pointer-events: auto; }
+.act-btn:hover { background: rgba(220, 245, 235, 0.65); }
+
+#bottomBar {
+  position: absolute; bottom: max(36px, env(safe-area-inset-bottom, 36px)); left: 50%;
+  transform: translateX(-50%);
+  z-index: 30; display: flex; align-items: center; gap: 10px;
+  white-space: nowrap;
+}
+
+#pauseBtn {
+  padding: 9px 18px; border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(235, 248, 242, 0.55);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  box-shadow: 0 4px 16px rgba(60,140,100,0.15), inset 0 1px 0 rgba(255,255,255,0.7);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 11px;
+  letter-spacing: 2px; color: rgba(40, 100, 65, 0.75);
+  cursor: pointer; transition: all 0.2s ease;
+}
+#pauseBtn:hover { background: rgba(210, 240, 225, 0.75); }
+
+#nextSectionBtn {
+  padding: 9px 22px; border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(235, 248, 242, 0.55);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  box-shadow: 0 4px 16px rgba(60,140,100,0.15), inset 0 1px 0 rgba(255,255,255,0.7);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 11px;
+  letter-spacing: 2px; color: rgba(40, 100, 65, 0.85);
+  cursor: pointer; transition: all 0.2s ease;
+}
+#nextSectionBtn:hover { background: rgba(210, 240, 225, 0.75); }
+
+/* Section 5 repeat hint */
+#repeatHint {
+  position: absolute; left: 0; right: 0; text-align: center;
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 10px; letter-spacing: 2px;
+  color: rgba(160, 80, 120, 0.5); z-index: 30; pointer-events: none;
+  opacity: 0; transition: opacity 0.5s ease;
+  bottom: max(90px, calc(env(safe-area-inset-bottom, 44px) + 50px));
+}
+#repeatHint.visible { opacity: 1; }
+
+#pauseOverlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(235,248,242,0.92); backdrop-filter: blur(20px);
+  flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+}
+#pauseOverlay.show { display: flex; }
+#pauseOverlay h2 {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 18px;
+  letter-spacing: 4px; color: rgba(40,100,65,0.85);
+}
+#pauseOverlay p {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 12px;
+  letter-spacing: 2px; color: rgba(60,120,80,0.5);
+}
+#resumeBtn {
+  padding: 10px 36px; border-radius: 99px;
+  border: 1px solid rgba(60,140,100,0.5);
+  background: rgba(210,240,225,0.8);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px;
+  letter-spacing: 3px; color: rgba(40,80,60,0.9);
+  cursor: pointer;
+}
+#resumeBtn:hover { background: rgba(190,230,210,0.9); }
+
+.caption {
+  position: absolute; bottom: 8px; left: 0; right: 0;
+  text-align: center; z-index: 10; pointer-events: none;
+}
+.caption p { font-size: 7.5px; letter-spacing: 2.5px; color: rgba(160,80,120,0.28); font-family: 'ZCOOL XiaoWei', serif; }
+
+@keyframes hg1{0%,100%{opacity:0.06}50%{opacity:0.2}}
+@keyframes hg2{0%,100%{opacity:0.12}50%{opacity:0.45}}
+@keyframes hg3{0%,100%{opacity:0.35}50%{opacity:0.85}}
+@keyframes hcore{0%,100%{opacity:0.45}50%{opacity:1}}
+.hg1{animation:hg1 6s ease-in-out infinite;}
+.hg2{animation:hg2 5s ease-in-out infinite 0.5s;}
+.hg3{animation:hg3 4s ease-in-out infinite 1s;}
+.hcore{animation:hcore 4s ease-in-out infinite;}
+
+@keyframes desireRing {
+  0%   { r: 34; opacity: 0.5; }
+  100% { r: 54; opacity: 0; }
+}
+.desire-ring { animation: desireRing 2s ease-out infinite; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div id="sectionLabel"></div>
+  <div id="targetName"></div>
+  <div id="questionEl"></div>
+  <div id="reflectBox">
+    <div id="reflectInputWrap">
+      <textarea id="reflectInput" placeholder="写下你的感受…" rows="3"></textarea>
+    </div>
+    <button id="reflectNext">继续 →</button>
+  </div>
+  <div id="repeatHint">以上问题至少重复九遍，直到感觉释放干净</div>
+
+  <svg id="sv" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:5;pointer-events:none;" viewBox="0 0 360 640">
+    <defs>
+      <filter id="f1" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="10"/></filter>
+      <filter id="f2" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="20"/></filter>
+      <filter id="f3" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="36"/></filter>
+      <filter id="fd" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="16"/></filter>
+      <radialGradient id="heartGradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"  stop-color="rgba(80,180,130,1)" stop-opacity="0.9"/>
+        <stop offset="40%" stop-color="rgba(60,160,110,1)" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="rgba(60,160,110,1)" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Human figure — rose glow -->
+    <path class="hg1" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="#90c8a8" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f3)"/>
+    <path class="hg2" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="#b8ddc8" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f2)"/>
+    <path class="hg3" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="#e0f5ec" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f1)"/>
+    <path class="hcore" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+    <circle id="svgHeartGlow" cx="183" cy="420" r="60" fill="url(#heartGradient)" opacity="0.85"/>
+    <g id="bg" style="pointer-events:all;"></g>
+  </svg>
+
+  <button class="act-btn" id="btnA">可以</button>
+  <button class="act-btn" id="btnD">不可以</button>
+
+  <div id="bottomBar">
+    <button id="pauseBtn">⏸ 暂停</button>
+    <button id="nextSectionBtn">如果感觉已经释放干净，进入下一环节 →</button>
+  </div>
+
+  <!-- Input overlay for section 4 -->
+  <div id="inputOverlay">
+    <p>请在脑海中描绘这个人的样子，<br>调动五感，去看他们、听他们、感受他们。<br><br>我想要释放的对象是</p>
+    <input id="targetInput" type="text" placeholder="输入名字或关系" maxlength="20"/>
+    <button id="confirmBtn">确定，开始释放</button>
+  </div>
+
+  <!-- Pause overlay -->
+  <div id="pauseOverlay">
+    <h2>已暂停</h2>
+    <p>你的进度已保存，随时可以继续</p>
+    <button id="resumeBtn">继续释放</button>
+  </div>
+
+  <div class="caption"><p>SEDONA METHOD · 觉察它，允许它，释放它</p></div>
+</div>
+
+<script>
+const SECTIONS = [
+  {
+    label:'环节一', title:'五步练习',
+    steps:[
+      { type:'text', q:'在开始之前，有几件事值得记住：\n释放情绪能够促进身体健康，但这并不意味着生病是你的错。\n生老病死是最正常不过的事，不需要因此苛责自己。\n这个练习能帮助你爱与接纳自己的身、心、灵，\n不管你现在是什么样子。', dur:10000 },
+      // 第一步
+      { type:'text', q:'第一步：对治愈的可能性保持开放\n\n想要改变自己的身体，先要改变自己的心智。\n你相信释放情绪能够促进身体健康这件事吗？\n保持开放的心态，是这个练习最重要的第一步。', dur:8000 },
+      { type:'yesno', q:'花些时间，看看自己内心是否对\n「释放情绪能够促进身体健康」这件事\n足够相信、足够开放？', btnA:'是的，我相信', btnD:'还有怀疑', skipNextOnA:3 },
+      { type:'question', q:'这些怀疑，是否来自哪种欲望？' },
+      { type:'yesno', q:'你能把那欲望放下吗？' },
+      // 第二步
+      { type:'text', q:'第二步：爱自己最原本的样子\n\n我们对自己的身体常常是不放心的——\n批判它、嫌弃它、觉得它不够好。\n其实，这种不认同本身就是让我们不舒服的原因之一。\n现在，让我们试着放下它。', dur:8000 },
+      { type:'yesno', q:'关注那种对自己的不认同感。\n你能把这种对自己的不认同放下吗？' },
+      { type:'yesno', q:'当你发现自己不认同身体上不舒服的那一块时，\n你能把对它的不认同放下吗？' },
+      // 第三步
+      { type:'text', q:'第三步：不问「为什么」\n\n有时候，我们纠结于病因，\n其实只是想在未来再次体验这种痛苦。', dur:7000 },
+      { type:'yesno', q:'你能把打算再次体验这种痛苦的想法放下吗？' },
+      // 第四步
+      { type:'text', q:'第四步：超越诊断\n\n我们往往会把医生的诊断当成一种预言，\n然后用对它的恐惧和期待反复强化它。\n试着放下这种执念，\n不是放弃治疗，而是让自己不再被它牢牢困住。', dur:9000 },
+      { type:'reflect', q:'你对医生、医院、治疗感觉如何？\n不管这个问题激起了怎样的想法、感受或图像，\n请让自己尽量欢迎它们。' },
+      { type:'question', q:'这些感受，是否来自哪种欲望？' },
+      { type:'yesno', q:'不管是哪种欲望，你能放下它吗？' },
+      { type:'yesno', q:'你能否允许自己回忆起自己是如何对这个诊断深信不疑的？', btnA:'可以', btnD:'不可以' },
+      { type:'yesno', q:'你愿意从过去把它改变吗？', btnA:'愿意', btnD:'不愿意' },
+      { type:'yesno', q:'如果是的话，你能把想要从过去改变它的欲望放下吗？' },
+      { type:'yesno', q:'你能把想要相信自己有这个病的欲望放下吗？' },
+      // 第五步
+      { type:'text', q:'第五步：放下病痛与症状\n\n关注自己对那个问题的感受，\n把这些感受归到三大基本欲望下，然后允许自己放下。', dur:7000 },
+      { type:'question', q:'这感觉，是否来自哪种欲望？' },
+      { type:'yesno', q:'不管是哪种欲望，你能放下它吗？' },
+      // 第六步
+      { type:'text', q:'第六步：拥抱本然如是\n\n抗拒自己的身体、想要改变它，只会让自己感觉更糟。\n不管你的身体现在是什么样子，\n允许它以原本的样子存在，\n反而能给它更多好转的空间。', dur:9000 },
+      { type:'yesno', q:'现在，看看自己是否能够全然允许\n自己的身体以它原本自然的样子存在。\n你能欢迎它以原本自然的样子存在吗？' },
+      { type:'yesno', q:'对于欢迎自己的身体以其原本自然的样子存在这件事，\n你能否更轻松一些、更投入一些？' },
+      { type:'yesno', q:'你是否在抗拒着自己身体的某种样子或某些感受？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'你能把那种抗拒放下、并允许自己的身体\n按其原本自然的样子存在吗？哪怕就当下这一会儿？' },
+      { type:'yesno', q:'你能拥抱自己身体的现状吗？' },
+      { type:'yesno', q:'你能让自己更放松、更投入地去欢迎\n或允许自己身体按其原本的样子存在吗？' },
+    ]
+  },
+  {
+    label:'环节二', title:'超越父母的影响',
+    steps:[
+      { type:'text', q:'父母对我们看待自己身体的方式影响极深。\n他们对自己身体的态度、对你身体的评价，\n往往在你心里留下了根深蒂固的印记。\n现在，让我们来看看这些影响，并把它们释放掉。', dur:9000 },
+      { type:'reflect', q:'把注意力放在你的父母、或其中某一位身上。\n你父母对他们自己的身体状态，\n或你的身体状态，大体感受如何呢？' },
+      { type:'yesno', q:'对此你有什么想要改变的吗？', btnA:'有', btnD:'没有' },
+      { type:'yesno', q:'如果是的话，你能把想要改变它的欲望放下吗？' },
+      { type:'reflect', q:'再回想一种你想要改变的、\n你父母对于他们自己或你的身体的态度。', skipOnLoop:true },
+      { type:'yesno', q:'你能把想要改变它的欲望放下吗？', skipOnLoop:true },
+      { type:'reflect', q:'现在，你父母对他们自己或你的身体的态度中，\n有什么是让你十分抗拒的吗？', skipOnLoop:true },
+      { type:'yesno', q:'你能把这种抗拒放下吗？', skipOnLoop:true },
+      { type:'reflect', q:'再回想一种引发你抗拒的、\n你父母对他们或你的身体的态度。', skipOnLoop:true },
+      { type:'yesno', q:'你能允许这种抗拒感溶解消散吗？', skipOnLoop:true },
+      { type:'reflect', q:'你的父母是否认为他们太胖、不健康、\n或身体上有其他毛病？\n你能看到自己是如何不自觉地把这种态度继承过来的吗？\n又或是自己如何一直拼命抗拒那种态度的呢？', skipOnLoop:true },
+      { type:'yesno', q:'你能把想要改变它的欲望放下吗？', skipOnLoop:true },
+      { type:'yesno', q:'你想要改变继承自父母的观念吗？', btnA:'有', btnD:'没有', skipOnLoop:true },
+      { type:'yesno', q:'你能放下这种想要改变的欲望吗？', skipOnLoop:true },
+      { type:'reflect', q:'在你自己对自己身体的态度中，\n有什么是你想要改变的吗？', skipOnLoop:true },
+      { type:'yesno', q:'你能把想要改变的欲望放下吗？', skipOnLoop:true },
+      { type:'reflect', q:'关于你的身体，还有什么是你想要改变的吗？', skipOnLoop:true },
+      { type:'yesno', q:'你能把想要改变它的欲望放下吗？', skipOnLoop:true },
+    ]
+  },
+  {
+    label:'环节三', title:'超越致病的恐惧',
+    steps:[
+      { type:'text', q:'在潜意识里，我们隐隐地期待那些令我们害怕之事的发生。\n当我们对某种特定的恐惧进行释放时，\n就把这种可能性从意识中挖出来丢掉了。\n我们的感觉会变得更好，\n想到自己身体时也会感觉更放松、更淡定。', dur:10000 },
+      { type:'reflect', q:'关于自己现在的或今后的身体状况，\n你有什么害怕的吗？' },
+      { type:'yesno', q:'你能把想要这件事发生的欲望放下吗？' },
+      { type:'question', q:'这种恐惧源自于哪种想要？' },
+      { type:'yesno', q:'你能放下这些想要吗？' },
+      { type:'reflect', q:'在你与自己身体的关系中，再找一件令你觉得恐惧的事。\n请允许自己在脑海内尽量描绘你害怕的画面，\n这样你会更容易把它放下。' },
+      { type:'yesno', q:'你能把想要这件事发生的欲望放下吗？' },
+      { type:'question', q:'这种恐惧源自于哪种想要？' },
+      { type:'yesno', q:'你能放下这些想要吗？' },
+      { type:'reflect', q:'再选一件你害怕会发生在你身体上的事，\n一件你只要意识清醒就绝不想它发生的事。\n你还怕自己身体上会发生什么事呢？' },
+      { type:'yesno', q:'你能把想要这件事发生的欲望放下吗？' },
+      { type:'question', q:'这种恐惧源自于哪种想要？' },
+      { type:'yesno', q:'你能放下这些想要吗？' },
+    ]
+  },
+  {
+    label:'环节四', title:'针对身体的喜欢／讨厌流程',
+    steps:[
+      { type:'text', q:'放下自己心中对身体的喜欢与讨厌，\n就能更容易接纳自己身体原本的样子，\n你的感觉也会因此好起来。\n喜欢和讨厌交替进行，一对一地来。', dur:8000 },
+      { type:'reflect', q:'你喜欢自己身体的哪一点呢？' },
+      { type:'question', q:'这激起了你想要被认同、想要控制、\n或想要安全稳妥的欲望吗？' },
+      { type:'yesno', q:'你能把它放下吗？' },
+      { type:'reflect', q:'你讨厌自己身体的哪一点呢？' },
+      { type:'question', q:'这激起了你想要被认同、想要控制、\n或想要安全稳妥的欲望吗？' },
+      { type:'yesno', q:'不管是哪种欲望，你能允许它被释放掉吗？' },
+      { type:'reflect', q:'你还喜欢自己身体的哪一点呢？' },
+      { type:'question', q:'这种喜欢背后潜藏着某些欲望吗？' },
+      { type:'yesno', q:'不管是哪种欲望，你能放开它、放下它吗？' },
+      { type:'reflect', q:'你还讨厌自己身体的哪一点呢？' },
+      { type:'question', q:'这激起了你想要被认同、想要控制、\n或想要安全稳妥的欲望吗？' },
+      { type:'yesno', q:'不管是哪种欲望，你能否允许它被释放掉呢？' },
+    ]
+  },
+  {
+    label:'环节五', title:'针对身体的清理程序',
+    steps:[
+      { type:'text', q:'我们与自己身体的关系，\n往往和我们与他人的关系一样复杂、深远、马虎不得。\n现在，请尽量允许那些画面、感受涌现在心里，\n不要试图去搞清它们是什么、为什么、从哪里来。', dur:9000 },
+      { type:'yesno', q:'你的身体曾试图控制你吗？\n或者说你曾感觉自己的身体试图控制你吗？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'如果是的话，你能把想要反过来控制它的欲望放下吗？' },
+      { type:'yesno', q:'你曾试图控制自己的身体吗？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'如果是的话，你能把想要控制自己身体的欲望放下吗？' },
+      { type:'yesno', q:'你现在是否能允许自己身体按其现状存在？\n纯客观地讲，你能做到吗？' },
+      { type:'yesno', q:'那你愿意允许自己身体按其现状存在吗？' },
+      { type:'yesno', q:'你现在能允许自己身体按其现状存在了吗？' },
+      { type:'reflect', q:'你曾不喜欢或不认同自己身体的哪一点吗？' },
+      { type:'yesno', q:'你能把自己对它的不喜欢或不认同放下吗？\n哪怕就现在这一会儿？' },
+      { type:'reflect', q:'你觉得自己的身体不喜欢或不认同你的哪一点吗？' },
+      { type:'yesno', q:'如果是的话，你能把想要得到自己身体认同的欲望放下吗？\n哪怕就现在这一会儿？' },
+      { type:'yesno', q:'你现在能允许自己对自己的身体只怀有爱与接纳吗？\n纯客观地讲，你能做到吗？' },
+      { type:'yesno', q:'那你愿意允许自己对自己的身体\n只怀有爱与接纳吗？哪怕就当下这一会儿？' },
+      { type:'yesno', q:'你现在对自己的身体是否只剩下爱与接纳的感受了呢？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'你觉得自己的身体以任何方式\n挑战过你、反对过你、威胁过你吗？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'这件事引起了你想要安全稳妥与生存的欲望吗？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'你能把它放下吗？' },
+      { type:'yesno', q:'你是否曾挑战、反对、威胁过自己的身体？\n或者起码看上去是这样？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'你能把想要挑战、反对、威胁自己身体的欲望放下吗？' },
+      { type:'yesno', q:'你的身体曾挑战、反对、威胁过你吗？\n或者起码看上去是这样？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'你能把想要反过来挑战、反对、威胁它的这种自保心理放下吗？' },
+      { type:'yesno', q:'你的身体曾挑战、反对、威胁过你吗？', btnA:'是', btnD:'不是' },
+      { type:'yesno', q:'如果是的话，你能允许自己的不安全感被释放掉吗？' },
+      { type:'yesno', q:'现在，你能允许自己对自己的身体只感到平安喜乐与信任吗？' },
+      { type:'yesno', q:'你愿意允许自己对自己的身体只感到平安喜乐与信任吗？' },
+      { type:'yesno', q:'你现在对自己的身体是否只感到平安喜乐与信任呢？', btnA:'是', btnD:'不是' },
+    ]
+  },
+  {
+    label:'环节六', title:'针对身体的好处／坏处流程',
+    showRepeatHint: true,
+    steps:[
+      { type:'text', q:'释放对象是「身体处于你心中的理想状态」这件事本身。\n喜欢和讨厌两边都需要被释放，至少重复九遍。', dur:7000 },
+      { type:'reflect', q:'身体处于你心中的理想状态会给你带来什么好处呢？' },
+      { type:'question', q:'这激起了你想要被认同、想要控制、\n想要安全稳妥的欲望吗？' },
+      { type:'yesno', q:'不管是哪种欲望，你能允许它被释放掉吗？' },
+      { type:'reflect', q:'身体处于你心中的理想状态会给你带来什么坏处呢？' },
+      { type:'question', q:'这激起了你想要被认同、想要控制、\n想要安全稳妥的欲望吗？' },
+      { type:'yesno', q:'不管是哪种欲望，你能允许自己把它放开吗？' },
+    ]
+  },
+  {
+    label:'环节七', title:'把想要的视觉化',
+    steps:[
+      { type:'text', q:'让自己尽量舒适，然后集中精力\n想象一下自己身体的理想状态。\n请你尽量调动多种感官，\n把心中的图像和身体上的感觉结合起来，\n尽量激发自己的想象力。', dur:10000 },
+      { type:'reflect', q:'让自己想象一下自己身体的理想状态。\n它看上去如何？感觉如何？它有多健康？' },
+      { type:'question', q:'这些景象是否激发了你想要被认同、\n想要控制、或想要安全稳妥的欲望？' },
+      { type:'yesno', q:'不管是哪种欲望，你能只是把它放下吗？' },
+      { type:'reflect', q:'回到对理想身体状态的想象中来，越生动越好。' },
+      { type:'question', q:'再看看这些想象是否源于想要被认同、\n想要控制、或想要安全稳妥的欲望。' },
+      { type:'yesno', q:'不管是哪种欲望，你能只是允许它被释放掉吗？' },
+      { type:'reflect', q:'再想象自己的理想身体状态，尽你所能让这些景象生动鲜活。\n这一次，看心里是否出现了\n「你不能拥有这样的身体」「你不配」\n「你永远不可能变成这样的」「怎么可能呢」这样的念头。' },
+      { type:'question', q:'这些想法是否来自想要被认同、\n想要控制或想要安全稳妥的欲望？' },
+      { type:'yesno', q:'不管是哪种欲望，你能只是把它放下吗？' },
+      { type:'reflect', q:'再描绘自己身体的理想状态，调动自己全部的感官。\n你对这些景象有什么反对、抵触、或是其他感受吗？' },
+      { type:'yesno', q:'不管是怎样的感受，你能只是欢迎它们的出现吗？' },
+      { type:'question', q:'这些感受是否也源于想要被认同、\n想要控制、想要安全稳妥的欲望？' },
+      { type:'yesno', q:'你能把它放下吗？哪怕只是现在这一会儿？' },
+      { type:'yesno', q:'现在，想象自己身体的理想状态，请全情投入其中，越投入越好。\n你能否欢迎这样的情景全然进入自己的意识，\n并拥抱它的一切吗？' },
+      { type:'yesno', q:'能再多欢迎一些，拥抱一些吗？' },
+      { type:'yesno', q:'对于身体状态的理想与否，你能顺其自然吗？' },
+      { type:'yesno', q:'你能发自内心地接受身体这个理想的样子吗？', finalStep:true },
+    ]
+  },
+];
+
+const DESIRES = [
+  { name:'想要控制',    glow:'#b84040', stroke:'#ffcca0', s:['#ffcca0','#c05030','#7a2010'], bodyPos:{x:110,y:370} },
+  { name:'想要被认同',  glow:'#9050b0', stroke:'#e0b8ff', s:['#e0b8ff','#9050b0','#5a1880'], bodyPos:{x:256,y:370} },
+  { name:'想要安全稳妥',glow:'#2080a0', stroke:'#a0e0ff', s:['#a0e0ff','#2080a0','#0a4860'], bodyPos:{x:183,y:455} },
+];
+
+const NS='http://www.w3.org/2000/svg';
+const TARGET_X=183, TARGET_Y=210;
+let gc=0, activeBubbles=[], mergedBubble=null, _arrivedNames=[];
+let phase='idle';
+let currentSection=0, currentStep=0;
+let sectionLoopCount={};
+let targetPersonName='';
+
+const card    = document.getElementById('card');
+const sv      = document.getElementById('sv');
+const bgG     = document.getElementById('bg');
+const dfs     = sv.querySelector('defs');
+const qEl     = document.getElementById('questionEl');
+const sLbl    = document.getElementById('sectionLabel');
+const tgtName = document.getElementById('targetName');
+const btnA    = document.getElementById('btnA');
+const btnD    = document.getElementById('btnD');
+const nextBtn = document.getElementById('nextSectionBtn');
+const pauseBtn= document.getElementById('pauseBtn');
+const pauseOverlay  = document.getElementById('pauseOverlay');
+const resumeBtn     = document.getElementById('resumeBtn');
+const inputOverlay  = document.getElementById('inputOverlay');
+const targetInput   = document.getElementById('targetInput');
+const confirmBtn    = document.getElementById('confirmBtn');
+const repeatHint    = document.getElementById('repeatHint');
+
+function toPx(sx,sy){ return {x:(sx/360)*card.offsetWidth, y:(sy/640)*card.offsetHeight}; }
+
+function positionUI(){
+  const headTopPx = (143/640)*card.offsetHeight;
+  const cardH = card.offsetHeight;
+
+  sLbl.style.top    = 'max(18px, env(safe-area-inset-top, 18px))';
+  sLbl.style.bottom = 'auto';
+
+  tgtName.style.top    = 'calc(max(18px, env(safe-area-inset-top, 18px)) + 28px)';
+  tgtName.style.bottom = 'auto';
+
+  qEl.style.top    = '';
+  qEl.style.bottom = (cardH - headTopPx + 20) + 'px';
+  qEl.style.maxHeight = (headTopPx - 60) + 'px';
+  qEl.style.overflowY = 'auto';
+
+  // reflectBox: centered at chest (SVG y≈420)
+  const {y:chestY} = toPx(183, 390);
+  const reflectEl = document.getElementById('reflectBox');
+  reflectEl.style.top = chestY + 'px';
+  reflectEl.style.bottom = '';
+
+  const {x:hx, y:hy} = toPx(183, 420);
+  const btnGap = 10;
+  btnD.style.top       = (hy - 18) + 'px';
+  btnD.style.right     = (card.offsetWidth - hx + btnGap) + 'px';
+  btnD.style.left      = 'auto';
+  btnD.style.transform = 'none';
+  btnA.style.top       = (hy - 18) + 'px';
+  btnA.style.left      = (hx + btnGap) + 'px';
+  btnA.style.right     = 'auto';
+  btnA.style.transform = 'none';
+}
+
+function showReflect(){ document.getElementById('reflectBox').classList.add('visible'); document.getElementById('reflectInput').value=''; }
+function hideReflect(){ document.getElementById('reflectBox').classList.remove('visible'); }
+
+function mkGrad(s){
+  const id='g'+(gc++);
+  const rg=document.createElementNS(NS,'radialGradient');
+  rg.setAttribute('id',id); rg.setAttribute('cx','35%'); rg.setAttribute('cy','30%'); rg.setAttribute('r','65%');
+  [[s[0],0.6,'0%'],[s[1],0.35,'60%'],[s[2],0.7,'100%']].forEach(([c,o,off])=>{
+    const st=document.createElementNS(NS,'stop');
+    st.setAttribute('offset',off); st.setAttribute('stop-color',c); st.setAttribute('stop-opacity',o);
+    rg.appendChild(st);
+  });
+  dfs.appendChild(rg); return id;
+}
+
+function showQ(html){ qEl.innerHTML=html.replace(/\n/g,'<br>'); qEl.classList.add('visible'); }
+function hideQ(){ qEl.classList.remove('visible'); hideReflect(); }
+function showButtons(){ positionUI(); btnA.classList.add('visible'); btnD.classList.add('visible'); }
+function hideButtons(){ btnA.classList.remove('visible'); btnD.classList.remove('visible'); }
+
+function showTargetName(){
+  if(targetPersonName){
+    tgtName.textContent = '— ' + targetPersonName + ' —';
+    tgtName.classList.add('visible');
+  }
+}
+function hideTargetName(){ tgtName.classList.remove('visible'); }
+
+function spawnBubble(def, R, onClickFn, delayIdx){
+  const gid=mkGrad(def.s);
+  const g=document.createElementNS(NS,'g');
+  g.setAttribute('style','cursor:pointer; pointer-events:all;');
+  const ring=document.createElementNS(NS,'circle');
+  ring.setAttribute('r',R+10); ring.setAttribute('fill','none');
+  ring.setAttribute('stroke',def.stroke); ring.setAttribute('stroke-width','1.2');
+  ring.setAttribute('stroke-opacity','0.4'); ring.classList.add('desire-ring');
+  ring.style.animationDelay=(delayIdx*0.6)+'s';
+  const glC=document.createElementNS(NS,'circle');
+  glC.setAttribute('r',R+14); glC.setAttribute('fill',def.glow);
+  glC.setAttribute('filter','url(#fd)'); glC.style.opacity='0.28';
+  const bod=document.createElementNS(NS,'circle');
+  bod.setAttribute('r',R); bod.setAttribute('fill','url(#'+gid+')');
+  const rim=document.createElementNS(NS,'circle');
+  rim.setAttribute('r',R); rim.setAttribute('fill','none');
+  rim.setAttribute('stroke',def.stroke); rim.setAttribute('stroke-width','1.4'); rim.setAttribute('stroke-opacity','0.85');
+  const h1=document.createElementNS(NS,'ellipse');
+  h1.setAttribute('rx',R*0.34); h1.setAttribute('ry',R*0.17); h1.setAttribute('fill','white');
+  h1.setAttribute('fill-opacity','0.27'); h1.setAttribute('transform',`translate(${-R*0.28},${-R*0.33})`);
+  const tx=document.createElementNS(NS,'text');
+  tx.setAttribute('text-anchor','middle'); tx.setAttribute('dy','0.35em');
+  tx.setAttribute('font-size',def.name.length>4?'8':'9');
+  tx.setAttribute('font-family',"'Noto Serif SC',serif");
+  tx.setAttribute('fill','white'); tx.setAttribute('fill-opacity','0.92');
+  tx.textContent=def.name;
+  [ring,glC,bod,rim,h1,tx].forEach(el=>g.appendChild(el));
+  bgG.appendChild(g);
+  const b={
+    def,R,el:g,glC,
+    bx:def.bodyPos.x, by:def.bodyPos.y, x:def.bodyPos.x, y:def.bodyPos.y,
+    ph:Math.random()*Math.PI*2, fa:2+Math.random()*1.5, fs:5+Math.random()*4,
+    gph:Math.random()*Math.PI*2, gs:0.9+Math.random()*0.5,
+    state:'idle'
+  };
+  g.addEventListener('click',(ev)=>{ev.stopPropagation();onClickFn(b);});
+  g.setAttribute('transform',`translate(${b.x},${b.y})`);
+  g.style.opacity='0';
+  setTimeout(()=>{
+    let op=0;
+    const iv=setInterval(()=>{ op=Math.min(1,op+0.09); g.style.opacity=op.toFixed(2); if(op>=1)clearInterval(iv); },25);
+  }, delayIdx*300);
+  activeBubbles.push(b);
+  return b;
+}
+
+function spawnMerged(names){
+  if(mergedBubble){mergedBubble.el.remove();mergedBubble=null;}
+  const MR=names.length===1?34:names.length===2?40:46;
+  const gid='mg'+(gc++);
+  const rg=document.createElementNS(NS,'radialGradient');
+  rg.setAttribute('id',gid); rg.setAttribute('cx','38%'); rg.setAttribute('cy','32%'); rg.setAttribute('r','65%');
+  [['#e0f5ec',0.65,'0%'],['#50b080',0.4,'55%'],['#1a6840',0.72,'100%']].forEach(([c,o,off])=>{
+    const st=document.createElementNS(NS,'stop');
+    st.setAttribute('offset',off); st.setAttribute('stop-color',c); st.setAttribute('stop-opacity',o);
+    rg.appendChild(st);
+  });
+  dfs.appendChild(rg);
+  const g=document.createElementNS(NS,'g'); g.setAttribute('style','pointer-events:none;');
+  const glC=document.createElementNS(NS,'circle');
+  glC.setAttribute('r','55'); glC.setAttribute('fill','#50b080');
+  glC.setAttribute('filter','url(#fd)'); glC.style.opacity='0.38';
+  const bod=document.createElementNS(NS,'circle'); bod.setAttribute('r',MR); bod.setAttribute('fill','url(#'+gid+')');
+  const rim=document.createElementNS(NS,'circle'); rim.setAttribute('r',MR); rim.setAttribute('fill','none');
+  rim.setAttribute('stroke','#90d8b0'); rim.setAttribute('stroke-width','1.5'); rim.setAttribute('stroke-opacity','0.9');
+  const h1=document.createElementNS(NS,'ellipse');
+  h1.setAttribute('rx','11'); h1.setAttribute('ry','5.5'); h1.setAttribute('fill','white');
+  h1.setAttribute('fill-opacity','0.26'); h1.setAttribute('transform','translate(-9,-12)');
+  const tx=document.createElementNS(NS,'text');
+  tx.setAttribute('text-anchor','middle');
+  tx.setAttribute('font-size', names.length>=2 ? '7' : '9');
+  tx.setAttribute('font-family',"'Noto Serif SC',serif");
+  tx.setAttribute('fill','white'); tx.setAttribute('fill-opacity','0.95');
+  // Stack names vertically using tspan
+  const lineH = names.length===1 ? 0 : names.length===2 ? 9 : 8;
+  const startDy = names.length===1 ? '0.35em' : names.length===2 ? '-0.35em' : '-0.7em';
+  names.forEach((name, i) => {
+    const ts = document.createElementNS(NS,'tspan');
+    ts.setAttribute('x','0');
+    ts.setAttribute('dy', i===0 ? startDy : lineH+'px');
+    ts.textContent = name;
+    tx.appendChild(ts);
+  });
+  [glC,bod,rim,h1,tx].forEach(el=>g.appendChild(el));
+  bgG.appendChild(g);
+  g.setAttribute('transform',`translate(${TARGET_X},${TARGET_Y})`);
+  mergedBubble={el:g,glC,x:TARGET_X,y:TARGET_Y,state:'idle',_gph:0};
+}
+
+function releaseUp(el,cx,cy,onDone){
+  const endY=cy-700;
+  const animT=document.createElementNS(NS,'animateTransform');
+  animT.setAttribute('attributeName','transform'); animT.setAttribute('type','translate');
+  animT.setAttribute('from',`${cx} ${cy}`); animT.setAttribute('to',`${cx} ${endY}`);
+  animT.setAttribute('dur','0.85s'); animT.setAttribute('fill','freeze');
+  const animO=document.createElementNS(NS,'animate');
+  animO.setAttribute('attributeName','opacity'); animO.setAttribute('from','1'); animO.setAttribute('to','0');
+  animO.setAttribute('dur','0.85s'); animO.setAttribute('fill','freeze');
+  el.appendChild(animT); el.appendChild(animO);
+  animT.beginElement(); animO.beginElement();
+  setTimeout(()=>{el.remove();if(onDone)onDone();},900);
+}
+
+function clearAllBubbles(onDone){
+  const all=[...activeBubbles]; activeBubbles=[];
+  if(mergedBubble){mergedBubble.el.remove();mergedBubble=null;}
+  if(all.length===0){if(onDone)onDone();return;}
+  let done=0;
+  all.forEach(b=>{
+    let op=1;
+    const iv=setInterval(()=>{
+      op=Math.max(0,op-0.12); b.el.style.opacity=op.toFixed(2);
+      if(op<=0){clearInterval(iv);b.el.remove();done++;if(done===all.length&&onDone)onDone();}
+    },25);
+  });
+}
+
+function spawnRipple(){
+  const {x:hx,y:hy}=toPx(183,420);
+  const size=(120/360)*card.offsetWidth;
+  [0,420].forEach(delay=>{
+    setTimeout(()=>{
+      const rp=document.createElement('div');
+      rp.className='ripple-el';
+      rp.style.width=size+'px'; rp.style.height=size+'px';
+      rp.style.left=hx+'px'; rp.style.top=hy+'px';
+      card.appendChild(rp);
+      setTimeout(()=>rp.remove(),1700);
+    },delay);
+  });
+}
+
+function saveProgress(){
+  localStorage.setItem('body_progress', JSON.stringify({currentSection, currentStep, targetPersonName}));
+}
+function loadProgress(){
+  try {
+    const p=JSON.parse(localStorage.getItem('body_progress'));
+    if(p){ currentSection=p.currentSection||0; currentStep=0; targetPersonName=p.targetPersonName||''; }
+  } catch(e){}
+}
+
+function runStep(){
+  const sec=SECTIONS[currentSection];
+  if(!sec)return;
+  const step=sec.steps[currentStep];
+  if(!step)return;
+
+  // Skip text on loops; skip steps marked skipOnLoop; but never skip neverSkip steps
+  const loopCount = sectionLoopCount[currentSection] || 0;
+  if(loopCount > 0 && (step.type==='text' || step.skipOnLoop) && !step.neverSkip){
+    advanceStep(); return;
+  }
+
+  sLbl.innerHTML=`<span style="font-size:10px;letter-spacing:3px;">${sec.label}：${sec.title}</span>`;
+  positionUI(); hideQ(); hideButtons();
+  hideTargetName();
+
+  // Show/hide repeat hint for section 5
+  if(sec.showRepeatHint && sectionLoopCount[currentSection] > 0){
+    repeatHint.classList.add('visible');
+  } else {
+    repeatHint.classList.remove('visible');
+  }
+
+  if(step.type==='text'){
+    phase='idle';
+    const totalDur = (step.dur || 5000) + 400;
+    showQ(step.q);
+    setTimeout(()=>{ if(phase==='idle') advanceStep(); }, totalDur);
+
+  } else if(step.type==='question'){
+    phase='desire'; _arrivedNames=[];
+    setTimeout(()=>{
+      showQ(step.q);
+      DESIRES.forEach((d,i)=>spawnBubble(d,38,onClickDesire,i));
+    },400);
+
+  } else if(step.type==='reflect'){
+    phase='reflect';
+    setTimeout(()=>{
+      showQ(step.q);
+      positionUI();
+      showReflect();
+    },400);
+
+  } else if(step.type==='yesno'){
+    phase='yesno';
+    btnA.textContent = step.btnA || '可以';
+    btnD.textContent = step.btnD || '不可以';
+    setTimeout(()=>{
+      showQ(step.q);
+      clearAllBubbles(()=>{ positionUI(); showButtons(); });
+    },400);
+  }
+}
+
+document.getElementById('reflectNext').addEventListener('click',()=>{
+  if(phase!=='reflect') return;
+  hideReflect(); hideQ();
+  setTimeout(()=>clearAllBubbles(()=>advanceStep()), 300);
+});
+document.getElementById('reflectInput').addEventListener('keydown',(e)=>{
+  if(e.key==='Enter') document.getElementById('reflectNext').click();
+});
+
+function advanceStep(){
+  currentStep++;
+  if(currentStep >= SECTIONS[currentSection].steps.length){
+    currentStep=0;
+    sectionLoopCount[currentSection]=(sectionLoopCount[currentSection]||0)+1;
+    // Show repeat hint for section 5 after first loop
+    if(SECTIONS[currentSection].showRepeatHint){
+      repeatHint.classList.add('visible');
+    }
+  }
+  clearAllBubbles(()=>runStep());
+}
+
+function onClickDesire(b){
+  if((phase!=='desire' && phase!=='merged')||b.state!=='idle') return;
+  if(_arrivedNames.length >= 3) return; // max 3
+  b.state='selected';
+  const FLY_MS=260, startX=b.x, startY=b.y, t0=performance.now();
+  function fly(now){
+    const t=Math.min((now-t0)/FLY_MS,1);
+    b.el.setAttribute('transform',`translate(${(startX+(TARGET_X-startX)*t).toFixed(1)},${(startY+(TARGET_Y-startY)*t).toFixed(1)})`);
+    b.el.style.opacity=(1-t).toFixed(2);
+    if(t<1){requestAnimationFrame(fly);}
+    else{
+      b.state='gone'; b.el.remove(); activeBubbles=activeBubbles.filter(ab=>ab!==b);
+      _arrivedNames.push(b.def.name);
+      spawnMerged([..._arrivedNames]);
+      hideQ();
+      const nextStep=SECTIONS[currentSection].steps[currentStep+1];
+      const mergeQ=(nextStep&&nextStep.type==='yesno')?nextStep.q:'能允许这些<em>想要</em>离开吗？';
+      showQ(mergeQ);
+      positionUI();
+      btnA.classList.add('visible'); btnD.classList.add('visible');
+      phase='merged';
+    }
+  }
+  requestAnimationFrame(fly);
+}
+
+function handleDecision(isA){
+  if(phase==='yesno'){
+    btnA.textContent='可以'; btnD.textContent='不可以';
+    hideQ(); hideButtons();
+    spawnRipple();
+    const step=SECTIONS[currentSection].steps[currentStep];
+    setTimeout(()=>{
+      if(step&&step.finalStep) showFinalChoice();
+      else if(step&&step.skipNextOnA&&isA){
+        // skip N steps ahead
+        currentStep += step.skipNextOnA;
+        if(currentStep>=SECTIONS[currentSection].steps.length){
+          currentStep=0;
+          sectionLoopCount[currentSection]=(sectionLoopCount[currentSection]||0)+1;
+        }
+        clearAllBubbles(()=>runStep());
+      }
+      else clearAllBubbles(()=>advanceStep());
+    },900);
+    return;
+  }
+  if(phase!=='merged'||!mergedBubble) return;
+  phase='animating'; hideQ(); hideButtons();
+  spawnRipple();
+  const el=mergedBubble.el; mergedBubble=null;
+  releaseUp(el,TARGET_X,TARGET_Y,()=>clearAllBubbles(()=>{
+    currentStep+=2;
+    if(currentStep>=SECTIONS[currentSection].steps.length){
+      currentStep=0;
+      sectionLoopCount[currentSection]=(sectionLoopCount[currentSection]||0)+1;
+    }
+    runStep();
+  }));
+}
+btnA.addEventListener('click',()=>handleDecision(true));
+btnD.addEventListener('click',()=>handleDecision(false));
+
+function showFinalChoice(){
+  clearAllBubbles(()=>{
+    hideQ(); hideButtons(); hideTargetName();
+    repeatHint.classList.remove('visible');
+    document.getElementById('bottomBar').style.display='none';
+    const {x:bx,y:by}=toPx(TARGET_X,TARGET_Y);
+    btnA.textContent='是的，我值得健康';
+    btnD.textContent='重复这一环节';
+    btnA.style.top=(by+50)+'px'; btnA.style.left=(bx-110)+'px'; btnA.style.right='auto';
+    btnD.style.top=(by+90)+'px'; btnD.style.left='50%'; btnD.style.transform='translateX(-50%)'; btnD.style.right='auto';
+
+    showQ('你能发自内心地接受身体这个理想的样子吗？\n你值得拥有健康，也值得好好爱自己。');
+    showButtons();
+
+    function onWorth(){
+      cleanup();
+      localStorage.removeItem('body_progress');
+      hideQ(); hideButtons();
+      showQ('你已完成全部的释放练习。\n请花一点时间，\n静静感受此刻内心的变化。');
+    }
+    function onRepeat(){
+      cleanup(); hideQ(); hideButtons();
+      document.getElementById('bottomBar').style.display='';
+      currentStep=0;
+      sectionLoopCount[currentSection]=0;
+      clearAllBubbles(()=>runStep());
+    }
+    function cleanup(){
+      btnA.textContent='可以'; btnD.textContent='不可以';
+      btnA.style.transform='none'; btnD.style.transform='none';
+      btnA.removeEventListener('click',onWorth); btnD.removeEventListener('click',onRepeat);
+      btnA.addEventListener('click',handleDecision); btnD.addEventListener('click',handleDecision);
+    }
+    btnA.removeEventListener('click',handleDecision); btnD.removeEventListener('click',handleDecision);
+    btnA.addEventListener('click',onWorth); btnD.addEventListener('click',onRepeat);
+  });
+}
+
+nextBtn.addEventListener('click',()=>{
+  if(currentSection<SECTIONS.length-1){
+    currentSection++; currentStep=0;
+    sectionLoopCount[currentSection]=0;
+    repeatHint.classList.remove('visible');
+    clearAllBubbles(()=>{hideQ();hideButtons();runStep();});
+  }
+});
+
+// Input overlay confirm
+confirmBtn.addEventListener('click',()=>{
+  const name=targetInput.value.trim();
+  if(!name) return;
+  targetPersonName=name;
+  inputOverlay.classList.remove('show');
+  currentSection=3; currentStep=0;
+  sectionLoopCount[3]=0;
+  clearAllBubbles(()=>{hideQ();hideButtons();runStep();});
+});
+targetInput.addEventListener('keydown',(e)=>{
+  if(e.key==='Enter') confirmBtn.click();
+});
+
+pauseBtn.addEventListener('click',()=>{
+  saveProgress();
+  pauseOverlay.classList.add('show');
+});
+resumeBtn.addEventListener('click',()=>{
+  pauseOverlay.classList.remove('show');
+});
+
+let last=null;
+function loop(ts){
+  const dt=last?Math.min((ts-last)/1000,0.05):0.016; last=ts;
+  activeBubbles.forEach(b=>{
+    if(b.state!=='idle') return;
+    b.ph+=dt*b.fs; b.x=b.bx+Math.cos(b.ph*0.65)*1.8; b.y=b.by+Math.sin(b.ph)*b.fa;
+    b.gph+=dt*b.gs; b.glC.style.opacity=((Math.sin(b.gph)*0.5+0.5)*0.7).toFixed(3);
+    b.el.setAttribute('transform',`translate(${b.x.toFixed(1)},${b.y.toFixed(1)})`);
+  });
+  if(mergedBubble&&mergedBubble.state==='idle'){
+    mergedBubble._gph=(mergedBubble._gph||0)+dt*1.2;
+    mergedBubble.glC.style.opacity=((Math.sin(mergedBubble._gph)*0.5+0.5)*0.5+0.25).toFixed(3);
+  }
+  requestAnimationFrame(loop);
+}
+
+function setVH(){ document.querySelector('.card').style.height=window.innerHeight+'px'; }
+setVH();
+window.addEventListener('resize',()=>{setVH();positionUI();});
+loadProgress();
+positionUI();
+runStep();
+requestAnimationFrame(loop);
+</script>
+<script src="nav-orb.js"></script>
+<script src="music-btn.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "freed-releasing",
+  "version": "1.0.0",
+  "description": "Freed 释放 - Sedona Method based emotional release app",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'No build step - static files in www/'",
+    "cap:sync": "npx cap sync ios",
+    "cap:open": "npx cap open ios"
+  },
+  "author": "Fiona",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
+    "@capacitor/app": "^6.0.1",
+    "@capacitor/status-bar": "^6.0.1",
+    "@capacitor/keyboard": "^6.0.2",
+    "@capacitor/network": "^6.0.2",
+    "@capacitor/splash-screen": "^6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

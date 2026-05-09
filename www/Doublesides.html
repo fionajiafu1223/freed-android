@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>圣多纳释放法 · 双面觉察</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+SC:wght@300;400&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:'Noto Sans SC',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden; position:relative;
+    background:#082f60;
+  }
+
+  /* ══ SPLIT BACKGROUNDS ══ */
+  .bg-half { position:fixed; top:0; width:50%; height:100%; z-index:0; }
+  #bgLeft  {
+    left:0;
+    background:linear-gradient(180deg,
+      #cce9ff 0%, #aadcf8 30%, #88caee 51%,
+      #1a74b8 53%, #1360a0 68%, #0d4a82 83%, #082f60 100%);
+  }
+  #bgRight {
+    right:0;
+    background:linear-gradient(180deg,
+      #cce9ff 0%, #aadcf8 30%, #88caee 51%,
+      #1a5c8a 53%, #154e78 68%, #0f3c60 83%, #09284a 100%);
+  }
+
+  /* Extra murk tint on right underwater — blue-tinted turbidity */
+  #murkTint {
+    position:fixed; top:52%; left:50%; width:50%; height:48%;
+    background:
+      radial-gradient(ellipse 90% 70% at 60% 30%, rgba(10,40,80,0.30) 0%, transparent 70%),
+      linear-gradient(180deg, rgba(8,25,55,0.15) 0%, rgba(6,18,45,0.45) 100%);
+    z-index:1; pointer-events:none;
+  }
+
+  /* Suspended murk specks */
+  .murk-speck {
+    position:fixed; border-radius:50%;
+    background:rgba(50,90,160,0.16);
+    pointer-events:none; z-index:2;
+    animation:murkBob ease-in-out infinite alternate;
+  }
+  @keyframes murkBob {
+    0%   { transform:translate(0,0);      opacity:0.15; }
+    100% { transform:translate(6px,-12px); opacity:0.30; }
+  }
+
+  /* ══ CENTER DIVIDER ══ */
+  #divider { display:none; }
+
+  /* ══ SIDE LABELS at waterline ══ */
+  .side-label {
+    position:fixed; z-index:22;
+    font-family:'Noto Serif SC',serif;
+    font-size:0.80rem; font-weight:600; letter-spacing:0.14em;
+    padding:4px 16px; border-radius:20px;
+    pointer-events:none; white-space:nowrap;
+  }
+  #lblBenefit {
+    left:25%; transform:translateX(-50%);
+    color:#0b2c48;
+    background:rgba(255,255,255,0.52);
+    border:1px solid rgba(255,255,255,0.75);
+    box-shadow:0 2px 12px rgba(0,90,180,0.15);
+    backdrop-filter:blur(6px);
+  }
+  #lblDrawback {
+    left:75%; transform:translateX(-50%);
+    color:#0b2c48;
+    background:rgba(255,255,255,0.45);
+    border:1px solid rgba(255,255,255,0.65);
+    box-shadow:0 2px 12px rgba(0,60,140,0.18);
+    backdrop-filter:blur(6px);
+  }
+
+  /* ══ CLOUDS ══ */
+  .sky-clouds {
+    position:fixed; top:0; left:0; width:100%; height:55%;
+    pointer-events:none; z-index:1; overflow:hidden;
+  }
+  .cloud { position:absolute; border-radius:50px; animation:cloudDrift linear infinite; }
+  .cloud.bright { background:rgba(255,255,255,0.52); filter:blur(9px); }
+  .cloud.grey   { background:rgba(255,255,255,0.38); filter:blur(13px); }
+  @keyframes cloudDrift {
+    0%   { transform:translateX(-140px); opacity:0; }
+    9%   { opacity:1; }
+    88%  { opacity:0.72; }
+    100% { transform:translateX(calc(100vw + 140px)); opacity:0; }
+  }
+
+  /* ══ WATER SURFACE SVG ══ */
+  .water-surface { position:fixed; left:0; right:0; pointer-events:none; z-index:10; }
+
+  /* ══ UNDERWATER RAYS ══ */
+  .underwater-rays {
+    position:fixed; left:0; bottom:0; width:100%;
+    height:50%; pointer-events:none; z-index:2; overflow:hidden;
+  }
+  .ray { position:absolute; bottom:0; width:58px; transform-origin:bottom center; animation:rayWave ease-in-out infinite alternate; }
+  .ray.r-clear { background:linear-gradient(180deg,transparent,rgba(80,185,255,0.07)); }
+  .ray.r-murky { background:linear-gradient(180deg,transparent,rgba(20,70,140,0.06)); }
+  @keyframes rayWave {
+    0%   { transform:skewX(-4deg) scaleX(1);    opacity:0.45; }
+    100% { transform:skewX( 4deg) scaleX(1.15); opacity:0.90; }
+  }
+
+  /* ══ HEADER ══ */
+  .header {
+    position:relative; z-index:22;
+    text-align:center; padding:18px 20px 3px; width:100%; pointer-events:none;
+  }
+  .header h1 {
+    font-family:'Noto Serif SC',serif;
+    font-size:1.32rem; font-weight:300; letter-spacing:0.20em;
+    background:linear-gradient(90deg,
+      #0c2d4a 0%,#0c2d4a 48%,
+      #0c2d4a 52%,#0c2d4a 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .header p { font-size:0.69rem; letter-spacing:0.12em; font-weight:300; color:rgba(140,192,220,0.80); margin-top:3px; }
+
+  /* ══ ZONE LABELS ══ */
+  .zone-label { position:fixed; pointer-events:none; z-index:22; font-family:'Noto Serif SC',serif; font-size:0.80rem; font-weight:600; letter-spacing:0.09em; }
+  #lbCL { left:12px;             color:#0c2d48; }
+  #lbSL { left:12px;             color:rgba(155,215,255,0.72); }
+
+  /* ══ SCENE ══ */
+  .scene { position:fixed; top:0; left:0; right:0; bottom:0; z-index:5; pointer-events:none; overflow:hidden; }
+
+  /* ══ BUBBLE BASE ══ */
+  .bubble {
+    position:absolute; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    text-align:center; font-family:'Noto Serif SC',serif; font-weight:600;
+    line-height:1.35; user-select:none; will-change:left,top,opacity;
+  }
+
+
+  /* LEFT idle (clear, bright) */
+  .bubble.idle.L {
+    cursor:pointer; z-index:8; pointer-events:auto; color:#fff;
+    background:radial-gradient(circle at 32% 28%, rgba(255,255,255,0.38),rgba(30,120,230,0.20));
+    border:1.5px solid rgba(140,215,255,0.62);
+    box-shadow:0 2px 13px rgba(0,70,160,0.22),inset 0 1px 0 rgba(255,255,255,0.52),inset -1px -1px 4px rgba(0,90,200,0.18);
+    backdrop-filter:blur(2px); text-shadow:0 1px 4px rgba(0,40,100,0.38);
+  }
+  .bubble.idle.L.bc { background:radial-gradient(circle at 32% 28%, rgba(255,205,215,0.42),rgba(200,55,85,0.24)); border-color:rgba(255,165,185,0.64); }
+  .bubble.idle.L.ba { background:radial-gradient(circle at 32% 28%, rgba(185,255,215,0.42),rgba(35,165,105,0.24)); border-color:rgba(120,235,175,0.64); }
+  .bubble.idle.L.bs { background:radial-gradient(circle at 32% 28%, rgba(195,215,255,0.42),rgba(55,100,235,0.24)); border-color:rgba(145,185,255,0.64); }
+  .bubble.idle.L:hover  { filter:brightness(1.18); transform:scale(1.07); }
+  .bubble.idle.L:active { transform:scale(0.92); }
+
+  /* RIGHT idle (murky, dark) */
+  .bubble.idle.R {
+    cursor:pointer; z-index:8; pointer-events:auto; color:#fff;
+    background:radial-gradient(circle at 32% 28%, rgba(110,135,175,0.42),rgba(30,50,100,0.48));
+    border:1.5px solid rgba(80,115,165,0.55);
+    box-shadow:0 2px 13px rgba(0,20,80,0.40),inset 0 1px 0 rgba(170,200,255,0.45),inset -1px -1px 4px rgba(10,40,150,0.28);
+    backdrop-filter:blur(3px); text-shadow:0 1px 5px rgba(0,15,70,0.55);
+  }
+  .bubble.idle.R.bc { background:radial-gradient(circle at 32% 28%, rgba(175,120,150,0.42),rgba(95,45,80,0.48)); border-color:rgba(150,100,130,0.55); }
+  .bubble.idle.R.ba { background:radial-gradient(circle at 32% 28%, rgba(90,145,125,0.42),rgba(20,80,60,0.48)); border-color:rgba(70,125,105,0.55); }
+  .bubble.idle.R.bs { background:radial-gradient(circle at 32% 28%, rgba(100,120,185,0.42),rgba(30,50,130,0.48)); border-color:rgba(80,105,165,0.55); }
+  .bubble.idle.R:hover  { filter:brightness(1.14); transform:scale(1.07); }
+  .bubble.idle.R:active { transform:scale(0.92); }
+
+  .bubble.idle { animation:none; }
+  .bubble.rising { cursor:default; z-index:12; pointer-events:none; }
+
+  /* At surface */
+  .bubble.at-surface {
+    cursor:default; z-index:15; pointer-events:none;
+    background:radial-gradient(circle at 34% 28%, rgba(255,255,255,0.92),rgba(175,228,255,0.62)) !important;
+    border:none !important;
+    box-shadow:0 6px 32px rgba(0,100,200,0.28) !important;
+    color:#0e2840 !important; text-shadow:none !important; backdrop-filter:blur(8px);
+  }
+  .bubble.at-surface.bc  { background:radial-gradient(circle at 34% 28%, rgba(255,232,238,0.95),rgba(238,128,155,0.66)) !important; color:#3a0a18 !important; }
+  .bubble.at-surface.ba  { background:radial-gradient(circle at 34% 28%, rgba(220,255,236,0.95),rgba(75,190,130,0.66)) !important; color:#062e1e !important; }
+  .bubble.at-surface.bs  { background:radial-gradient(circle at 34% 28%, rgba(224,234,255,0.95),rgba(98,140,242,0.66)) !important; color:#080e38 !important; }
+  .bubble.at-surface.bm  { background:radial-gradient(circle at 34% 28%, rgba(235,240,255,0.95),rgba(158,118,222,0.70)) !important; border:none !important; color:#1a0a38 !important; }
+  .bubble.at-surface.bm3 { background:radial-gradient(circle at 34% 28%, rgba(255,242,222,0.95),rgba(178,128,78,0.66)) !important; border:none !important; color:#2a1400 !important; }
+
+  /* Decision buttons */
+  .surf-btn {
+    position:fixed; z-index:18;
+    width:64px; height:64px; border-radius:50%; border:none;
+    font-family:'Noto Serif SC',serif; font-size:0.74rem; font-weight:600;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    text-align:center; line-height:1.3;
+    opacity:0; pointer-events:none; transition:opacity 0.3s ease, transform 0.15s ease;
+  }
+  .surf-btn.show { opacity:1; pointer-events:auto; }
+  .surf-btn:hover  { transform:scale(1.12); }
+  .surf-btn:active { transform:scale(0.90); }
+  #sharedDeny, #sharedAllow, #rqNo, #rqYes {
+    background:radial-gradient(circle at 36% 30%, rgba(255,255,255,0.96),rgba(200,232,255,0.90));
+    color:#0e2840; border:1.5px solid rgba(100,162,222,0.50);
+    box-shadow:0 3px 14px rgba(80,140,222,0.28);
+  }
+
+  #surfQ {
+    position:fixed; z-index:22;
+    left:50%; transform:translateX(-50%);
+    font-family:'Noto Serif SC',serif;
+    letter-spacing:0.08em;
+    pointer-events:none; text-align:center;
+    opacity:0; transition:opacity 0.38s ease;
+    line-height:1.8; width:min(90vw, 480px);
+  }
+  #surfQ .sq-main {
+    font-size:1.05rem; font-weight:400;
+    color:rgba(230,248,255,0.97);
+    text-shadow:0 2px 16px rgba(0,40,120,0.8), 0 0 30px rgba(80,180,255,0.35);
+    display:block;
+  }
+  #surfQ .sq-sub {
+    font-size:0.82rem; font-weight:300;
+    color:rgba(210,238,255,0.88);
+    text-shadow:0 1px 10px rgba(0,20,80,0.8);
+    display:block; margin-top:8px;
+  }
+  #surfQ.show { opacity:1; }
+
+  /* ══ SECOND QUESTION (after allow/deny) ══ */
+  #releaseQ {
+    position:fixed; left:50%; transform:translateX(-50%);
+    z-index:22; pointer-events:none; text-align:center;
+    opacity:0; transition:opacity 0.45s ease;
+    line-height:1.8; width:min(90vw, 460px);
+  }
+  #releaseQ.show { opacity:1; pointer-events:auto; }
+  #releaseQ .rq-main {
+    font-family:'Noto Serif SC',serif;
+    font-size:1.05rem; font-weight:400; letter-spacing:0.10em;
+    color:rgba(230,248,255,0.97);
+    text-shadow:0 2px 16px rgba(0,40,120,0.8), 0 0 40px rgba(80,180,255,0.35);
+    display:block; margin-bottom:18px;
+  }
+  .rq-btn:hover  { transform:scale(1.07); }
+  .rq-btn:active { transform:scale(0.93); }
+
+  @keyframes escapeToSky {
+    0%   { opacity:1;    transform:translateY(0)     scale(1);    }
+    14%  { opacity:0.95; transform:translateY(-50px)  scale(1.07); }
+    55%  { opacity:0.50; transform:translateY(-190px) scale(0.72); }
+    100% { opacity:0;    transform:translateY(-430px) scale(0.06); }
+  }
+  .go-sky { animation:escapeToSky 1.95s cubic-bezier(0.22,0.58,0.38,0.96) forwards !important; pointer-events:none !important; z-index:19 !important; }
+
+  .uw-particle { position:absolute; border-radius:50%; animation:uwFloat linear infinite; pointer-events:none; }
+  .uw-particle.pL { background:rgba(100,205,255,0.18); }
+  .uw-particle.pR { background:rgba(50,100,170,0.14); }
+  @keyframes uwFloat {
+    0%   { transform:translateY(0);     opacity:0;    }
+    10%  { opacity:0.55; }
+    90%  { opacity:0.12; }
+    100% { transform:translateY(-58vh); opacity:0;    }
+  }
+
+  .toast {
+    position:fixed; bottom:58px; left:50%;
+    transform:translateX(-50%) translateY(10px);
+    background:rgba(255,255,255,0.93); backdrop-filter:blur(12px);
+    color:#0e2840; padding:9px 26px; border-radius:40px;
+    font-family:'Noto Serif SC',serif; font-size:0.84rem; letter-spacing:0.04em;
+    opacity:0; transition:all 0.38s ease; pointer-events:none; z-index:200;
+    white-space:nowrap; box-shadow:0 4px 22px rgba(0,0,0,0.13);
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .counter { position:fixed; bottom:9px; left:50%; transform:translateX(-50%); z-index:22; font-family:'Noto Serif SC',serif; font-size:0.63rem; color:rgba(135,198,255,0.55); letter-spacing:0.12em; text-shadow:0 1px 4px rgba(0,0,60,0.4); }
+
+  /* ══ GUIDANCE CARD (centered, above waterline) ══ */
+  #guidanceCard {
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:22; pointer-events:none;
+    text-align:center; width:min(90vw, 480px);
+    transition:opacity 0.5s ease;
+  }
+  #guidanceCard.hidden { opacity:0; }
+  #guidanceMain {
+    font-family:'Noto Serif SC',serif;
+    font-size:1.05rem; font-weight:400; letter-spacing:0.10em;
+    color:rgba(230,248,255,0.97);
+    text-shadow:0 2px 16px rgba(0,40,120,0.8), 0 0 40px rgba(80,180,255,0.35);
+    line-height:1.6;
+  }
+  #guidanceSub {
+    font-family:'Noto Serif SC',serif;
+    font-size:1.05rem; letter-spacing:0.10em; font-weight:400;
+    color:rgba(230,248,255,0.97);
+    margin-top:14px;
+    text-shadow:0 2px 16px rgba(0,40,120,0.8), 0 0 40px rgba(80,180,255,0.35);
+    line-height:1.8;
+  }
+
+  /* ══ TOPIC MODAL ══ */
+  #topicOverlay {
+    position:fixed; inset:0; z-index:300;
+    background:rgba(4,18,45,0.72);
+    backdrop-filter:blur(14px);
+    display:flex; align-items:center; justify-content:center;
+    opacity:1; transition:opacity 0.55s ease;
+  }
+  #topicOverlay.hide { opacity:0; pointer-events:none; }
+
+  #topicCard {
+    background:linear-gradient(145deg, rgba(255,255,255,0.14) 0%, rgba(130,200,255,0.08) 100%);
+    border:1px solid rgba(160,220,255,0.28);
+    border-radius:24px;
+    padding:38px 36px 32px;
+    width:min(88vw, 360px);
+    box-shadow:0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+    backdrop-filter:blur(20px);
+    text-align:center;
+    transform:translateY(0px);
+    animation:cardFloat 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes cardFloat {
+    from { opacity:0; transform:translateY(32px) scale(0.96); }
+    to   { opacity:1; transform:translateY(0)    scale(1);    }
+  }
+
+  #topicCard h2 {
+    font-family:'Noto Serif SC',serif;
+    font-size:1.10rem; font-weight:400; letter-spacing:0.16em;
+    color:rgba(230,248,255,0.95); margin-bottom:8px;
+  }
+  #topicCard .sub {
+    font-size:0.72rem; letter-spacing:0.07em; font-weight:300;
+    color:rgba(155,215,255,0.65); margin-bottom:26px; line-height:1.7;
+  }
+  #topicInput {
+    width:100%; background:rgba(255,255,255,0.08);
+    border:1px solid rgba(140,210,255,0.38); border-radius:12px;
+    padding:12px 16px; color:rgba(230,248,255,0.92);
+    font-family:'Noto Serif SC',serif; font-size:0.92rem; letter-spacing:0.04em;
+    outline:none; text-align:center; caret-color:rgba(140,210,255,0.9);
+    transition:border-color 0.25s ease, background 0.25s ease;
+    margin-bottom:20px;
+  }
+  #topicInput::placeholder { color:rgba(155,215,255,0.38); }
+  #topicInput:focus {
+    border-color:rgba(140,210,255,0.70);
+    background:rgba(255,255,255,0.12);
+  }
+  #topicStart {
+    width:100%; padding:13px; border-radius:50px; border:none;
+    background:linear-gradient(135deg, rgba(80,175,255,0.70), rgba(40,110,220,0.80));
+    color:#fff; font-family:'Noto Serif SC',serif;
+    font-size:0.88rem; letter-spacing:0.14em; font-weight:600;
+    cursor:pointer; box-shadow:0 4px 20px rgba(40,100,220,0.40);
+    transition:transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  }
+  #topicStart:hover  { transform:scale(1.04); box-shadow:0 6px 26px rgba(40,100,220,0.55); }
+  #topicStart:active { transform:scale(0.96); }
+
+  #topicSkip {
+    display:block; margin-top:14px;
+    font-size:0.68rem; letter-spacing:0.09em; color:rgba(135,198,255,0.45);
+    cursor:pointer; background:none; border:none;
+    transition:color 0.2s ease;
+  }
+  #topicSkip:hover { color:rgba(155,215,255,0.70); }
+</style>
+</head>
+<body>
+
+<div class="bg-half" id="bgLeft"></div>
+<div class="bg-half" id="bgRight"></div>
+<div id="murkTint"></div>
+<div id="divider"></div>
+<div class="sky-clouds" id="skyClouds"></div>
+<div class="underwater-rays" id="uwRays"></div>
+
+<!-- Topic input modal -->
+<div id="topicOverlay">
+  <div id="topicCard">
+    <h2>好处 · 坏处释放</h2>
+    <p class="sub">选择一件让你困扰或想改变的事<br>我们将一起觉察它两面的欲望</p>
+    <input id="topicInput" type="text" maxlength="30" placeholder="例如：换工作、这段关系……" />
+    <button id="topicStart" onclick="startSession()">开始释放</button>
+    <button id="topicSkip" onclick="startSession()">先不填，直接开始</button>
+  </div>
+</div>
+
+<div class="header">
+  <h1>圣多纳释放法</h1>
+  <p>觉察双面 · 允许 · 释放</p>
+</div>
+
+<div class="side-label" id="lblBenefit">好处</div>
+<div class="side-label" id="lblDrawback">坏处</div>
+
+<div class="zone-label" id="lbCL">表意识</div>
+<div class="zone-label" id="lbSL">潜意识</div>
+
+<svg class="water-surface" id="waterSvg" xmlns="http://www.w3.org/2000/svg"
+     style="position:fixed;left:0;width:100%;pointer-events:none;z-index:10;">
+  <defs>
+    <linearGradient id="wgL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="rgba(26,130,200,0.94)"/>
+      <stop offset="100%" stop-color="rgba(14,88,158,0)"/>
+    </linearGradient>
+    <linearGradient id="wgR" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="rgba(18,52,95,0.94)"/>
+      <stop offset="100%" stop-color="rgba(6,18,50,0)"/>
+    </linearGradient>
+  </defs>
+  <path id="waveL"  fill="url(#wgL)"             opacity="0.96"/>
+  <path id="waveR"  fill="url(#wgR)"             opacity="0.96"/>
+  <path id="waveL2" fill="rgba(55,168,240,0.28)" opacity="0.62"/>
+  <path id="waveR2" fill="rgba(20,55,110,0.32)"   opacity="0.62"/>
+</svg>
+
+<div class="scene" id="scene"></div>
+
+<button class="surf-btn" id="sharedDeny"  onclick="handleDecision(false)">不允许</button>
+<button class="surf-btn" id="sharedAllow" onclick="handleDecision(true)">允许</button>
+<div id="surfQ">
+  <span class="sq-main">你能允许这个欲望存在吗？</span>
+</div>
+
+<div id="releaseQ">
+  <span class="rq-main" id="releaseQText">你能放下想要「」的欲望吗？</span>
+</div>
+<button class="surf-btn" id="rqNo"  onclick="handleRelease(false)">不能</button>
+<button class="surf-btn" id="rqYes" onclick="handleRelease(true)">能</button>
+
+<div id="guidanceCard">
+  <div id="guidanceMain"></div>
+  <div id="guidanceSub"></div>
+</div>
+<div class="counter" id="counter">已释放 0 个欲望</div>
+<div class="toast"   id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════
+const DESIRES = [
+  { key:'control',  label:'想要\n控制', cls:'bc' },
+  { key:'approval', label:'想要\n认同', cls:'ba' },
+  { key:'safety',   label:'想要\n安全', cls:'bs' },
+];
+const SPAWN_GAP     = 220;
+const RISE_SPEED    = 240;
+const WATER_Y_PCT   = 0.52;
+const TSZ           = 90;
+const IDLE_PER_SIDE = Math.max(5, Math.min(10,
+  Math.floor(window.innerWidth * window.innerHeight * (1 - WATER_Y_PCT) / 28000)
+));
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let idleBubbles  = [];
+let risingSlots  = [null, null, null];
+let mergedBubble = null;
+let released     = 0;
+
+// ═══════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════
+const waterY = () => window.innerHeight * WATER_Y_PCT;
+const vw     = () => window.innerWidth;
+const vh     = () => window.innerHeight;
+const halfW  = () => window.innerWidth / 2;
+
+// ═══════════════════════════════════════════════════
+//  PHYSICS
+// ═══════════════════════════════════════════════════
+const BUOYANCY    = 0.003;
+const DAMPING     = 0.97;
+const REPULSION   = 60;
+const WALL_REP    = 40;
+const WALL_MARGIN = 8;
+const DOM_EVERY   = 4;
+let   frameCount  = 0;
+
+function physicsTick() {
+  const wy = waterY(), W = vw(), H = vh(), hw = halfW();
+  frameCount++;
+  const doDOM = (frameCount % DOM_EVERY === 0);
+
+  const CELL = 72;
+  const grid = new Map();
+  for (const b of idleBubbles) {
+    const key = ((b.px / CELL)|0) * 1000 + ((b.py / CELL)|0);
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key).push(b);
+  }
+
+  for (const b of idleBubbles) {
+    const r = b.sz / 2;
+
+    // Buoyancy
+    const depth = (b.py - wy) / (H - wy);
+    b.vy -= BUOYANCY * (0.3 + depth * 1.4);
+
+    // Repulsion
+    const cx = (b.px/CELL)|0, cy = (b.py/CELL)|0;
+    for (let nx = cx-1; nx <= cx+1; nx++) {
+      for (let ny = cy-1; ny <= cy+1; ny++) {
+        const nb = grid.get(nx*1000+ny);
+        if (!nb) continue;
+        for (const o of nb) {
+          if (o === b) continue;
+          const dx = b.px-o.px, dy = b.py-o.py;
+          const d2 = dx*dx + dy*dy;
+          const md = r + o.sz/2;
+          if (d2 < md*md && d2 > 0.001) {
+            const d = Math.sqrt(d2);
+            const f = REPULSION*(md-d)/(md*d);
+            b.vx += dx*f; b.vy += dy*f;
+          }
+        }
+      }
+    }
+
+    // Wall repulsion — keep bubble on its assigned side
+    const isL  = b.side === 'L';
+    const xMin = isL ? r + WALL_MARGIN : hw + r + 6;
+    const xMax = isL ? hw - r - 6      : W - r - WALL_MARGIN;
+    const top  = wy + r, bot = H - r - WALL_MARGIN;
+
+    if (b.px < xMin + 40) b.vx += WALL_REP / Math.max(1, b.px - xMin);
+    if (b.px > xMax - 40) b.vx -= WALL_REP / Math.max(1, xMax - b.px);
+    if (b.py < top  + 50) b.vy += WALL_REP*3 / Math.max(1, b.py - top);
+    if (b.py > bot  - 40) b.vy -= WALL_REP / Math.max(1, bot - b.py);
+
+    b.vx *= DAMPING; b.vy *= DAMPING;
+    const s2 = b.vx*b.vx + b.vy*b.vy;
+    if (s2 > 0.36) { const s = 0.6/Math.sqrt(s2); b.vx*=s; b.vy*=s; }
+
+    b.px += b.vx; b.py += b.vy;
+    b.px = Math.max(xMin, Math.min(xMax, b.px));
+    b.py = Math.max(top,  Math.min(bot,  b.py));
+    if (b.py <= top) { b.py = top; b.vy = 0; }
+
+    if (doDOM) {
+      b.el.style.left = `${(b.px - r)|0}px`;
+      b.el.style.top  = `${(Math.max(wy, b.py - r))|0}px`;
+    }
+  }
+  requestAnimationFrame(physicsTick);
+}
+
+function placeOnSide(sz, side) {
+  const wy = waterY(), W = vw(), H = vh(), hw = halfW();
+  const r = sz/2, pad = 6;
+  const xMin = side==='L' ? r+pad  : hw+r+pad;
+  const xMax = side==='L' ? hw-r-6 : W-r-pad;
+  for (let a = 0; a < 120; a++) {
+    const dep = Math.random() * Math.random();
+    const py  = wy + r + pad + dep*(H - wy - r*2 - pad*2);
+    const px  = xMin + Math.random()*(xMax - xMin);
+    let ok = true;
+    for (const b of idleBubbles)
+      if (Math.hypot(px-b.px, py-b.py) < r+b.sz/2) { ok=false; break; }
+    if (ok) return {px,py};
+  }
+  return {
+    px: xMin + Math.random()*(xMax-xMin),
+    py: wy + r + pad + Math.random()*Math.random()*(H-wy-r*2-pad*2),
+  };
+}
+
+// ═══════════════════════════════════════════════════
+//  SURFACE SLOT — always dead center
+// ═══════════════════════════════════════════════════
+function surfaceSlotPos() {
+  return { x: vw()*0.50, y: waterY() - TSZ*1.1 };
+}
+
+// ═══════════════════════════════════════════════════
+//  SPAWN IDLE BUBBLE
+// ═══════════════════════════════════════════════════
+function spawnIdleBubble(desireHint, sideHint) {
+  const side = sideHint || (
+    idleBubbles.filter(b=>b.side==='L').length <=
+    idleBubbles.filter(b=>b.side==='R').length ? 'L' : 'R'
+  );
+
+  let desire;
+  if (desireHint) {
+    desire = desireHint;
+  } else {
+    const pool   = idleBubbles.filter(b=>b.side===side);
+    const counts = DESIRES.map(d=>({ d, n:pool.filter(b=>b.desire.key===d.key).length }));
+    counts.sort((a,b)=>a.n-b.n);
+    desire = counts[0].d;
+  }
+
+  const sz  = Math.round((62 + Math.floor(Math.random()*24)) * 1.1);
+  const pos = placeOnSide(sz, side);
+
+  const el  = document.createElement('div');
+  el.className = `bubble ${desire.cls} idle ${side}`;
+  el.innerHTML = desire.label.replace('\n','<br>');
+
+  el.style.cssText = `
+    width:${sz}px; height:${sz}px;
+    left:${pos.px-sz/2}px; top:${Math.max(waterY(),pos.py-sz/2)}px;
+    font-size:${sz>68?0.78:0.70}rem;
+    opacity:0; pointer-events:auto; transition:opacity 0.6s ease;
+  `;
+  sceneEl.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.style.opacity='1'; }));
+
+  const entry = { el, desire, sz, side, px:pos.px, py:pos.py, vx:(Math.random()-0.5)*0.3, vy:(Math.random()-0.5)*0.3 };
+  el.onclick = ()=>onBubbleClick(entry);
+  idleBubbles.push(entry);
+  return entry;
+}
+
+// ═══════════════════════════════════════════════════
+//  CLICK → RISE TO CENTER
+// ═══════════════════════════════════════════════════
+function onBubbleClick(entry) {
+  if (entry.clicked) return;
+  entry.clicked = true;
+
+  const slotIdx = risingSlots.findIndex(s=>s===null);
+  if (slotIdx === -1) { entry.clicked=false; showToast('最多同时觉察 3 个欲望'); return; }
+
+  idleBubbles = idleBubbles.filter(b=>b!==entry);
+  const { el, desire, sz, side } = entry;
+
+  el.style.transition   = 'none';
+  el.style.left         = `${entry.px - sz/2}px`;
+  el.style.top          = `${entry.py - sz/2}px`;
+  el.classList.remove('idle', side);
+  el.classList.add('rising');
+  el.style.animation    = 'none';
+  el.style.pointerEvents= 'none';
+
+  const target = surfaceSlotPos();
+  const dist   = Math.hypot(target.x-(entry.px-sz/2), target.y-(entry.py-sz/2));
+  const dur    = Math.max(0.7, dist / RISE_SPEED);
+
+  el.style.transition = `left ${dur.toFixed(2)}s cubic-bezier(0.3,1.2,0.6,1),`
+                      + `top  ${dur.toFixed(2)}s cubic-bezier(0.3,1.2,0.6,1),`
+                      + `width ${dur.toFixed(2)}s ease, height ${dur.toFixed(2)}s ease`;
+  el.style.left   = `${target.x - TSZ/2}px`;
+  el.style.top    = `${target.y - TSZ/2}px`;
+  el.style.width  = `${TSZ}px`;
+  el.style.height = `${TSZ}px`;
+  el.style.zIndex = '14';
+
+  risingSlots[slotIdx] = { el, desire, slotIdx, tSz:TSZ, side };
+
+  setTimeout(()=>{
+    el.classList.remove('rising');
+    el.classList.add('at-surface');
+    el.style.transition = '';
+    tryMerge();
+    updateInstruction();
+  }, dur*1000 + 60);
+}
+
+// ═══════════════════════════════════════════════════
+//  MERGE BUBBLE AT SURFACE
+// ═══════════════════════════════════════════════════
+function tryMerge() {
+  const atSurface = risingSlots
+    .map((s,i) => s && s.el.classList.contains('at-surface') ? {...s, idx:i} : null)
+    .filter(Boolean);
+  if (!atSurface.length) return;
+
+  if (mergedBubble) { mergedBubble.el.remove(); mergedBubble=null; }
+
+  for (const e of atSurface) { e.el.style.opacity='0'; e.el.style.pointerEvents='none'; }
+
+  const desires = atSurface.map(e=>e.desire);
+  const count   = desires.length;
+  const mSz     = 92 + (count-1)*28;
+
+  const seen  = new Set();
+  const lines = atSurface.map(e=>{
+    const key = e.desire.key + e.side;
+    if (seen.has(key)) return null; seen.add(key);
+    return e.desire.label.replace('\n','');
+  }).filter(Boolean);
+
+  const cls = count===1 ? desires[0].cls
+    : count===2 ? (desires[0].cls===desires[1].cls ? desires[0].cls : 'bm')
+    : 'bm3';
+
+  const wy = waterY(), cx = vw()*0.50, cy = wy - mSz*1.1;
+
+  const el = document.createElement('div');
+  el.className = `bubble at-surface merged ${cls}`;
+  el.innerHTML = lines.join('<br>');
+  el.style.cssText = `
+    width:${mSz}px; height:${mSz}px;
+    left:${cx-mSz/2}px; top:${cy-mSz/2}px;
+    font-size:${count>1?0.72:0.82}rem;
+    position:fixed; z-index:15; opacity:0; pointer-events:none;
+    transition:opacity 0.4s ease,width 0.5s ease,height 0.5s ease,left 0.5s ease,top 0.5s ease;
+  `;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.style.opacity='1'; }));
+
+  mergedBubble = { el, desires, sz:mSz, atSurface, cy };
+
+  // Show buttons + question
+  const deny  = document.getElementById('sharedDeny');
+  const allow = document.getElementById('sharedAllow');
+  const q     = document.getElementById('surfQ');
+  const gap   = 16;
+  deny.style.left  = `${cx - mSz/2 - 64 - gap}px`;
+  deny.style.top   = `${cy - 32}px`;
+  allow.style.left = `${cx + mSz/2 + gap}px`;
+  allow.style.top  = `${cy - 32}px`;
+  deny.classList.add('show');
+  allow.classList.add('show');
+  // surfQ: just above the bubble top edge, with some breathing room
+  const bubbleTop = cy - mSz/2;
+  const headerBottom = 72;
+  const aboveBubble = bubbleTop - 20;
+  q.style.top = `${Math.max(headerBottom + 10, aboveBubble)}px`;
+  q.style.left = '';
+  q.style.transform = 'translateX(-50%) translateY(-100%)';
+  q.classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════
+//  DECISION (step 1: allow / deny)
+// ═══════════════════════════════════════════════════
+let pendingAtSurface = null;   // held between step 1 and step 2
+
+function handleDecision(allow) {
+  if (!mergedBubble) return;
+  ['sharedDeny','sharedAllow','surfQ'].forEach(id=>document.getElementById(id).classList.remove('show'));
+
+  const labels = [...new Set(mergedBubble.desires.map(d=>d.label.replace('\n','')))].join('、');
+
+  // Save bubble state for step 2
+  pendingAtSurface = {
+    el: mergedBubble.el,
+    atSurface: mergedBubble.atSurface,
+    labels,
+    allowedStep1: allow,
+    cy: mergedBubble.cy,
+    sz: mergedBubble.sz,
+  };
+  mergedBubble = null;
+
+  // Show step 2: can you let go?
+  const rqText = document.getElementById('releaseQText');
+  rqText.innerHTML = `你能放下想要「${labels}」的欲望吗？`;
+
+  const { cy, sz } = pendingAtSurface;
+  const cx2 = vw() * 0.50;
+  const gap2 = 16;
+  const rqNo  = document.getElementById('rqNo');
+  const rqYes = document.getElementById('rqYes');
+  rqNo.style.left  = `${cx2 - sz/2 - 64 - gap2}px`;
+  rqNo.style.top   = `${cy - 32}px`;
+  rqYes.style.left = `${cx2 + sz/2 + gap2}px`;
+  rqYes.style.top  = `${cy - 32}px`;
+  rqNo.classList.add('show');
+  rqYes.classList.add('show');
+
+  const rq = document.getElementById('releaseQ');
+  const bubbleTop = cy - sz / 2;
+  const headerBottom = 72;
+  rq.style.top = `${Math.max(headerBottom + 10, bubbleTop - 20)}px`;
+  rq.style.transform = 'translateX(-50%) translateY(-100%)';
+  rq.classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════
+//  RELEASE (step 2: can / cannot let go)
+// ═══════════════════════════════════════════════════
+function handleRelease(canRelease) {
+  if (!pendingAtSurface) return;
+  ['releaseQ','rqNo','rqYes'].forEach(id=>document.getElementById(id).classList.remove('show'));
+
+  const { el, atSurface, labels, allowedStep1 } = pendingAtSurface;
+  pendingAtSurface = null;
+
+  // Toast based on both answers
+  let msg;
+  if (allowedStep1 && canRelease)  msg = `🌸 你允许了，也放下了「${labels}」`;
+  else if (allowedStep1)            msg = `✨ 你允许了它——即使还放不下，也没关系`;
+  else if (canRelease)              msg = `🌿 即使不允许，你已放下「${labels}」`;
+  else                              msg = `✨ 即使不允许、也放不下，它依然悄然离去了`;
+  showToast(msg);
+
+  el.style.transition = 'none';
+  el.classList.add('go-sky');
+
+  setTimeout(()=>{
+    el.remove();
+    for (const e of atSurface) {
+      e.el.remove();
+      risingSlots[e.idx] = null;
+      released++;
+      if (e.side === 'L') sessionStats.left++;
+      else sessionStats.right++;
+      setTimeout(()=>spawnIdleBubble(e.desire, e.side), 800);
+    }
+    document.getElementById('counter').textContent = `已释放 ${released} 个欲望`;
+    updateInstruction();
+  }, 1950);
+}
+
+// ═══════════════════════════════════════════════════
+//  INSTRUCTION / TOAST
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  GUIDANCE CARD
+// ═══════════════════════════════════════════════════
+let currentTopic = '';
+
+function skyCardTop() {
+  // Returns the top value for any centered sky card
+  // Positions it in the lower half of the sky area, just above waterline
+  const wy = waterY();
+  const headerBottom = 72;
+  return headerBottom + (wy - headerBottom) * 0.62;
+}
+
+function positionGuidanceCard() {
+  const card = document.getElementById('guidanceCard');
+  card.style.top = `${skyCardTop()}px`;
+  card.style.transform = 'translateX(-50%) translateY(-50%)';
+}
+
+function setGuidance(main, sub) {
+  const card = document.getElementById('guidanceCard');
+  const mainEl = document.getElementById('guidanceMain');
+  const subEl  = document.getElementById('guidanceSub');
+  card.classList.add('hidden');
+  setTimeout(() => {
+    mainEl.innerHTML = main || '';
+    subEl.innerHTML  = sub  || '';
+    if (!main && !sub) return;
+    card.classList.remove('hidden');
+  }, 300);
+}
+
+function updateInstruction() {
+  const active = risingSlots.filter(Boolean).length;
+  const atSurf = risingSlots.filter(s=>s&&s.el.classList.contains('at-surface')).length;
+  const L = sessionStats.left;
+  const R = sessionStats.right;
+  const topic = currentTopic;
+  const t = topic ? `「${topic}」` : '它';
+
+  if (atSurf > 0) {
+    setGuidance('', '');
+    return;
+  }
+
+  if (active > 0) {
+    setGuidance('欲望正在上浮……', '静静感受，不需要做任何事');
+    return;
+  }
+
+  // Decide which side to prompt next
+  const promptLeft = (L <= R);
+  const isFirstRound = (L === 0 && R === 0);
+
+  if (isFirstRound || promptLeft) {
+    const main = isFirstRound
+      ? `${t}能给我带来什么好处？`
+      : L === 1
+        ? `还有哪些好处是你想到的？`
+        : `再感受一次——还有什么好处浮现了？`;
+    setGuidance(
+      main,
+      '这些想法或感受中，是否掺杂着<br>想要被认同、想要控制、或想要安全妥当的欲望？'
+    );
+  } else {
+    const main = R === 0
+      ? `${t}会带来什么坏处？`
+      : R === 1
+        ? `坏处这一面，还有什么在里面？`
+        : `继续感受——坏处里还藏着什么？`;
+    setGuidance(
+      main,
+      '这份担心背后，是否掺杂着<br>想要被认同、想要控制、或想要安全妥当的欲望？'
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  SESSION STATS (track left/right releases)
+// ═══════════════════════════════════════════════════
+const sessionStats = { left: 0, right: 0 };
+
+// ═══════════════════════════════════════════════════
+//  TOPIC MODAL
+// ═══════════════════════════════════════════════════
+function startSession() {
+  const topic = document.getElementById('topicInput').value.trim();
+  const overlay = document.getElementById('topicOverlay');
+  overlay.classList.add('hide');
+  currentTopic = topic;
+  setTimeout(()=>{ positionGuidanceCard(); updateInstruction(); }, 650);
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const input = document.getElementById('topicInput');
+  if (input) input.addEventListener('keydown', e=>{ if(e.key==='Enter') startSession(); });
+});
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════════════════
+//  LABEL POSITIONS
+// ═══════════════════════════════════════════════════
+function positionLabels() {
+  const wy = waterY();
+  document.getElementById('lbCL').style.top  = `${wy-70}px`;
+  document.getElementById('lbSL').style.top  = `${wy+82}px`;
+  // Place tags just below the waterline
+  const tagY = `${wy + 14}px`;
+  document.getElementById('lblBenefit').style.top  = tagY;
+  document.getElementById('lblDrawback').style.top = tagY;
+  positionGuidanceCard();
+}
+
+// ═══════════════════════════════════════════════════
+//  ANIMATED WAVES — left clear, right murky
+// ═══════════════════════════════════════════════════
+let waveOffset = 0;
+function drawWaves() {
+  const W=vw(), hw=halfW(), wy=waterY(), H=vh();
+  const amp=10, amp2=6;
+  waveOffset += 0.012;
+
+  let dL = `M 0 ${wy+amp}`;
+  for (let x=0; x<=hw; x+=6) {
+    const y = wy + Math.sin((x/W)*Math.PI*4 + waveOffset)*amp
+                 + Math.sin((x/W)*Math.PI*2.5 + waveOffset*1.3)*(amp*0.40);
+    dL += ` L ${x} ${y}`;
+  }
+  dL += ` L ${hw} ${H} L 0 ${H} Z`;
+  document.getElementById('waveL').setAttribute('d',dL);
+
+  let dR = `M ${hw} ${wy+amp*0.65}`;
+  for (let x=hw; x<=W; x+=6) {
+    const y = wy + Math.sin((x/W)*Math.PI*4 + waveOffset + 0.9)*amp*0.65
+                 + Math.sin((x/W)*Math.PI*2.5 + waveOffset*1.05)*(amp*0.25);
+    dR += ` L ${x} ${y}`;
+  }
+  dR += ` L ${W} ${H} L ${hw} ${H} Z`;
+  document.getElementById('waveR').setAttribute('d',dR);
+
+  let d2L = `M 0 ${wy+amp2}`;
+  for (let x=0; x<=hw; x+=8) {
+    const y = wy + Math.sin((x/W)*Math.PI*5 + waveOffset*1.6+1)*amp2
+                 + Math.cos((x/W)*Math.PI*3  + waveOffset*0.9)*(amp2*0.5);
+    d2L += ` L ${x} ${y}`;
+  }
+  d2L += ` L ${hw} ${wy+38} L 0 ${wy+38} Z`;
+  document.getElementById('waveL2').setAttribute('d',d2L);
+
+  let d2R = `M ${hw} ${wy+amp2*0.55}`;
+  for (let x=hw; x<=W; x+=8) {
+    const y = wy + Math.sin((x/W)*Math.PI*5 + waveOffset*1.3+2)*amp2*0.55
+                 + Math.cos((x/W)*Math.PI*3  + waveOffset*0.75)*(amp2*0.32);
+    d2R += ` L ${x} ${y}`;
+  }
+  d2R += ` L ${W} ${wy+38} L ${hw} ${wy+38} Z`;
+  document.getElementById('waveR2').setAttribute('d',d2R);
+
+  requestAnimationFrame(drawWaves);
+}
+
+// ═══════════════════════════════════════════════════
+//  CLOUDS, RAYS, PARTICLES, AMBIENT
+// ═══════════════════════════════════════════════════
+function spawnCloud(type) {
+  const el = document.createElement('div');
+  el.className = `cloud ${type}`;
+  const h=16+Math.random()*28, w=55+Math.random()*115;
+  const top=6+Math.random()*(waterY()*0.50), dur=26+Math.random()*32;
+  el.style.cssText = `width:${w}px;height:${h}px;top:${top}px;animation-duration:${dur}s;animation-delay:${-Math.random()*dur}s;`;
+  document.getElementById('skyClouds').appendChild(el);
+}
+for (let i=0;i<5;i++) spawnCloud('bright');
+for (let i=0;i<4;i++) spawnCloud('grey');
+
+const uwRaysEl = document.getElementById('uwRays');
+for (let i=0;i<6;i++) {
+  const r=document.createElement('div'); r.className='ray r-clear';
+  r.style.cssText=`left:${3+i*8+Math.random()*5}%;height:${110+Math.random()*200}px;animation-duration:${3+Math.random()*3}s;animation-delay:${Math.random()*3}s;opacity:${0.28+Math.random()*0.38};`;
+  uwRaysEl.appendChild(r);
+}
+for (let i=0;i<5;i++) {
+  const r=document.createElement('div'); r.className='ray r-murky';
+  r.style.cssText=`left:${53+i*9+Math.random()*5}%;height:${80+Math.random()*140}px;animation-duration:${4+Math.random()*4}s;animation-delay:${Math.random()*4}s;opacity:${0.10+Math.random()*0.16};`;
+  uwRaysEl.appendChild(r);
+}
+
+const sceneEl = document.getElementById('scene');
+
+function spawnUwParticle(side) {
+  const p = document.createElement('div');
+  p.className = `uw-particle ${side==='L'?'pL':'pR'}`;
+  const s=2+Math.random()*5;
+  const xPct=side==='L' ? Math.random()*46 : 52+Math.random()*46;
+  p.style.cssText=`width:${s}px;height:${s}px;left:${xPct}%;bottom:${Math.random()*45}%;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*10}s;`;
+  sceneEl.appendChild(p);
+}
+for (let i=0;i<14;i++) spawnUwParticle('L');
+for (let i=0;i<10;i++) spawnUwParticle('R');
+
+for (let i=0;i<22;i++) {
+  const s=document.createElement('div'); s.className='murk-speck';
+  const sz=3+Math.random()*9;
+  s.style.cssText=`width:${sz}px;height:${sz}px;left:${52+Math.random()*44}%;top:${54+Math.random()*43}%;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*8}s;`;
+  document.body.appendChild(s);
+}
+
+function spawnAmbient() {
+  const isL=Math.random()<0.55;
+  const sz=isL?7+Math.random()*20:4+Math.random()*12;
+  const xPct=isL?2+Math.random()*44:52+Math.random()*44;
+  const dur=4+Math.random()*7;
+  const el=document.createElement('div');
+  el.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;`
+    +`left:${xPct}vw;top:${vh()+sz}px;border-radius:50%;pointer-events:none;z-index:6;`
+    +`background:radial-gradient(circle at 35% 30%,${isL?'rgba(155,218,255,0.42),rgba(55,138,228,0.17)':'rgba(70,115,175,0.28),rgba(15,35,80,0.18)'});`
+    +`border:1px solid ${isL?'rgba(135,208,255,0.32)':'rgba(40,85,160,0.28)'};`
+    +`transition:top ${dur.toFixed(1)}s linear,opacity ${dur.toFixed(1)}s ease;opacity:0.65;`;
+  sceneEl.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.style.top=`${waterY()-sz*1.5}px`; el.style.opacity='0'; }));
+  setTimeout(()=>el.remove(), dur*1000+200);
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  positionLabels();
+  drawWaves();
+  setTimeout(()=>{
+    for (let i=0;i<IDLE_PER_SIDE;i++) spawnIdleBubble(null,'L');
+    for (let i=0;i<IDLE_PER_SIDE;i++) spawnIdleBubble(null,'R');
+    physicsTick();
+    setInterval(()=>{
+      const nL=idleBubbles.filter(b=>b.side==='L').length;
+      const nR=idleBubbles.filter(b=>b.side==='R').length;
+      if (nL<IDLE_PER_SIDE) spawnIdleBubble(null,'L');
+      if (nR<IDLE_PER_SIDE) spawnIdleBubble(null,'R');
+    }, SPAWN_GAP);
+    setInterval(spawnAmbient, 185);
+  }, 300);
+});
+
+window.addEventListener('resize', positionLabels);
+</script>
+<script src="nav-orb.js"></script>
+<script src="music-btn.js"></script>
+</body>
+</html>

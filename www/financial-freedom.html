@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>财富自由释放</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; display: block; overflow: hidden; }
+
+.card {
+  position: relative; z-index: 1;
+  width: 100vw; height: 100vh;
+  height: 100dvh;
+  background: linear-gradient(170deg, #fff8ee 0%, #fdecd5 45%, #f8dbb8 100%);
+}
+
+#questionEl {
+  position: absolute; left: 0; right: 0;
+  text-align: center;
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px; letter-spacing: 2px;
+  color: rgba(110, 60, 20, 0.85); line-height: 2;
+  z-index: 30; opacity: 0; pointer-events: none;
+  transition: opacity 0.6s ease;
+  padding: 0 28px;
+}
+#questionEl.visible { opacity: 1; }
+#questionEl em { font-style: normal; color: rgba(190, 100, 20, 0.95); font-size: 15px; }
+
+#sectionLabel {
+  position: absolute; left: 0; right: 0; text-align: center;
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 10px; letter-spacing: 4px;
+  color: rgba(190, 120, 40, 0.6); z-index: 30; pointer-events: none;
+}
+
+/* Heart glow — warm gold pulse */
+@keyframes heartPulse {
+  0%,100% { opacity: 0.5;  r: 58; }
+  50%      { opacity: 0.88; r: 72; }
+}
+#svgHeartGlow {
+  animation: heartPulse 3s ease-in-out infinite;
+}
+
+/* Release ripple — centered via transform */
+@keyframes rippleRelease {
+  0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0.75; }
+  100% { transform: translate(-50%,-50%) scale(4.5); opacity: 0; }
+}
+.ripple-el {
+  position: absolute; border-radius: 50%; pointer-events: none; z-index: 6;
+  background: radial-gradient(circle, rgba(240,170,80,0.6) 0%, rgba(240,150,60,0) 70%);
+  animation: rippleRelease 1.5s ease-out forwards;
+  transform-origin: center center;
+}
+
+/* Yes/No buttons — at heart position */
+.act-btn {
+  position: absolute; z-index: 30;
+  padding: 7px 22px; border-radius: 99px;
+  border: 1px solid rgba(210, 150, 60, 0.45);
+  background: rgba(255, 248, 235, 0.7); backdrop-filter: blur(12px);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px;
+  letter-spacing: 2px; color: rgba(130, 70, 10, 0.9);
+  cursor: pointer; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.act-btn.visible { opacity: 1; pointer-events: auto; }
+.act-btn:hover { background: rgba(255, 235, 195, 0.9); }
+
+/* Bottom bar */
+#bottomBar {
+  position: absolute; bottom: max(44px, env(safe-area-inset-bottom, 44px)); left: 50%;
+  transform: translateX(-50%);
+  z-index: 30; display: flex; align-items: center; gap: 12px;
+  white-space: nowrap;
+}
+
+#pauseBtn {
+  padding: 8px 18px; border-radius: 99px;
+  border: 1px solid rgba(200, 140, 50, 0.3);
+  background: rgba(255, 248, 235, 0.45); backdrop-filter: blur(10px);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 11px;
+  letter-spacing: 2px; color: rgba(150, 90, 20, 0.6);
+  cursor: pointer; transition: background 0.2s ease;
+}
+#pauseBtn:hover { background: rgba(255, 235, 195, 0.75); }
+
+#nextSectionBtn {
+  padding: 8px 28px; border-radius: 99px;
+  border: 1px solid rgba(200, 140, 50, 0.35);
+  background: rgba(255, 248, 235, 0.5); backdrop-filter: blur(10px);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 11px;
+  letter-spacing: 2px; color: rgba(150, 90, 20, 0.7);
+  cursor: pointer; transition: background 0.2s ease;
+}
+#nextSectionBtn:hover { background: rgba(255, 235, 195, 0.8); }
+
+/* Pause overlay */
+#pauseOverlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(255,245,225,0.92); backdrop-filter: blur(20px);
+  flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+}
+#pauseOverlay.show { display: flex; }
+#pauseOverlay h2 {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 18px;
+  letter-spacing: 4px; color: rgba(150,90,20,0.85);
+}
+#pauseOverlay p {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 12px;
+  letter-spacing: 2px; color: rgba(150,90,20,0.5);
+}
+#resumeBtn {
+  padding: 10px 36px; border-radius: 99px;
+  border: 1px solid rgba(200,140,50,0.5);
+  background: rgba(255,235,195,0.8);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px;
+  letter-spacing: 3px; color: rgba(130,70,10,0.9);
+  cursor: pointer;
+}
+#resumeBtn:hover { background: rgba(255,220,160,0.9); }
+
+.caption {
+  position: absolute; bottom: 8px; left: 0; right: 0;
+  text-align: center; z-index: 10; pointer-events: none;
+}
+.caption p { font-size: 7.5px; letter-spacing: 2.5px; color: rgba(180,120,40,0.28); font-family: 'ZCOOL XiaoWei', serif; }
+
+@keyframes hg1{0%,100%{opacity:0.06}50%{opacity:0.2}}
+@keyframes hg2{0%,100%{opacity:0.12}50%{opacity:0.45}}
+@keyframes hg3{0%,100%{opacity:0.35}50%{opacity:0.85}}
+@keyframes hcore{0%,100%{opacity:0.45}50%{opacity:1}}
+.hg1{animation:hg1 6s ease-in-out infinite;}
+.hg2{animation:hg2 5s ease-in-out infinite 0.5s;}
+.hg3{animation:hg3 4s ease-in-out infinite 1s;}
+.hcore{animation:hcore 4s ease-in-out infinite;}
+
+@keyframes desireRing {
+  0%   { r: 34; opacity: 0.5; }
+  100% { r: 54; opacity: 0; }
+}
+.desire-ring { animation: desireRing 2s ease-out infinite; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div id="sectionLabel"></div>
+  <div id="questionEl"></div>
+
+  <svg id="sv" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:5;pointer-events:none;" viewBox="0 0 360 640">
+    <defs>
+      <filter id="f1" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="10"/></filter>
+      <filter id="f2" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="20"/></filter>
+      <filter id="f3" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="36"/></filter>
+      <filter id="fd" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="16"/></filter>
+      <radialGradient id="heartGradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="rgba(240,170,80,1)"  stop-opacity="0.9"/>
+        <stop offset="40%"  stop-color="rgba(240,150,60,1)"  stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="rgba(240,150,60,1)"  stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Human figure — warm gold glow -->
+    <path class="hg1" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="#f0c878" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f3)"/>
+    <path class="hg2" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="#f8dfa0" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f2)"/>
+    <path class="hg3" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="#fff8e8" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f1)"/>
+    <path class="hcore" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+    <!-- Heart glow — inside SVG so it's always behind bubbles -->
+    <circle id="svgHeartGlow" cx="183" cy="420" r="60"
+      fill="url(#heartGradient)" opacity="0.85"/>
+
+    <g id="bg" style="pointer-events:all;"></g>
+  </svg>
+
+  <button class="act-btn" id="btnA">可以</button>
+  <button class="act-btn" id="btnD">不可以</button>
+
+  <div id="bottomBar">
+    <button id="pauseBtn">⏸ 暂停</button>
+    <button id="nextSectionBtn">如果感觉已经释放干净，进入下一环节 →</button>
+  </div>
+
+  <!-- Pause overlay -->
+  <div id="pauseOverlay">
+    <h2>已暂停</h2>
+    <p>你的进度已保存，随时可以继续</p>
+    <button id="resumeBtn">继续释放</button>
+  </div>
+
+  <div class="caption"><p>SEDONA METHOD · 觉察它，允许它，释放它</p></div>
+</div>
+
+<script>
+const SECTIONS = [
+  {
+    label:'环节一', title:'在想要金钱的背后，我们真正想要的是什么？',
+    steps:[
+      { type:'text',     q:'当我们渴望金钱的时候，金钱本身往往不是真正的目的。\n让我们来看看，在这个渴望的背后，真正驱动你的是什么？', dur:4000 },
+      { type:'question', q:'想一想，在财务上，有什么是你此刻非常渴望得到的？\n让这个感受自然浮现，不需要评判它。\n这个渴望，来自哪种欲望？' },
+      { type:'yesno',    q:'你能允许这个欲望被放下吗？\n哪怕就是当下这一会儿？' },
+    ]
+  },
+  {
+    label:'环节二', title:'释放父母的财务模式',
+    steps:[
+      { type:'text',     q:'我们对金钱的很多态度，其实悄悄地来自父母。\n不管我们潜移默化地继承下来，还是坚持不懈地想摆脱它，\n都会削弱我们的能力，阻碍我们获得想要的东西。\n好消息是，一旦我们看见它们，就有机会把它们释放掉。', dur:6000 },
+      { type:'question', q:'回想一下你父母对待金钱的态度或行为。\n你想要改变什么？你在抗拒什么？\n这个抗拒，来自哪种欲望？' },
+      { type:'yesno',    q:'你能把这个想要改变它、抗拒它的欲望放下吗？' },
+      { type:'yesno',    q:'你是否在不知不觉中，继承或模仿了父母对待金钱的某些模式？\n你能接纳、欢迎那种态度、信念或习惯吗？' },
+      { type:'question', q:'它来自哪种欲望？' },
+      { type:'yesno',    q:'不管是哪种欲望催生了它，你能把那种欲望放下吗？' },
+      { type:'yesno',    q:'你是否想起了一些自己过去做过的这样的模仿？\n你能允许它的存在吗？' },
+      { type:'question', q:'它牵连着哪种欲望？' },
+      { type:'yesno',    q:'你能允许那欲望被释放掉吗？' },
+      { type:'yesno',    q:'你的财务活动是否还在以其他方式被父母影响着？\n你能单纯地欢迎它吗？' },
+      { type:'yesno',    q:'你能把想要改变它的欲望放下吗？' },
+      { type:'yesno',    q:'你能把想要模仿父母的欲望放下吗？' },
+      { type:'yesno',    q:'现在，再看看自己是否还在以别的方式抗拒或模仿父母对金钱的态度？\n你能允许它的存在吗？' },
+      { type:'question', q:'这背后是哪种欲望？' },
+      { type:'yesno',    q:'你能允许自己放下吗？' },
+    ]
+  },
+  {
+    label:'环节三', title:'释放对金钱的恐惧',
+    steps:[
+      { type:'text',     q:'任何我们恐惧的事，潜意识都在期待它发生。\n我们会想尽办法避免它，但这也意味着\n我们会把这种情况一直放在脑子里。\n现在，让我们来看看这些恐惧。', dur:5000 },
+      { type:'yesno',    q:'假如你有了许多钱、或财务上有了更大的自由度，\n会有什么令你害怕的事发生吗？\n怕亲戚朋友因为钱反目？怕被骗？\n能把想要那件事发生的欲望放下吗？' },
+      { type:'yesno',    q:'如果你银行账户里多了一大笔钱，\n还有什么令你害怕的事会发生吗？\n你对于金钱的恐惧是什么？\n能把想要这件事发生的欲望放下吗？' },
+      { type:'yesno',    q:'再选一件你害怕有钱后会发生的事，\n能把想要这件事发生的欲望放下吗？' },
+    ]
+  },
+  {
+    label:'环节四', title:'针对钱财的喜欢／讨厌流程',
+    steps:[
+      { type:'text',     q:'我们对金钱的观念与态度就像空气一样不易察觉，\n但它们一直在影响着我们与财富的关系。\n现在我们来把这些隐藏极深的感受带到意识层面，\n然后把它们释放掉。', dur:5000 },
+      { type:'question', q:'你目前的财务状况中有什么让你觉得喜欢吗？\n这感觉来自哪种欲望？' },
+      { type:'yesno',    q:'你能把这欲望放下吗？' },
+      { type:'question', q:'你目前的财务状况中有什么让你觉得讨厌吗？\n这感觉来自哪种欲望？' },
+      { type:'yesno',    q:'你能把这欲望放下吗？' },
+      { type:'text',     q:'你能否只是允许自己拥抱或欢迎自己的财务现状？\n就算你对它并不满意，\n只要你肯接纳它，就会给自己开辟出一大块前进的空间。', dur:5000 },
+      { type:'yesno',    q:'此时此刻，你能允许自己接纳现状吗？\n你能顺其自然吗？你对此能泰然处之吗？' },
+      { type:'yesno',    q:'不管你目前涉及到金钱的现状如何，\n你能拥抱它、欢迎它、让它顺其自然地发展吗？' },
+      { type:'yesno',    q:'还有你关于金钱的想法、感受、态度和行为，\n你能允许它们按其本来的样子存在并欢迎它们吗？\n哪怕只是当下这一会儿？' },
+    ]
+  },
+  {
+    label:'环节五', title:'针对金钱的清理程序',
+    steps:[
+      { type:'text',     q:'做这个练习之前，有几件事要记住：\n你可能在练习过程中不知不觉就自然放下了一些东西；\n释放往往只是个选择问题，只看你愿不愿意；\n不论脑海中出现了什么，都请你欢迎它。', dur:6000 },
+      { type:'yesno',    q:'你曾经觉得金钱在试图控制你吗？\n你能否欢迎自己想要反过来控制金钱的欲望？\n你能把那欲望放下吗？' },
+      { type:'yesno',    q:'你是否曾经试图去控制金钱？\n你能放下想要控制金钱的欲望吗？\n哪怕就在当下这一会儿？' },
+      { type:'yesno',    q:'金钱曾试图控制你吗？你曾感觉被金钱所控制吗？\n如果是的话，你能否把想要反过来控制金钱的欲望放下呢？' },
+      { type:'yesno',    q:'你曾试图控制金钱吗？\n如果是的话，你能把想要控制金钱的欲望放下吗？' },
+      { type:'yesno',    q:'你曾感觉金钱要控制你、要挟你、危害你吗？\n你能把想要控制金钱的欲望放下吗？' },
+      { type:'yesno',    q:'你曾试图以任何方式来控制金钱吗？\n如果是的话，你现在能把想要控制金钱的欲望放下吗？' },
+      { type:'yesno',    q:'你能允许金钱以它本来的样子存在吗？\n能给它这个权利吗？' },
+      { type:'yesno',    q:'你愿意允许金钱以其本来的样子存在吗？\n哪怕就现在这一小会儿？' },
+      { type:'yesno',    q:'你不喜欢或是不认同某些与钱有关的人、事、物吗？\n你能把对金钱的不喜欢与不认同放下吗？' },
+      { type:'yesno',    q:'你曾感觉金钱以某种形式不喜欢或不认同你吗？\n你能把想要从金钱那里得到认同感的欲望放下吗？' },
+      { type:'yesno',    q:'你曾感觉过金钱以某种方式不认同你吗？\n你能把想要被认同的欲望放下吗？' },
+      { type:'yesno',    q:'你能否允许自己对金钱只怀有爱与接纳呢？\n哪怕就现在这一会儿？' },
+      { type:'yesno',    q:'金钱或与金钱有关的人、事、物曾以任何方式威胁过你吗？\n你能把想要安全妥当、想要存活的欲望放下吗？' },
+      { type:'yesno',    q:'你曾以任何方式挑战、反对或威胁过金钱吗？\n或者金钱曾挑战、反对、威胁过你吗？\n你能把这些欲望放下吗？' },
+      { type:'yesno',    q:'你曾挑战、反对或威胁过金钱吗？\n你能把想要那样做的欲望放下吗？' },
+      { type:'yesno',    q:'金钱曾挑战、反对或威胁过你吗？\n你能把想要安全和生存的欲望放下吗？' },
+      { type:'yesno',    q:'你曾以任何形式挑战、反对或威胁过金钱吗？\n你能把这放下吗？' },
+      { type:'yesno',    q:'你能否允许自己对金钱只怀有平安喜乐与信任呢？\n你愿意允许自己这样吗？哪怕就现在这一会儿？' },
+    ]
+  },
+  {
+    label:'环节六', title:'针对金钱的好处／坏处练习',
+    steps:[
+      { type:'text',     q:'不管是对财务自由的期待，还是对它的抗拒，\n都值得被看见，也都需要被释放。\n这样两边兼顾，才能更快地把财务自由与充裕\n这个目标真正拉入你的生活中。', dur:5000 },
+      { type:'question', q:'财务上的自由充裕会给你带来什么好处呢？\n这感觉来自哪种欲望？' },
+      { type:'yesno',    q:'你能把那欲望放下吗？' },
+      { type:'question', q:'财务上的自由充裕会给你带来什么坏处呢？\n这感觉来自哪种欲望？' },
+      { type:'yesno',    q:'你能把那欲望放下吗？' },
+    ]
+  },
+  {
+    label:'环节七', title:'将你理想的财务状况具象化',
+    steps:[
+      { type:'text',     q:'允许自己在心中勾勒一下，\n如果你实现了财务上的极度自由与充裕，生活会怎样。\n调动你的每一个感官——视觉、听觉、触觉……\n把那个场景体验得越生动越好。', dur:12000 },
+      { type:'question', q:'听一下自己内心是否出现了抗议的声音——\n"不，我怎么能拥有这些？"\n在这些声音背后，你是否在渴望着被认同、\n渴望着控制、渴望着安全？' },
+      { type:'yesno',    q:'你能把那些欲望放下吗？哪怕就现在这一会儿？' },
+      { type:'text',     q:'请继续幻想现在你财务自由又充裕的样子，\n自己有钱后会感觉如何？会看到什么？会听到什么？', dur:5000 },
+      { type:'question', q:'再看看内心是否又有反对的想法或感受跳出来。\n这些感受想法背后是否隐藏着\n想要被认同、想要控制、想要安全稳妥的欲望？' },
+      { type:'yesno',    q:'你能把那欲望放下吗？' },
+      { type:'text',     q:'再一次，让自己继续幻想财务充裕又自由的样子。\n你现在有钱了的话，生活会是什么样子的？', dur:5000 },
+      { type:'question', q:'看看这些想法是否来自\n想要被认同、想要控制、或想要安全稳妥的欲望。' },
+      { type:'yesno',    q:'你能放下那欲望吗？' },
+      { type:'yesno',    q:'看看自己的构想中，是否本来就包含了欲望。\n如果是的话，你能允许那些欲望被释放掉吗？' },
+      { type:'text',     q:'再一次，允许自己构想一下\n现在的生活中有了充裕又自由的财务的话会怎样。\n你心里对此还有保留或抵触吗？\n还有声音在说"你得不到"或"你不应该得到"这些吗？', dur:6000 },
+      { type:'question', q:'如果是的话，这些感受或想法\n是否来自想要被认同、想要控制、\n或想要安全稳妥的欲望呢？' },
+      { type:'yesno',    q:'不管是哪种欲望，你能允许自己放下它吗？' },
+      { type:'text',     q:'再一次，允许自己现在来幻想\n自己的财务变得自由又充裕的样子，\n做到心安理得、理直气壮。', dur:5000 },
+      { type:'yesno',    q:'你能单纯允许自己欢迎那些场景进入意识中吗？', btnA:'能', btnD:'不能' },
+      { type:'text',     q:'请接纳那些场景，给它们润色，允许它们的存在。', dur:4000, finalStep:true },
+    ]
+  },
+];
+
+const DESIRES = [
+  { name:'想要控制',    glow:'#b84040', stroke:'#ffcca0', s:['#ffcca0','#c05030','#7a2010'], bodyPos:{x:110,y:370} },
+  { name:'想要被认同',  glow:'#9050b0', stroke:'#e0b8ff', s:['#e0b8ff','#9050b0','#5a1880'], bodyPos:{x:256,y:370} },
+  { name:'想要安全稳妥',glow:'#2080a0', stroke:'#a0e0ff', s:['#a0e0ff','#2080a0','#0a4860'], bodyPos:{x:183,y:455} },
+];
+
+/* Body center SVG position — true torso center */
+const HEART_SVG_X = 183, HEART_SVG_Y = 360;
+const NS='http://www.w3.org/2000/svg';
+const TARGET_X=183, TARGET_Y=210;
+let gc=0, activeBubbles=[], mergedBubble=null, _arrivedNames=[];
+let phase='idle';
+let currentSection=0, currentStep=0;
+let sectionLoopCount={};
+
+const card    = document.getElementById('card');
+const sv      = document.getElementById('sv');
+const bgG     = document.getElementById('bg');
+const dfs     = sv.querySelector('defs');
+const qEl     = document.getElementById('questionEl');
+const sLbl    = document.getElementById('sectionLabel');
+const btnA    = document.getElementById('btnA');
+const btnD    = document.getElementById('btnD');
+const nextBtn = document.getElementById('nextSectionBtn');
+const pauseBtn= document.getElementById('pauseBtn');
+const pauseOverlay = document.getElementById('pauseOverlay');
+const resumeBtn= document.getElementById('resumeBtn');
+
+function toPx(sx,sy){ return {x:(sx/360)*card.offsetWidth, y:(sy/640)*card.offsetHeight}; }
+
+function positionUI(){
+  const headTopPx = (143/640)*card.offsetHeight;
+  const cardH = card.offsetHeight;
+
+  // Section label: very top
+  sLbl.style.top    = '18px';
+  sLbl.style.bottom = 'auto';
+
+  // Question: just above head
+  qEl.style.top    = '';
+  qEl.style.bottom = (cardH - headTopPx + 20) + 'px';
+
+  // Buttons flanking SVG heart glow — Y matches cy="420" exactly
+  const {x:hx, y:hy} = toPx(183, 420);
+
+  const btnGap = 10;
+  btnD.style.top       = (hy - 18) + 'px';
+  btnD.style.right     = (card.offsetWidth - hx + btnGap) + 'px';
+  btnD.style.left      = 'auto';
+  btnD.style.transform = 'none';
+  btnA.style.top       = (hy - 18) + 'px';
+  btnA.style.left      = (hx + btnGap) + 'px';
+  btnA.style.right     = 'auto';
+  btnA.style.transform = 'none';
+}
+
+function mkGrad(s){
+  const id='g'+(gc++);
+  const rg=document.createElementNS(NS,'radialGradient');
+  rg.setAttribute('id',id); rg.setAttribute('cx','35%'); rg.setAttribute('cy','30%'); rg.setAttribute('r','65%');
+  [[s[0],0.6,'0%'],[s[1],0.35,'60%'],[s[2],0.7,'100%']].forEach(([c,o,off])=>{
+    const st=document.createElementNS(NS,'stop');
+    st.setAttribute('offset',off); st.setAttribute('stop-color',c); st.setAttribute('stop-opacity',o);
+    rg.appendChild(st);
+  });
+  dfs.appendChild(rg); return id;
+}
+
+function showQ(html){ qEl.innerHTML=html.replace(/\n/g,'<br>'); qEl.classList.add('visible'); }
+function hideQ(){ qEl.classList.remove('visible'); }
+function showButtons(){ positionUI(); btnA.classList.add('visible'); btnD.classList.add('visible'); }
+function hideButtons(){ btnA.classList.remove('visible'); btnD.classList.remove('visible'); }
+
+function spawnBubble(def, R, onClickFn, delayIdx){
+  const gid=mkGrad(def.s);
+  const g=document.createElementNS(NS,'g');
+  g.setAttribute('style','cursor:pointer; pointer-events:all;');
+
+  const ring=document.createElementNS(NS,'circle');
+  ring.setAttribute('r',R+10); ring.setAttribute('fill','none');
+  ring.setAttribute('stroke',def.stroke); ring.setAttribute('stroke-width','1.2');
+  ring.setAttribute('stroke-opacity','0.4'); ring.classList.add('desire-ring');
+  ring.style.animationDelay=(delayIdx*0.6)+'s';
+
+  const glC=document.createElementNS(NS,'circle');
+  glC.setAttribute('r',R+14); glC.setAttribute('fill',def.glow);
+  glC.setAttribute('filter','url(#fd)'); glC.style.opacity='0.28';
+
+  const bod=document.createElementNS(NS,'circle');
+  bod.setAttribute('r',R); bod.setAttribute('fill','url(#'+gid+')');
+
+  const rim=document.createElementNS(NS,'circle');
+  rim.setAttribute('r',R); rim.setAttribute('fill','none');
+  rim.setAttribute('stroke',def.stroke); rim.setAttribute('stroke-width','1.4'); rim.setAttribute('stroke-opacity','0.85');
+
+  const h1=document.createElementNS(NS,'ellipse');
+  h1.setAttribute('rx',R*0.34); h1.setAttribute('ry',R*0.17); h1.setAttribute('fill','white');
+  h1.setAttribute('fill-opacity','0.27'); h1.setAttribute('transform',`translate(${-R*0.28},${-R*0.33})`);
+
+  const tx=document.createElementNS(NS,'text');
+  tx.setAttribute('text-anchor','middle'); tx.setAttribute('dy','0.35em');
+  tx.setAttribute('font-size',def.name.length>4?'8':'9');
+  tx.setAttribute('font-family',"'Noto Serif SC',serif");
+  tx.setAttribute('fill','white'); tx.setAttribute('fill-opacity','0.92');
+  tx.textContent=def.name;
+
+  [ring,glC,bod,rim,h1,tx].forEach(el=>g.appendChild(el));
+  bgG.appendChild(g);
+
+  const b={
+    def,R,el:g,glC,
+    bx:def.bodyPos.x, by:def.bodyPos.y, x:def.bodyPos.x, y:def.bodyPos.y,
+    ph:Math.random()*Math.PI*2, fa:2+Math.random()*1.5, fs:5+Math.random()*4,
+    gph:Math.random()*Math.PI*2, gs:0.9+Math.random()*0.5,
+    state:'idle'
+  };
+
+  g.addEventListener('click',(ev)=>{ev.stopPropagation();onClickFn(b);});
+  g.setAttribute('transform',`translate(${b.x},${b.y})`);
+  g.style.opacity='0';
+  setTimeout(()=>{
+    let op=0;
+    const iv=setInterval(()=>{ op=Math.min(1,op+0.09); g.style.opacity=op.toFixed(2); if(op>=1)clearInterval(iv); },25);
+  }, delayIdx*300);
+
+  activeBubbles.push(b);
+  return b;
+}
+
+function spawnMerged(names){
+  if(mergedBubble){mergedBubble.el.remove();mergedBubble=null;}
+  const MR=names.length===1?34:names.length===2?40:46;
+  const gid='mg'+(gc++);
+  const rg=document.createElementNS(NS,'radialGradient');
+  rg.setAttribute('id',gid); rg.setAttribute('cx','38%'); rg.setAttribute('cy','32%'); rg.setAttribute('r','65%');
+  [['#fff0d0',0.65,'0%'],['#d09030',0.4,'55%'],['#8a6008',0.72,'100%']].forEach(([c,o,off])=>{
+    const st=document.createElementNS(NS,'stop');
+    st.setAttribute('offset',off); st.setAttribute('stop-color',c); st.setAttribute('stop-opacity',o);
+    rg.appendChild(st);
+  });
+  dfs.appendChild(rg);
+  const g=document.createElementNS(NS,'g'); g.setAttribute('style','pointer-events:none;');
+  const glC=document.createElementNS(NS,'circle');
+  glC.setAttribute('r','55'); glC.setAttribute('fill','#d09030');
+  glC.setAttribute('filter','url(#fd)'); glC.style.opacity='0.38';
+  const bod=document.createElementNS(NS,'circle'); bod.setAttribute('r',MR); bod.setAttribute('fill','url(#'+gid+')');
+  const rim=document.createElementNS(NS,'circle'); rim.setAttribute('r',MR); rim.setAttribute('fill','none');
+  rim.setAttribute('stroke','#f0d080'); rim.setAttribute('stroke-width','1.5'); rim.setAttribute('stroke-opacity','0.9');
+  const h1=document.createElementNS(NS,'ellipse');
+  h1.setAttribute('rx','11'); h1.setAttribute('ry','5.5'); h1.setAttribute('fill','white');
+  h1.setAttribute('fill-opacity','0.26'); h1.setAttribute('transform','translate(-9,-12)');
+  const tx=document.createElementNS(NS,'text');
+  tx.setAttribute('text-anchor','middle'); tx.setAttribute('dy','0.35em');
+  tx.setAttribute('font-size',names.length>=2?'7.5':'9');
+  tx.setAttribute('font-family',"'Noto Serif SC',serif");
+  tx.setAttribute('fill','white'); tx.setAttribute('fill-opacity','0.95');
+  tx.textContent=names.join('·');
+  [glC,bod,rim,h1,tx].forEach(el=>g.appendChild(el));
+  bgG.appendChild(g);
+  g.setAttribute('transform',`translate(${TARGET_X},${TARGET_Y})`);
+  mergedBubble={el:g,glC,x:TARGET_X,y:TARGET_Y,state:'idle',_gph:0};
+}
+
+function releaseUp(el,cx,cy,onDone){
+  const endY=cy-700;
+  const animT=document.createElementNS(NS,'animateTransform');
+  animT.setAttribute('attributeName','transform'); animT.setAttribute('type','translate');
+  animT.setAttribute('from',`${cx} ${cy}`); animT.setAttribute('to',`${cx} ${endY}`);
+  animT.setAttribute('dur','0.85s'); animT.setAttribute('fill','freeze');
+  const animO=document.createElementNS(NS,'animate');
+  animO.setAttribute('attributeName','opacity'); animO.setAttribute('from','1'); animO.setAttribute('to','0');
+  animO.setAttribute('dur','0.85s'); animO.setAttribute('fill','freeze');
+  el.appendChild(animT); el.appendChild(animO);
+  animT.beginElement(); animO.beginElement();
+  setTimeout(()=>{el.remove();if(onDone)onDone();},900);
+}
+
+function clearAllBubbles(onDone){
+  const all=[...activeBubbles]; activeBubbles=[];
+  if(mergedBubble){mergedBubble.el.remove();mergedBubble=null;}
+  if(all.length===0){if(onDone)onDone();return;}
+  let done=0;
+  all.forEach(b=>{
+    let op=1;
+    const iv=setInterval(()=>{
+      op=Math.max(0,op-0.12); b.el.style.opacity=op.toFixed(2);
+      if(op<=0){clearInterval(iv);b.el.remove();done++;if(done===all.length&&onDone)onDone();}
+    },25);
+  });
+}
+
+function spawnRipple(){
+  const {x:hx, y:hy} = toPx(183, 420);
+  const size = (120/360)*card.offsetWidth;
+  [0, 420].forEach((delay)=>{
+    setTimeout(()=>{
+      const rp = document.createElement('div');
+      rp.className = 'ripple-el';
+      rp.style.width  = size + 'px';
+      rp.style.height = size + 'px';
+      rp.style.left   = hx + 'px';
+      rp.style.top    = hy + 'px';
+      card.appendChild(rp);
+      setTimeout(()=>rp.remove(), 1700);
+    }, delay);
+  });
+}
+
+/* ── Save / restore progress ── */
+function saveProgress(){
+  localStorage.setItem('wealth_progress', JSON.stringify({currentSection, currentStep}));
+}
+function loadProgress(){
+  try {
+    const p=JSON.parse(localStorage.getItem('wealth_progress'));
+    if(p){
+      currentSection = p.currentSection||0;
+      // Always restore to the start of the question block for that section
+      // Find the first 'question' or 'text' step at or before saved step
+      currentStep = 0;
+    }
+  } catch(e){}
+}
+
+function runStep(){
+  const sec=SECTIONS[currentSection];
+  if(!sec)return;
+  const step=sec.steps[currentStep];
+  if(!step)return;
+
+  // If looping and this is a text step, skip it
+  if(step.type==='text' && sectionLoopCount[currentSection] > 0 && currentSection !== 6){
+    advanceStep(); return;
+  }
+
+  sLbl.innerHTML=`<span style="font-size:10px;letter-spacing:3px;">${sec.label}：${sec.title}</span>`;
+  positionUI(); hideQ(); hideButtons();
+
+  if(step.type==='text'){
+    phase='idle';
+    setTimeout(()=>{
+      showQ(step.q);
+      setTimeout(()=>{
+        if(step.finalStep) showFinalChoice();
+        else advanceStep();
+      }, step.dur||3000);
+    },400);
+
+  } else if(step.type==='question'){
+    phase='desire'; _arrivedNames=[];
+    setTimeout(()=>{
+      showQ(step.q);
+      DESIRES.forEach((d,i)=>spawnBubble(d,38,onClickDesire,i));
+    },400);
+
+  } else if(step.type==='yesno'){
+    phase='yesno';
+    btnA.textContent = step.btnA || '可以';
+    btnD.textContent = step.btnD || '不可以';
+    setTimeout(()=>{
+      showQ(step.q);
+      clearAllBubbles(()=>{ positionUI(); showButtons(); });
+    },400);
+  }
+}
+
+function advanceStep(){
+  currentStep++;
+  if(currentStep >= SECTIONS[currentSection].steps.length){
+    currentStep = 0;
+    // Track that we've looped at least once in this section
+    sectionLoopCount[currentSection] = (sectionLoopCount[currentSection]||0) + 1;
+  }
+  clearAllBubbles(()=>runStep());
+}
+
+function onClickDesire(b){
+  if(phase!=='desire'||b.state!=='idle') return;
+  b.state='selected';
+  const FLY_MS=260, startX=b.x, startY=b.y, t0=performance.now();
+  function fly(now){
+    const t=Math.min((now-t0)/FLY_MS,1);
+    b.el.setAttribute('transform',`translate(${(startX+(TARGET_X-startX)*t).toFixed(1)},${(startY+(TARGET_Y-startY)*t).toFixed(1)})`);
+    b.el.style.opacity=(1-t).toFixed(2);
+    if(t<1){requestAnimationFrame(fly);}
+    else{
+      b.state='gone'; b.el.remove(); activeBubbles=activeBubbles.filter(ab=>ab!==b);
+      _arrivedNames.push(b.def.name);
+      spawnMerged([..._arrivedNames]);
+      hideQ();
+      // Show the next yesno step's question instead of generic text
+      const nextStep = SECTIONS[currentSection].steps[currentStep + 1];
+      const mergeQ = (nextStep && nextStep.type==='yesno') ? nextStep.q : '能允许这些<em>想要</em>离开吗？';
+      showQ(mergeQ);
+      positionUI();
+      btnA.classList.add('visible'); btnD.classList.add('visible');
+      phase='merged';
+    }
+  }
+  requestAnimationFrame(fly);
+}
+
+function handleDecision(){
+  if(phase==='yesno'){
+    btnA.textContent='可以'; btnD.textContent='不可以';
+    hideQ(); hideButtons();
+    spawnRipple();
+    const step=SECTIONS[currentSection].steps[currentStep];
+    setTimeout(()=>{
+      if(step&&step.finalStep) showFinalChoice();
+      else clearAllBubbles(()=>advanceStep());
+    },900);
+    return;
+  }
+  if(phase!=='merged'||!mergedBubble) return;
+  phase='animating'; hideQ(); hideButtons();
+  spawnRipple();
+  const el=mergedBubble.el; mergedBubble=null;
+  // Skip question step + the next yesno step (already displayed its question)
+  releaseUp(el,TARGET_X,TARGET_Y,()=>clearAllBubbles(()=>{
+    currentStep += 2; // skip question + yesno we already displayed
+    if(currentStep >= SECTIONS[currentSection].steps.length){
+      currentStep = 0;
+      sectionLoopCount[currentSection] = (sectionLoopCount[currentSection]||0) + 1;
+    }
+    runStep();
+  }));
+}
+btnA.addEventListener('click',handleDecision);
+btnD.addEventListener('click',handleDecision);
+
+function showFinalChoice(){
+  clearAllBubbles(()=>{
+    hideQ(); hideButtons();
+    document.getElementById('bottomBar').style.display='none';
+    const {x:bx,y:by}=toPx(TARGET_X,TARGET_Y);
+    btnA.textContent='是的，我坚定地相信我值得';
+    btnD.textContent='不确定，我还是觉得自己不值得';
+    btnA.style.top=(by+50)+'px'; btnA.style.left=(bx-90)+'px'; btnA.style.right='auto';
+    btnD.style.top=(by+50)+'px'; btnD.style.right=(card.offsetWidth-bx-90)+'px'; btnD.style.left='auto';
+    showQ('允许自己对于拥有充裕自由的财务这件事感到心安理得。\n是时候了，就让自己接受充裕自由的财富进入你的生活吧。\n你值得的，不是吗？');
+    showButtons();
+    function onWorth(){
+      cleanup();
+      localStorage.removeItem('wealth_progress');
+      hideQ(); hideButtons();
+      showQ('你已完成全部的释放练习。\n请花一点时间，静静感受此刻内心的变化。');
+    }
+    function onRepeat(){
+      cleanup(); hideQ(); hideButtons();
+      document.getElementById('bottomBar').style.display='';
+      currentStep=0;
+      sectionLoopCount[currentSection]=0;
+      clearAllBubbles(()=>runStep());
+    }
+    function cleanup(){
+      btnA.textContent='可以'; btnD.textContent='不可以';
+      btnA.removeEventListener('click',onWorth); btnD.removeEventListener('click',onRepeat);
+      btnA.addEventListener('click',handleDecision); btnD.addEventListener('click',handleDecision);
+    }
+    btnA.removeEventListener('click',handleDecision); btnD.removeEventListener('click',handleDecision);
+    btnA.addEventListener('click',onWorth); btnD.addEventListener('click',onRepeat);
+  });
+}
+
+nextBtn.addEventListener('click',()=>{
+  if(currentSection<SECTIONS.length-1){
+    currentSection++; currentStep=0;
+    sectionLoopCount[currentSection]=0;
+    clearAllBubbles(()=>{hideQ();hideButtons();runStep();});
+  }
+});
+
+/* ── Pause / Resume ── */
+pauseBtn.addEventListener('click',()=>{
+  saveProgress();
+  pauseOverlay.classList.add('show');
+});
+resumeBtn.addEventListener('click',()=>{
+  pauseOverlay.classList.remove('show');
+});
+
+/* ── Animation loop ── */
+let last=null;
+function loop(ts){
+  const dt=last?Math.min((ts-last)/1000,0.05):0.016; last=ts;
+  activeBubbles.forEach(b=>{
+    if(b.state!=='idle') return;
+    b.ph+=dt*b.fs; b.x=b.bx+Math.cos(b.ph*0.65)*1.8; b.y=b.by+Math.sin(b.ph)*b.fa;
+    b.gph+=dt*b.gs; b.glC.style.opacity=((Math.sin(b.gph)*0.5+0.5)*0.7).toFixed(3);
+    b.el.setAttribute('transform',`translate(${b.x.toFixed(1)},${b.y.toFixed(1)})`);
+  });
+  if(mergedBubble&&mergedBubble.state==='idle'){
+    mergedBubble._gph=(mergedBubble._gph||0)+dt*1.2;
+    mergedBubble.glC.style.opacity=((Math.sin(mergedBubble._gph)*0.5+0.5)*0.5+0.25).toFixed(3);
+  }
+  requestAnimationFrame(loop);
+}
+
+function setVH(){
+  document.querySelector('.card').style.height = window.innerHeight + 'px';
+}
+setVH();
+window.addEventListener('resize', ()=>{ setVH(); positionUI(); });
+loadProgress();
+positionUI();
+runStep();
+requestAnimationFrame(loop);
+</script>
+<script src="nav-orb.js"></script>
+<script src="music-btn.js"></script>
+</body>
+</html>

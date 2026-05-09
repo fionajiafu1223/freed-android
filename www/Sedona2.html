@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>圣多纳释放法 · 内心疗愈</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+SC:wght@300;400&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    overflow-x: hidden; position: relative;
+    /* Sky above water */
+    background: linear-gradient(180deg,
+      #c8eeff 0%,
+      #b0e0fa 35%,
+      #90cff0 55%,
+      /* water surface */
+      #1a6ea8 56%,
+      #145e94 70%,
+      #0e4878 85%,
+      #093260 100%
+    );
+  }
+
+  /* ── SKY AREA (above water) ── */
+  .sky-clouds {
+    position: fixed; top: 0; left: 0; width: 100%; height: 55%;
+    pointer-events: none; z-index: 1; overflow: hidden;
+  }
+  .cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.55);
+    border-radius: 50px;
+    filter: blur(8px);
+    animation: cloudDrift linear infinite;
+  }
+  @keyframes cloudDrift {
+    0%   { transform: translateX(-120px); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.7; }
+    100% { transform: translateX(calc(100vw + 120px)); opacity: 0; }
+  }
+
+  /* ── WATER SURFACE SVG ── */
+  .water-surface {
+    position: fixed;
+    left: 0; right: 0;
+    /* will be positioned by JS based on waterY */
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* ── UNDERWATER light rays ── */
+  .underwater-rays {
+    position: fixed; left: 0; bottom: 0; width: 100%;
+    height: 50%; pointer-events: none; z-index: 2;
+    overflow: hidden;
+  }
+  .ray {
+    position: absolute;
+    bottom: 0;
+    width: 60px;
+    background: linear-gradient(180deg, transparent, rgba(80,180,255,0.06));
+    transform-origin: bottom center;
+    animation: rayWave ease-in-out infinite alternate;
+  }
+  @keyframes rayWave {
+    0%   { transform: skewX(-4deg) scaleX(1); opacity: 0.5; }
+    100% { transform: skewX(4deg) scaleX(1.15); opacity: 0.9; }
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: relative; z-index: 20;
+    text-align: center;
+    padding: 20px 20px 4px;
+  }
+  .header h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.36rem; font-weight: 300;
+    color: #0e3050; letter-spacing: 0.18em;
+    text-shadow: 0 1px 4px rgba(255,255,255,0.5);
+  }
+  .header p {
+    font-size: 0.71rem; color: #1a5080;
+    margin-top: 3px; letter-spacing: 0.1em; font-weight: 300;
+  }
+
+  /* ── ZONE LABELS ── */
+  .zone-label {
+    position: fixed;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 0.85rem; font-weight: 600;
+    letter-spacing: 0.08em;
+    pointer-events: none; z-index: 20;
+    left: 14px;
+  }
+  .label-conscious   { color: #0e3050; /* positioned above water line by JS */ }
+  .label-subconscious{ color: rgba(180,220,255,0.85); /* below water */ }
+
+  .instruction {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    font-size: 0.73rem; color: rgba(180,225,255,0.9);
+    letter-spacing: 0.06em; font-weight: 300;
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: 0 1px 6px rgba(0,0,60,0.5);
+  }
+
+  /* ── SCENE (full viewport, for bubble placement) ── */
+  .scene {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 5; pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* ── BUBBLE base ── */
+  .bubble {
+    position: absolute; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    text-align: center;
+    font-family: 'Noto Serif SC', serif; font-weight: 600;
+    color: #fff; line-height: 1.4;
+    user-select: none;
+    will-change: transform, left, top, opacity;
+  }
+
+  .bubble.idle {
+    cursor: pointer;
+    z-index: 8;
+    pointer-events: auto;
+    /* glass bubble underwater look */
+    background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.35), rgba(40,120,220,0.18));
+    border: 1.5px solid rgba(140,210,255,0.55);
+    box-shadow:
+      0 2px 12px rgba(0,60,140,0.25),
+      inset 0 1px 0 rgba(255,255,255,0.5),
+      inset -1px -1px 4px rgba(0,80,180,0.2);
+    backdrop-filter: blur(2px);
+    text-shadow: 0 1px 4px rgba(0,40,100,0.4);
+  }
+  .bubble.idle:hover { filter: brightness(1.18); transform: scale(1.06); }
+  .bubble.idle:active { transform: scale(0.93); }
+
+  /* Color tints per desire type */
+  .bubble.idle.bc {
+    background: radial-gradient(circle at 32% 28%, rgba(255,200,210,0.4), rgba(200,60,90,0.22));
+    border-color: rgba(255,160,180,0.6);
+  }
+  .bubble.idle.ba {
+    background: radial-gradient(circle at 32% 28%, rgba(180,255,210,0.4), rgba(40,160,100,0.22));
+    border-color: rgba(120,230,170,0.6);
+  }
+  .bubble.idle.bs {
+    background: radial-gradient(circle at 32% 28%, rgba(190,210,255,0.4), rgba(60,100,230,0.22));
+    border-color: rgba(140,180,255,0.6);
+  }
+
+  /* Physics engine handles idle bubble movement — no CSS animation needed */
+  .bubble.idle { animation: none; }
+  .bubble.idle:hover { animation-play-state: paused; }
+
+  /* Rising through water */
+  .bubble.rising { cursor: default; z-index: 12; pointer-events: none; }
+
+  /* At surface, waiting for decision */
+  .bubble.at-surface {
+    cursor: default; z-index: 15; pointer-events: none;
+    /* above-water look: vibrant, glassy */
+    background: radial-gradient(circle at 34% 28%, rgba(255,255,255,0.9), rgba(180,230,255,0.6)) !important;
+    border: 2px solid rgba(255,255,255,0.85) !important;
+    box-shadow: 0 6px 28px rgba(0,100,200,0.28), inset 0 2px 0 rgba(255,255,255,0.7) !important;
+    color: #0e2840 !important;
+    text-shadow: none !important;
+    backdrop-filter: blur(6px);
+  }
+  .bubble.at-surface.bc { background: radial-gradient(circle at 34% 28%, rgba(255,230,235,0.95), rgba(240,130,155,0.65)) !important; color: #3a0a18 !important; }
+  .bubble.at-surface.ba { background: radial-gradient(circle at 34% 28%, rgba(220,255,235,0.95), rgba(80,190,130,0.65)) !important; color: #063020 !important; }
+  .bubble.at-surface.bs { background: radial-gradient(circle at 34% 28%, rgba(225,235,255,0.95), rgba(100,140,240,0.65)) !important; color: #080e38 !important; }
+
+  /* Decision buttons flanking the surface bubble */
+  .surf-btn {
+    position: absolute; z-index: 16;
+    width: 62px; height: 62px; border-radius: 50%; border: none;
+    font-family: 'Noto Serif SC', serif; font-size: 0.74rem; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; line-height: 1.3;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.15s ease;
+  }
+  .surf-btn.show { opacity: 1; pointer-events: auto; }
+  .surf-btn:hover { transform: scale(1.12); }
+  .surf-btn:active { transform: scale(0.9); }
+  .surf-deny  {
+    background: radial-gradient(circle at 36% 30%, rgba(255,255,255,0.96), rgba(200,230,255,0.9));
+    color: #0e2840;
+    border: 1.5px solid rgba(100,160,220,0.5);
+    box-shadow: 0 3px 14px rgba(80,140,220,0.28);
+  }
+  .surf-allow {
+    background: radial-gradient(circle at 36% 30%, #fde87a, #e8a818);
+    color: #2a1200;
+    box-shadow: 0 3px 18px rgba(240,165,28,0.55);
+  }
+
+  /* Merged bubble — mixed color for 2 or 3 desires */
+  .bubble.at-surface.bm {
+    background: radial-gradient(circle at 34% 28%, rgba(235,240,255,0.95), rgba(160,120,220,0.7)) !important;
+    border: 2px solid rgba(200,180,255,0.85) !important;
+    color: #1a0a38 !important;
+  }
+  .bubble.at-surface.bm3 {
+    background: radial-gradient(circle at 34% 28%, rgba(255,240,220,0.95), rgba(180,130,80,0.65)) !important;
+    border: 2px solid rgba(255,210,140,0.85) !important;
+    color: #2a1400 !important;
+  }
+  @keyframes escapeToSky {
+    0%   { opacity: 1;   transform: translateY(0)     scale(1); }
+    15%  { opacity: 0.95; transform: translateY(-50px)  scale(1.06); }
+    55%  { opacity: 0.5;  transform: translateY(-180px) scale(0.74); }
+    100% { opacity: 0;   transform: translateY(-400px) scale(0.08); }
+  }
+  .go-sky {
+    animation: escapeToSky 1.9s cubic-bezier(0.22,0.58,0.38,0.96) forwards !important;
+    pointer-events: none !important;
+    z-index: 18 !important;
+  }
+
+  /* Underwater particle shimmer */
+  .uw-particle {
+    position: absolute; border-radius: 50%;
+    background: rgba(100,200,255,0.18);
+    animation: uwFloat linear infinite;
+    pointer-events: none;
+  }
+  @keyframes uwFloat {
+    0%   { transform: translateY(0); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.15; }
+    100% { transform: translateY(-60vh); opacity: 0; }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 58px; left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(10px);
+    color: #0e2840; padding: 9px 24px; border-radius: 40px;
+    font-family: 'Noto Serif SC', serif; font-size: 0.84rem; letter-spacing: 0.04em;
+    opacity: 0; transition: all 0.38s ease; pointer-events: none; z-index: 200;
+    white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .counter {
+    position: fixed; bottom: 8px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    font-family: 'Noto Serif SC', serif; font-size: 0.65rem;
+    color: rgba(140,200,255,0.6); letter-spacing: 0.1em;
+    text-shadow: 0 1px 4px rgba(0,0,60,0.4);
+  }
+
+  /* ── INTRO OVERLAY ── */
+  .intro-overlay {
+    position: fixed; inset: 0;
+    z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+    /* starts visible, fades out */
+  }
+
+  .intro-card {
+    position: relative;
+    text-align: center;
+    padding: 0 32px;
+    margin-bottom: 30vh;
+    animation: introAnim 7.5s ease forwards;
+  }
+
+  /* Decorative soft glow ring */
+  .intro-card::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(100,190,255,0.13) 0%, transparent 70%);
+    pointer-events: none;
+    animation: glowPulse 2.5s ease-in-out infinite;
+  }
+
+  .intro-line {
+    display: block;
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 300;
+    font-size: 1.1rem;
+    color: rgba(220, 240, 255, 0.92);
+    letter-spacing: 0.25em;
+    line-height: 2.4;
+    text-shadow: 0 0 24px rgba(100,200,255,0.5), 0 2px 6px rgba(0,30,80,0.4);
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  .intro-line-1 { animation: lineReveal 0.7s 0.3s ease forwards; }
+  .intro-line-2 { animation: lineReveal 0.7s 0.7s ease forwards; }
+  .intro-line-3 { animation: lineReveal 0.7s 1.1s ease forwards; }
+
+  /* Thin decorative divider */
+  .intro-divider {
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(140,210,255,0.6), transparent);
+    margin: 4px auto 0;
+    opacity: 0;
+    animation: lineReveal 0.5s 0.5s ease forwards;
+  }
+
+  @keyframes lineReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes introAnim {
+    0%   { opacity: 1; }
+    75%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1);   opacity: 0.7; }
+    50%       { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sky layer -->
+<div class="sky-clouds" id="skyClouds"></div>
+
+<!-- INTRO OVERLAY -->
+<div class="intro-overlay" id="introOverlay">
+  <div class="intro-card">
+    <span class="intro-line intro-line-1">觉察此刻升起的欲望</span>
+    <span class="intro-divider"></span>
+    <span class="intro-line intro-line-2">点击水中飘动的泡泡</span>
+    <span class="intro-line intro-line-3">识别即是释放</span>
+  </div>
+</div>
+
+<!-- Underwater light rays -->
+<div class="underwater-rays" id="uwRays"></div>
+
+<!-- Header in sky -->
+<div class="header">
+  <h1>圣多纳释放法</h1>
+  <p>觉察 · 允许 · 释放</p>
+</div>
+
+<!-- Zone labels -->
+<div class="zone-label label-conscious"    id="labelC">表意识</div>
+<div class="zone-label label-subconscious" id="labelS">潜意识</div>
+
+<!-- Water surface SVG (animated waves) -->
+<svg class="water-surface" id="waterSvg" xmlns="http://www.w3.org/2000/svg"
+     style="position:fixed;left:0;width:100%;pointer-events:none;z-index:10;">
+  <defs>
+    <linearGradient id="waveGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(30,130,200,0.9)"/>
+      <stop offset="100%" stop-color="rgba(20,94,148,0)"/>
+    </linearGradient>
+  </defs>
+  <path id="wavePath" fill="url(#waveGrad)" opacity="0.95"/>
+  <path id="wavePath2" fill="rgba(60,160,230,0.3)" opacity="0.6"/>
+</svg>
+
+<!-- Bubble scene layer -->
+<div class="scene" id="scene"></div>
+
+<!-- Decision buttons removed — bubbles auto-release on arrival -->
+
+<div class="instruction" id="instr">识别现在是哪种想要，点击允许释放</div>
+<div class="counter"     id="counter">已释放 0 个欲望</div>
+<div class="toast"       id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════
+const DESIRES = [
+  { key:'control',  label:'想要\n控制', cls:'bc' },
+  { key:'approval', label:'想要\n认同', cls:'ba' },
+  { key:'safety',   label:'想要\n安全', cls:'bs' },
+];
+const SPAWN_GAP   = 200;
+const RISE_SPEED  = 240;   // px/s
+const MAX_RISING  = 3;
+const WATER_Y_PCT = 0.52;
+const IDLE_COUNT  = Math.max(8, Math.min(15, Math.floor((window.innerWidth * window.innerHeight * (1 - WATER_Y_PCT)) / 14000)));
+
+const SURFACE_SLOTS_X_PCT = [0.25, 0.50, 0.75]; // fallback, overridden dynamically
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let idleBubbles  = [];
+let risingSlots  = [null, null, null];
+let released     = 0;
+let physicsRaf   = null;
+
+// ═══════════════════════════════════════════════════
+//  LAYOUT
+// ═══════════════════════════════════════════════════
+function waterY()  { return window.innerHeight * WATER_Y_PCT; }
+function vw()      { return window.innerWidth; }
+function vh()      { return window.innerHeight; }
+
+// ═══════════════════════════════════════════════════
+//  PHYSICS ENGINE
+//  Each idle bubble has: px, py (position of center), vx, vy (velocity)
+//  Forces: buoyancy (upward, stronger near bottom), repulsion from neighbours,
+//          wall repulsion, damping
+// ═══════════════════════════════════════════════════
+const BUOYANCY    = 0.003;   // very gentle upward drift
+const DAMPING     = 0.97;    // high damping = slow, lazy movement
+const REPULSION   = 60;      // soft push apart
+const WALL_REP    = 40;      // gentle wall bounce
+const WALL_MARGIN = 6;
+
+// Throttle: only update DOM every N physics frames
+const DOM_EVERY   = 4;       // update DOM at ~15fps, physics at 60fps
+let   frameCount  = 0;
+
+function physicsTick() {
+  const wy = waterY();
+  const W  = vw();
+  const H  = vh();
+  const active = idleBubbles; // all idle bubbles are physics-active
+
+  frameCount++;
+  const doDOM = (frameCount % DOM_EVERY === 0);
+
+  // ── Spatial grid for O(n) collision (cell size = max bubble diameter ~70px) ──
+  const CELL = 72;
+  const cols = Math.ceil(W / CELL) + 1;
+  const grid = new Map();
+  for (const b of active) {
+    const cx = (b.px / CELL) | 0;
+    const cy = (b.py / CELL) | 0;
+    const key = cx * 1000 + cy;
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key).push(b);
+  }
+
+  for (const b of active) {
+    const r = b.sz / 2;
+
+    // ── Buoyancy ──
+    const depth = (b.py - wy) / (H - wy);
+    b.vy -= BUOYANCY * (0.3 + depth * 1.4);
+
+    // ── Repulsion: only check neighbouring grid cells ──
+    const cx = (b.px / CELL) | 0;
+    const cy = (b.py / CELL) | 0;
+    for (let nx = cx - 1; nx <= cx + 1; nx++) {
+      for (let ny = cy - 1; ny <= cy + 1; ny++) {
+        const neighbours = grid.get(nx * 1000 + ny);
+        if (!neighbours) continue;
+        for (const o of neighbours) {
+          if (o === b) continue;
+          const dx = b.px - o.px;
+          const dy = b.py - o.py;
+          const dist2 = dx * dx + dy * dy;
+          const minDist = r + o.sz / 2;
+          const minDist2 = minDist * minDist;
+          if (dist2 < minDist2 && dist2 > 0.001) {
+            const dist = Math.sqrt(dist2);
+            const force = REPULSION * (minDist - dist) / (minDist * dist);
+            b.vx += dx * force;
+            b.vy += dy * force;
+          }
+        }
+      }
+    }
+
+    // ── Wall repulsion ──
+    const left = r + WALL_MARGIN, right = W - r - WALL_MARGIN;
+    const top  = wy + r,          bot   = H - r - WALL_MARGIN;
+    if (b.px < left  + 40) b.vx += WALL_REP / Math.max(1, b.px - left);
+    if (b.px > right - 40) b.vx -= WALL_REP / Math.max(1, right - b.px);
+    if (b.py < top   + 50) b.vy += WALL_REP * 3 / Math.max(1, b.py - top);
+    if (b.py > bot   - 40) b.vy -= WALL_REP / Math.max(1, bot - b.py);
+
+    // ── Damping + clamp velocity ──
+    b.vx *= DAMPING;
+    b.vy *= DAMPING;
+    const spd2 = b.vx * b.vx + b.vy * b.vy;
+    if (spd2 > 0.36) { const s = 0.6 / Math.sqrt(spd2); b.vx *= s; b.vy *= s; }
+
+    // ── Integrate ──
+    b.px += b.vx;
+    b.py += b.vy;
+    // Hard clamp: bubble top edge (py - r) must never go above waterY
+    b.px = Math.max(left,  Math.min(right, b.px));
+    b.py = Math.max(top,   Math.min(bot,   b.py));
+    if (b.py <= top) { b.py = top; b.vy = 0; }
+
+    // ── DOM update (throttled) — direct left/top so we can hard-clamp at waterY ──
+    if (doDOM) {
+      const renderTop = Math.max(wy, b.py - r);  // top edge never above waterY
+      b.el.style.left = `${(b.px - r) | 0}px`;
+      b.el.style.top  = `${renderTop  | 0}px`;
+    }
+  }
+
+  physicsRaf = requestAnimationFrame(physicsTick);
+}
+
+// Initial placement: pack bubbles without overlap using weighted-surface distribution
+function placeInitial(sz, allBubbles) {
+  const wy = waterY();
+  const W  = vw();
+  const H  = vh();
+  const r  = sz / 2;
+  const pad = 5;
+
+  for (let attempt = 0; attempt < 120; attempt++) {
+    // Weighted toward surface: use sqrt distribution so more bubbles near top
+    const tRand = Math.random();
+    // depth 0=surface, 1=bottom; bias toward 0
+    const depth = tRand * tRand;
+    const py = wy + r + pad + depth * (H - wy - r * 2 - pad * 2);
+    const px = r + pad + Math.random() * (W - r * 2 - pad * 2);
+
+    let ok = true;
+    for (const b of allBubbles) {
+      if (Math.hypot(px - b.px, py - b.py) < r + b.sz / 2) { ok = false; break; }
+    }
+    if (ok) return { px, py };
+  }
+  // fallback
+  const depth = Math.random() * Math.random();
+  return {
+    px: r + pad + Math.random() * (W - r * 2 - pad * 2),
+    py: wy + r + pad + depth * (H - wy - r * 2 - pad * 2),
+  };
+}
+
+// ═══════════════════════════════════════════════════
+//  SURFACE LAYOUT — dynamic based on how many bubbles are up
+// ═══════════════════════════════════════════════════
+const TSZ = 88; // size of surface bubble
+
+// Return {x, y} center for a slot given current active count
+// All rising bubbles head to center — they merge on arrival
+function surfaceSlotPos(slotIdx) {
+  return { x: vw() * 0.50, y: waterY() - TSZ * 0.55 };
+}
+
+// ═══════════════════════════════════════════════════
+//  SURFACE MERGE BUBBLE
+//  All at-surface bubbles collapse into one merged bubble
+// ═══════════════════════════════════════════════════
+let mergedBubble = null;
+let mergeTimer = null;
+let releasing = false; // lock: ignore tryMerge while animation is in flight
+
+function tryMerge() {
+  if (releasing) return; // don't re-trigger while a release is animating
+  if (mergeTimer) clearTimeout(mergeTimer);
+  mergeTimer = setTimeout(_doMerge, 80);
+}
+
+function _doMerge() {
+  mergeTimer = null;
+  if (releasing) return;
+  // Collect all at-surface slot entries
+  const atSurface = risingSlots
+    .map((s, i) => s && s.el.classList.contains('at-surface') ? { ...s, idx: i } : null)
+    .filter(Boolean);
+
+  if (atSurface.length === 0) return;
+
+  // Remove old merged bubble if exists
+  if (mergedBubble) { mergedBubble.el.remove(); mergedBubble = null; }
+
+  // Collect desires from all at-surface + any existing merge
+  const desires = atSurface.map(e => e.desire);
+
+  // Hide all individual rising bubbles
+  for (const e of atSurface) {
+    e.el.style.opacity = '0';
+    e.el.style.pointerEvents = 'none';
+  }
+
+  // Size: base 92px, grows with count
+  const count = desires.length;
+  const mSz = 92 + (count - 1) * 28; // 92 → 120 → 148
+
+  // Build label: deduplicate and join
+  const seen = new Set();
+  const lines = desires.map(d => d.label.replace('\n', '')).filter(l => !seen.has(l) && seen.add(l));
+  const labelHtml = lines.join('<br>');
+
+  // Color: mix classes
+  const cls = count === 1 ? desires[0].cls
+    : count === 2 ? (desires[0].cls === desires[1].cls ? desires[0].cls : 'bm')
+    : 'bm3';
+
+  const wy = waterY();
+  const cx = vw() * 0.50;
+  const cy = wy - mSz * 0.55;
+
+  const el = document.createElement('div');
+  el.className = `bubble at-surface merged ${cls}`;
+  el.innerHTML = labelHtml;
+  el.style.cssText = `
+    width:${mSz}px; height:${mSz}px;
+    left:${cx - mSz/2}px; top:${cy - mSz/2}px;
+    font-size:${count > 1 ? 0.72 : 0.82}rem;
+    position:fixed; z-index:15;
+    opacity:0;
+    transition: opacity 0.4s ease, width 0.5s ease, height 0.5s ease, left 0.5s ease, top 0.5s ease;
+    pointer-events:none;
+  `;
+  document.body.appendChild(el);
+
+  requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = '1'; }));
+
+  mergedBubble = { el, desires, sz: mSz, atSurface };
+
+  // Auto-release immediately
+  handleDecision(true);
+}
+
+function updateSharedButtons(cx, cy, sz) {
+  const denyEl  = document.getElementById('sharedDeny');
+  const allowEl = document.getElementById('sharedAllow');
+  const gap = 16;
+  denyEl.style.left  = `${cx - sz/2 - 62 - gap}px`;
+  denyEl.style.top   = `${cy - 30}px`;
+  allowEl.style.left = `${cx + sz/2 + gap}px`;
+  allowEl.style.top  = `${cy - 30}px`;
+  denyEl.classList.add('show');
+  allowEl.classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════
+//  ANIMATED WAVE SURFACE
+// ═══════════════════════════════════════════════════
+let waveOffset = 0;
+
+function drawWaves() {
+  const w    = vw();
+  const wy   = waterY();
+  const amp  = 10;
+  const amp2 = 6;
+  waveOffset += 0.012;
+
+  // Main wave
+  let d = `M 0 ${wy + amp}`;
+  for (let x = 0; x <= w; x += 6) {
+    const y = wy + Math.sin((x / w) * Math.PI * 4 + waveOffset) * amp
+                  + Math.sin((x / w) * Math.PI * 2.5 + waveOffset * 1.3) * (amp * 0.4);
+    d += ` L ${x} ${y}`;
+  }
+  d += ` L ${w} ${vh()} L 0 ${vh()} Z`;
+  document.getElementById('wavePath').setAttribute('d', d);
+
+  // Secondary shimmer wave
+  let d2 = `M 0 ${wy + amp2}`;
+  for (let x = 0; x <= w; x += 8) {
+    const y = wy + Math.sin((x / w) * Math.PI * 5 + waveOffset * 1.6 + 1) * amp2
+                  + Math.cos((x / w) * Math.PI * 3 + waveOffset * 0.9) * (amp2 * 0.5);
+    d2 += ` L ${x} ${y}`;
+  }
+  d2 += ` L ${w} ${wy + 40} L 0 ${wy + 40} Z`;
+  document.getElementById('wavePath2').setAttribute('d', d2);
+
+  requestAnimationFrame(drawWaves);
+}
+
+// ═══════════════════════════════════════════════════
+//  SKY CLOUDS
+// ═══════════════════════════════════════════════════
+function spawnCloud() {
+  const el = document.createElement('div');
+  el.className = 'cloud';
+  const h = 18 + Math.random() * 28;
+  const w = 60 + Math.random() * 120;
+  const top = 8 + Math.random() * (waterY() * 0.55);
+  const dur = 28 + Math.random() * 30;
+  el.style.cssText = `width:${w}px;height:${h}px;top:${top}px;animation-duration:${dur}s;animation-delay:${-Math.random()*dur}s;`;
+  document.getElementById('skyClouds').appendChild(el);
+}
+for (let i = 0; i < 7; i++) spawnCloud();
+
+// ═══════════════════════════════════════════════════
+//  UNDERWATER RAYS & PARTICLES
+// ═══════════════════════════════════════════════════
+const uwRaysEl = document.getElementById('uwRays');
+for (let i = 0; i < 8; i++) {
+  const ray = document.createElement('div');
+  ray.className = 'ray';
+  const h = 120 + Math.random() * 200;
+  ray.style.cssText = `
+    left:${5 + i * 12 + Math.random() * 6}%;
+    height:${h}px;
+    animation-duration:${3 + Math.random() * 3}s;
+    animation-delay:${Math.random() * 3}s;
+    opacity:${0.3 + Math.random() * 0.4};
+  `;
+  uwRaysEl.appendChild(ray);
+}
+
+const sceneEl = document.getElementById('scene');
+
+function spawnUwParticle() {
+  const p = document.createElement('div');
+  p.className = 'uw-particle';
+  const s = 2 + Math.random() * 5;
+  p.style.cssText = `
+    width:${s}px;height:${s}px;
+    left:${Math.random()*100}%;
+    bottom:${Math.random()*45}%;
+    animation-duration:${8+Math.random()*12}s;
+    animation-delay:${Math.random()*10}s;
+  `;
+  sceneEl.appendChild(p);
+}
+for (let i = 0; i < 22; i++) spawnUwParticle();
+
+// ═══════════════════════════════════════════════════
+//  ZONE LABELS
+// ═══════════════════════════════════════════════════
+function positionLabels() {
+  const wy = waterY();
+  document.getElementById('labelC').style.top = `${wy - 70}px`;
+  document.getElementById('labelS').style.top = `${wy + 80}px`;
+}
+
+// ═══════════════════════════════════════════════════
+//  SPAWN IDLE BUBBLE
+// ═══════════════════════════════════════════════════
+
+function spawnIdleBubble(desireOverride) {
+  // If no override, pick whichever desire has fewest bubbles currently
+  let desire;
+  if (desireOverride) {
+    desire = desireOverride;
+  } else {
+    const counts = DESIRES.map(d => ({
+      d,
+      n: idleBubbles.filter(b => b.desire.key === d.key).length
+    }));
+    counts.sort((a, b) => a.n - b.n);
+    desire = counts[0].d;
+  }
+
+  const sz  = Math.round((64 + Math.floor(Math.random() * 24)) * 1.1);
+  const pos = placeInitial(sz, idleBubbles);
+
+  const initLeft = pos.px - sz/2;
+  const initTop  = Math.max(waterY(), pos.py - sz/2);
+
+  const el = document.createElement('div');
+  el.className = `bubble ${desire.cls} idle`;
+  el.innerHTML = desire.label.replace('\n', '<br>');
+  el.style.cssText = `
+    width:${sz}px; height:${sz}px;
+    left:${initLeft}px; top:${initTop}px;
+    font-size:${sz > 58 ? 0.78 : 0.70}rem;
+    opacity:0;
+    pointer-events:auto;
+    transition:opacity 0.6s ease;
+  `;
+  sceneEl.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = '1'; }));
+
+  const entry = {
+    el, desire, sz,
+    px: pos.px, py: pos.py,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    physicsActive: true,
+    initLeft, initTop,
+  };
+  el.onclick = () => onBubbleClick(entry);
+  idleBubbles.push(entry);
+  return entry;
+}
+
+// ═══════════════════════════════════════════════════
+//  CLICK → FLY DIRECTLY TO SKY
+// ═══════════════════════════════════════════════════
+function onBubbleClick(entry) {
+  if (entry.clicked) return;
+  entry.clicked = true;
+
+  idleBubbles = idleBubbles.filter(b => b !== entry);
+  entry.physicsActive = false;
+
+  const { el, desire, sz } = entry;
+
+  // Fix position from physics coordinates
+  el.style.transition = 'none';
+  el.style.transform  = 'none';
+  el.style.left = `${entry.px - sz/2}px`;
+  el.style.top  = `${entry.py - sz/2}px`;
+  el.style.pointerEvents = 'none';
+  el.style.cursor = 'default';
+  // Keep idle class so bubble background/border stays visible
+  // just remove hover effects
+  el.style.filter = 'none';
+
+  const label = desire.label.replace('\n', '');
+  showToast(`🌸 「${label}」已悄然离去`);
+
+  // Fly to sky via JS transition
+  const currentTop = entry.py - sz/2;
+  el.style.zIndex = '18';
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    el.style.transition = 'top 1.9s cubic-bezier(0.22,0.58,0.38,0.96), opacity 1.9s ease';
+    el.style.top     = `${currentTop - 600}px`;
+    el.style.opacity = '0';
+  }));
+
+  setTimeout(() => {
+    el.remove();
+    released++;
+    document.getElementById('counter').textContent = `已释放 ${released} 个欲望`;
+    setTimeout(() => spawnIdleBubble(desire), 800);
+    updateInstruction();
+  }, 1950);
+}
+
+// ═══════════════════════════════════════════════════
+//  DECISION — releases the merged bubble
+// ═══════════════════════════════════════════════════
+function handleDecision(allow) {
+  if (!mergedBubble) return;
+  releasing = true;
+
+  const labels = [...new Set(mergedBubble.desires.map(d => d.label.replace('\n', '')))].join('、');
+  showToast(`🌸 「${labels}」已悄然离去`);
+
+  // Fly merged bubble into sky
+  const el = mergedBubble.el;
+  el.style.transition = 'none';
+  el.classList.add('go-sky');
+
+  // Clear slots immediately so new bubbles can be clicked
+  const atSurface = mergedBubble.atSurface;
+  mergedBubble = null;
+  for (const e of atSurface) {
+    risingSlots[e.idx] = null;
+  }
+
+  setTimeout(() => {
+    el.remove();
+    for (const e of atSurface) {
+      e.el.remove();
+      released++;
+      setTimeout(() => spawnIdleBubble(e.desire), 800);
+    }
+    // Safety: clean up any orphaned at-surface bubbles
+    for (let i = 0; i < risingSlots.length; i++) {
+      const s = risingSlots[i];
+      if (s && s.el.classList.contains('at-surface')) {
+        s.el.remove();
+        risingSlots[i] = null;
+        released++;
+        setTimeout(() => spawnIdleBubble(s.desire), 800);
+      }
+    }
+    document.getElementById('counter').textContent = `已释放 ${released} 个欲望`;
+    releasing = false;
+    updateInstruction();
+  }, 1950);
+}
+
+// ═══════════════════════════════════════════════════
+//  INSTRUCTION
+// ═══════════════════════════════════════════════════
+function updateInstruction() {
+  const active = risingSlots.filter(Boolean).length;
+  const atSurf = risingSlots.filter(s => s && s.el.classList.contains('at-surface')).length;
+  if (active === 0) {
+    document.getElementById('instr').textContent = '识别现在是哪种想要，点击允许释放';
+  } else if (atSurf > 0) {
+    document.getElementById('instr').textContent = '欲望正在飘离……';
+  } else {
+    document.getElementById('instr').textContent = `${active} 个欲望正在上浮……`;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  // Remove intro overlay after animation finishes
+  const introEl = document.getElementById('introOverlay');
+  if (introEl) {
+    setTimeout(() => { introEl.remove(); }, 7700);
+  }
+
+  positionLabels();
+  drawWaves();
+
+  setTimeout(() => {
+    // Batch-place all 80 bubbles packed without overlap
+    for (let i = 0; i < IDLE_COUNT; i++) {
+      spawnIdleBubble();
+    }
+
+    // Start physics simulation
+    physicsTick();
+
+    // Keep pool topped up, always balancing toward 1:1:1
+    setInterval(() => {
+      if (idleBubbles.length < IDLE_COUNT) spawnIdleBubble();
+    }, SPAWN_GAP);
+
+    // Continuous stream of small ambient bubbles rising from bottom
+    function spawnRisingAmbient() {
+      const el = document.createElement('div');
+      const sz = 8 + Math.random() * 22;
+      const x  = 4 + Math.random() * 92; // % of vw
+      const dur = 4 + Math.random() * 7;
+      const wy = waterY();
+      const startY = vh() + sz;
+      el.style.cssText = `
+        position:absolute;
+        width:${sz}px; height:${sz}px;
+        left:${x}vw; top:${startY}px;
+        border-radius:50%;
+        background: radial-gradient(circle at 35% 30%, rgba(160,220,255,0.45), rgba(60,140,230,0.18));
+        border: 1px solid rgba(140,210,255,0.35);
+        pointer-events:none;
+        z-index:6;
+        transition: top ${dur.toFixed(1)}s linear, opacity ${dur.toFixed(1)}s ease;
+        opacity:0.7;
+      `;
+      sceneEl.appendChild(el);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.style.top     = `${wy - sz * 1.5}px`;
+        el.style.opacity = '0';
+      }));
+      setTimeout(() => el.remove(), dur * 1000 + 200);
+    }
+    setInterval(spawnRisingAmbient, 180);
+  }, 300);
+});
+
+window.addEventListener('resize', positionLabels);
+</script>
+<script src="nav-orb.js"></script>
+<script src="music-btn.js"></script>
+</body>
+</html>
