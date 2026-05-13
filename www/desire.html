@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>圣多纳释放法 · 内心疗愈</title>
+<title>欲望释放 · Freed Releasing</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+SC:wght@300;400&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -1055,7 +1055,7 @@
 
 <!-- Header in sky -->
 <div class="header">
-  <h1>圣多纳释放法</h1>
+  <h1>欲望释放</h1>
   <p>觉察 · 允许 · 释放</p>
 </div>
 
@@ -1400,7 +1400,7 @@
 // ═══════════════════════════════════════════════════
 const STRINGS = {
   zh: {
-    title:'圣多纳释放法', subtitle:'觉察 · 允许 · 释放',
+    title:'欲望释放', subtitle:'觉察 · 允许 · 释放',
     instr_idle:'点击水下的欲望泡泡，让它浮上水面（最多同时3个）',
     instr_active:'允许 — 随它去；不允许 — 承认它在',
     deny:'不允许', allow:'允许',
@@ -1436,7 +1436,7 @@ const STRINGS = {
     goal_add_btn: '添加',
   },
   en: {
-    title:'Sedona Method', subtitle:'Awareness · Allow · Release',
+    title:'Desire Release', subtitle:'Awareness · Allow · Release',
     instr_idle:'Tap a desire bubble to bring it to the surface (max 3 at once)',
     instr_active:'Allow — let it go；Deny — acknowledge it',
     deny:'Deny', allow:'Allow',
@@ -1488,7 +1488,7 @@ function tf(key) {
 
 function getLangSystemPrompt() {
   if (currentLang === 'en') {
-    return 'You are a deep psychological insight guide, expert in the Sedona Method.\n\n'
+    return 'You are a deep psychological insight guide, expert in identifying hidden desire patterns beneath emotional language.\n\n'
       + 'The three core desires:\n'
       + '- control: craving to control situations, outcomes, others; fear of losing control\n'
       + '- approval: craving acceptance, validation, love; fear of rejection, criticism, abandonment\n'
@@ -1507,7 +1507,7 @@ function getLangSystemPrompt() {
       + '{"points":[{"quote":"brief phrase max 20 words","desire":"control|approval|safety","reason":"insight 40-60 words"}]}\n\n'
       + 'No limit on number of points. List every insight. Same desire can appear multiple times.';
   }
-  return '你是一位深度心理洞察师，精通圣多纳释放法（Sedona Method）。\n\n'
+  return '你是一位深度心理洞察师，专精识别情绪语言背后隐藏的欲望模式。\n\n'
     + '三种核心欲望：\n'
     + '- control（想要控制）：渴望掌控局面、结果、他人；害怕失控、混乱、不确定\n'
     + '- approval（想要被认同）：渴望被接受、肯定、爱；害怕被拒绝、批评、抛弃\n'
