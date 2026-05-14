@@ -14,7 +14,7 @@ workflows:
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
-        APP_STORE_APPLE_ID: 1234567890  # 上架后从 App Store Connect 获取，先填占位
+        APP_STORE_APPLE_ID: 6768422531  # 上架后从 App Store Connect 获取，先填占位
       node: 20.11.0
       xcode: latest
       cocoapods: default
