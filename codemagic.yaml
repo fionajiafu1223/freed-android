@@ -27,7 +27,7 @@ workflows:
 
       - name: 同步 Capacitor 到 iOS
         script: |
-          npx cap sync ios
+          npx cap add ios || npx cap sync ios
 
       - name: 安装 CocoaPods
         script: |
