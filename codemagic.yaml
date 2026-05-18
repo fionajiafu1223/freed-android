@@ -24,6 +24,11 @@ workflows:
       - name: 安装 npm 依赖
         script: |
           npm install
+      - name: 生成 App 图标
+        script: |
+          npm install -g @capacitor/assets
+          npx capacitor-assets generate --ios
+
 
       - name: 同步 Capacitor 到 iOS
         script: |
