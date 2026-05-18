@@ -1,0 +1,1269 @@
+<!-- gains v10 - direct localStorage read -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>收获本 · Freed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=Noto+Sans+SC:wght@300;400&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',serif; padding:80px 16px 32px; }
+.page-title { text-align:center; font-size:1.1rem; letter-spacing:0.2em; color:rgba(3,80,140,0.85); margin-bottom:24px; }
+.page-wrap { max-width:480px; margin:0 auto; background:rgba(255,255,255,0.78); border-radius:20px; padding:20px 16px; box-shadow:0 8px 32px rgba(0,60,120,0.10); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.85); }
+.gain-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .gain-input-row input {
+    flex: 1; padding: 9px 14px;
+    border: 1.5px solid rgba(100,160,220,0.4); border-radius: 12px;
+    background: rgba(255,255,255,0.7);
+    font-family: 'Noto Sans SC', sans-serif; font-size: 0.88rem; color: #0e2840;
+    outline: none; transition: border-color 0.2s;
+  }
+  .gain-input-row input:focus { border-color: rgba(80,140,220,0.8); }
+  .gain-input-row button {
+    padding: 9px 16px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #4a9fd4, #2a7abf); color: #fff;
+    font-family: 'Noto Serif SC', serif; font-size: 0.84rem;
+    cursor: pointer; white-space: nowrap;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .gain-input-row button:hover { opacity: 0.88; transform: scale(1.04); }
+  .gain-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .gain-cat {
+    padding: 4px 10px; border-radius: 20px;
+    border: 1.5px solid rgba(100,160,220,0.4);
+    background: rgba(255,255,255,0.55);
+    font-family: 'Noto Sans SC', sans-serif; font-size: 0.72rem;
+    color: #2a5080; cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .gain-cat:hover { background: rgba(200,230,255,0.7); }
+  .gain-cat.active {
+    background: linear-gradient(135deg, rgba(74,159,212,0.85), rgba(42,122,191,0.85));
+    border-color: rgba(74,159,212,0.6); color: #fff;
+  }
+  .gain-filter-row {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 14px;
+  }
+  .gain-filter-label { font-size: 0.72rem; color: #5a7aa0; font-family: 'Noto Sans SC', sans-serif; }
+  .gain-filter {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid rgba(100,160,220,0.4);
+    background: rgba(255,255,255,0.55);
+    font-size: 0.9rem; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    transition: all 0.18s ease;
+  }
+  .gain-filter[data-filter="all"] { width: auto; padding: 0 10px; font-size: 0.72rem; font-family: 'Noto Sans SC', sans-serif; color: #5a7aa0; }
+  .gain-filter:hover { background: rgba(200,230,255,0.7); }
+  .gain-filter.active {
+    background: linear-gradient(135deg, rgba(74,159,212,0.85), rgba(42,122,191,0.85));
+    border-color: rgba(74,159,212,0.6); color: #fff;
+  }
+  .gain-section-title {
+    font-size: 0.78rem; color: #2a5080; letter-spacing: 0.08em;
+    margin: 14px 0 8px; font-weight: 600;
+  }
+  .gain-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .gain-item {
+    background: rgba(255,255,255,0.62); border-radius: 12px;
+    padding: 10px 14px; border: 1px solid rgba(100,160,220,0.2);
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .gain-item.shared { background: rgba(230,245,255,0.62); }
+  .gain-text { font-size: 0.84rem; color: #0e2840; line-height: 1.5; }
+  .gain-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: rgba(74,159,212,0.15); border-radius: 10px;
+    padding: 2px 8px; font-size: 0.68rem; color: #2a6090;
+    font-family: 'Noto Sans SC', sans-serif; align-self: flex-start;
+  }
+  .gain-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 2px;
+  }
+  .gain-meta { font-size: 0.64rem; color: #7a9ab0; font-family: 'Noto Sans SC', sans-serif; }
+  .gain-like-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: none; border: 1px solid rgba(100,160,220,0.25);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 0.7rem; color: #7a9ab0;
+    font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer; transition: all 0.18s ease;
+    line-height: 1;
+  }
+  .gain-like-btn:hover { background: rgba(255,100,130,0.08); border-color: rgba(255,100,130,0.4); color: #e05080; }
+  .gain-like-btn.liked { background: rgba(255,100,130,0.12); border-color: rgba(255,100,130,0.5); color: #e05080; }
+  .gain-like-count { font-weight: 600; }
+  .gain-sort-btn {
+    padding: 4px 10px; border-radius: 14px;
+    border: 1.5px solid rgba(100,160,220,0.35);
+    background: rgba(255,255,255,0.5);
+    font-size: 0.68rem; color: #5a7aa0;
+    font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer; transition: all 0.18s ease;
+  }
+  .gain-sort-btn:hover { background: rgba(200,230,255,0.7); }
+  .gain-sort-btn.active {
+    background: linear-gradient(135deg, rgba(74,159,212,0.85), rgba(42,122,191,0.85));
+    border-color: rgba(74,159,212,0.6); color: #fff;
+  }
+  .gain-loading { font-size: 0.78rem; color: #8aaac0; text-align: center; padding: 10px 0; }
+  .gain-close-btn {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; font-size: 1.1rem;
+    color: #5a7aa0; cursor: pointer; line-height: 1;
+    transition: color 0.15s, transform 0.15s;
+  }
+  .gain-close-btn:hover { color: #0e2840; transform: scale(1.2); }
+
+
+/* ════════════════════════════════════════
+   Tab 切换栏 — 我的收获 / 所有人的收获
+   ════════════════════════════════════════ */
+.tabs-bar {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(220, 235, 250, 0.55);
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 9px 0;
+  border: none;
+  background: transparent;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.85rem;
+  color: #5a7aa0;
+  cursor: pointer;
+  border-radius: 11px;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+}
+.tab-btn.active {
+  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(42,122,191,0.25);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ════════════════════════════════════════
+   我的释放数据 — 折叠卡片
+   ════════════════════════════════════════ */
+.stats-card {
+  background: rgba(245, 250, 255, 0.7);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(120, 175, 220, 0.18);
+}
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.stats-title {
+  font-size: 0.78rem;
+  color: #2a5080;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.stats-toggle {
+  font-size: 0.7rem;
+  color: #5a7aa0;
+  transition: transform 0.25s ease;
+}
+.stats-card.collapsed .stats-toggle { transform: rotate(-90deg); }
+.stats-body {
+  margin-top: 10px;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.25s ease;
+  max-height: 600px;
+  opacity: 1;
+}
+.stats-card.collapsed .stats-body {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
+.stats-line {
+  font-size: 0.78rem;
+  color: #2a5080;
+  font-family: 'Noto Sans SC', sans-serif;
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+}
+.stats-line strong {
+  font-weight: 600;
+  color: #0e3560;
+  font-size: 0.86rem;
+}
+.stats-milestone {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(255,200,80,0.18), rgba(255,170,60,0.12));
+  border-radius: 10px;
+  border: 1px solid rgba(220, 160, 50, 0.20);
+  font-size: 0.78rem;
+  color: #8a5a10;
+  text-align: center;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.stats-quote {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.45);
+  border-left: 3px solid rgba(74,159,212,0.45);
+  border-radius: 8px;
+  font-size: 0.76rem;
+  color: #4a6580;
+  font-style: italic;
+  line-height: 1.6;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.stats-empty {
+  font-size: 0.78rem;
+  color: #8aaac0;
+  font-family: 'Noto Sans SC', sans-serif;
+  text-align: center;
+  padding: 6px 0;
+}
+
+/* 登录提示条 */
+.login-hint {
+  margin-top: 10px;
+  padding: 9px 12px;
+  background: rgba(180, 220, 255, 0.30);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.login-hint-text {
+  font-size: 0.72rem;
+  color: #2a5080;
+  font-family: 'Noto Sans SC', sans-serif;
+  flex: 1;
+  line-height: 1.4;
+}
+.login-hint-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
+  color: #fff;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.74rem;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+}
+.login-hint-btn:active { transform: scale(0.96); }
+
+/* 登录弹窗（和 index.html 同款玻璃气泡风格） */
+#auth-overlay-gains {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10, 40, 75, 0.55);
+  backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#auth-overlay-gains.show { display: flex; opacity: 1; }
+.auth-card-g {
+  position: relative; width: 100%; max-width: 340px;
+  padding: 32px 26px 26px; border-radius: 28px;
+  background: radial-gradient(circle at 30% 25%,
+    rgba(255,255,255,0.88) 0%,
+    rgba(230,245,255,0.72) 30%,
+    rgba(180,220,250,0.60) 60%,
+    rgba(140,200,240,0.55) 100%);
+  box-shadow:
+    inset 0 0 30px rgba(180,220,255,0.55),
+    inset 0 0 8px rgba(255,255,255,0.60),
+    0 12px 40px rgba(10,50,100,0.35),
+    0 0 50px rgba(140,200,240,0.30);
+  backdrop-filter: blur(6px);
+  transform: scale(0.92);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+#auth-overlay-gains.show .auth-card-g { transform: scale(1); }
+.auth-card-g .auth-close-g {
+  position: absolute; top: 12px; right: 14px;
+  width: 28px; height: 28px;
+  border: none; background: transparent;
+  font-size: 1.1rem; color: rgba(20, 60, 110, 0.55);
+  cursor: pointer; line-height: 1;
+}
+.auth-card-g .auth-title-g {
+  text-align: center;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.05rem; font-weight: 400;
+  color: #0e3560; letter-spacing: 0.15em;
+  margin-bottom: 4px;
+}
+.auth-card-g .auth-subtitle-g {
+  text-align: center;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.68rem; color: rgba(20, 60, 110, 0.62);
+  margin-bottom: 22px; letter-spacing: 0.04em;
+}
+.auth-card-g .auth-tabs-g {
+  display: flex; gap: 4px; margin-bottom: 18px;
+  padding: 3px; background: rgba(255,255,255,0.40);
+  border-radius: 12px;
+}
+.auth-card-g .auth-tab-g {
+  flex: 1; padding: 8px 0;
+  border: none; background: transparent;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.78rem; color: rgba(20, 60, 110, 0.65);
+  cursor: pointer; border-radius: 9px;
+  transition: all 0.2s ease;
+}
+.auth-card-g .auth-tab-g.active {
+  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
+  color: #fff; box-shadow: 0 2px 8px rgba(42,122,191,0.30);
+}
+.auth-card-g .auth-input-g {
+  width: 100%; padding: 11px 14px; margin-bottom: 12px;
+  border: 1.5px solid rgba(120,170,220,0.40);
+  border-radius: 12px; background: rgba(255,255,255,0.75);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.85rem; color: #0e2840;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.auth-card-g .auth-input-g:focus {
+  border-color: rgba(80,140,210,0.85);
+  background: rgba(255,255,255,0.92);
+}
+.auth-card-g .auth-submit-g {
+  width: 100%; padding: 12px 0; margin-top: 6px;
+  border: none; border-radius: 14px;
+  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
+  color: #fff;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.92rem; letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(42,122,191,0.35);
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+.auth-card-g .auth-submit-g:active { transform: scale(0.97); }
+.auth-card-g .auth-submit-g:disabled { opacity: 0.55; cursor: not-allowed; }
+.auth-card-g .auth-msg-g {
+  margin-top: 12px; padding: 8px 12px;
+  border-radius: 10px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.75rem; text-align: center;
+  display: none;
+}
+.auth-card-g .auth-msg-g.error {
+  display: block;
+  background: rgba(220, 80, 80, 0.15);
+  color: #a02020;
+  border: 1px solid rgba(220, 80, 80, 0.30);
+}
+.auth-card-g .auth-msg-g.success {
+  display: block;
+  background: rgba(80, 180, 130, 0.18);
+  color: #1a6f48;
+  border: 1px solid rgba(80, 180, 130, 0.35);
+}
+
+</style>
+</head>
+<body>
+<script>
+(function() {
+var canvas = document.createElement('canvas');
+canvas.id = 'bgCanvas';
+canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;';
+document.body.insertBefore(canvas, document.body.firstChild);
+var ctx = canvas.getContext('2d');
+var W, H, t = 0;
+
+const EMOTION_COLORS = [
+  {r:144, g:96,  b:208}, // 恐惧 紫
+  {r:48,  g:80,  b:176}, // 悲苦 深蓝
+  {r:80,  g:110, b:160}, // 万念俱灰 蓝灰
+  {r:192, g:96,  b:16 }, // 贪求 橙
+  {r:192, g:32,  b:32 }, // 愤怒 红
+  {r:176, g:128, b:0  }, // 自尊自傲 金
+  {r:16,  g:160, b:144}, // 无畏 青绿
+  {r:16,  g:160, b:80 }, // 接纳 绿
+  {r:74,  g:176, b:224}, // 平和 天蓝
+];
+
+
+class Bubble {
+  constructor(fromBottom) {
+    this.reset(fromBottom);
+  }
+
+  reset(startAtBottom) {
+    this.x    = Math.random() * W;
+    this.y    = startAtBottom ? H + 20 + Math.random()*100 : Math.random() * H;
+    this.r    = 2 + Math.random() * 22;
+    this.vy   = -(0.4 + Math.random() * 1.2);
+    this.vx   = 0;
+    this.wobbleAmp   = 0.4 + Math.random() * 1.2;
+    this.wobbleFreq  = 0.8 + Math.random() * 1.5;
+    this.wobblePhase = Math.random() * Math.PI * 2;
+    this.opacity = 0.20 + Math.random() * 0.20;
+    this.life    = 0;
+    this.maxLife = (H + 200) / Math.abs(this.vy) * (0.7 + Math.random()*0.5);
+    this.vy *= (0.8 + this.r / 30);
+    this.color = EMOTION_COLORS[Math.floor(Math.random() * EMOTION_COLORS.length)];
+  }
+
+  update(t) {
+    this.life++;
+    // wobbly horizontal drift — classic bubble sway
+    this.x += Math.sin(t * this.wobbleFreq + this.wobblePhase) * this.wobbleAmp;
+    this.y += this.vy;
+
+    // fade in at bottom, fade out at top
+    const progress = this.life / this.maxLife;
+    if (progress < 0.08) {
+      this.opacity = (progress / 0.08) * (0.25 + Math.random()*0.01);
+    } else if (progress > 0.85) {
+      this.opacity *= 0.97;
+    }
+
+    if (this.y < -this.r * 3 || this.life > this.maxLife) {
+      this.reset(true);
+    }
+  }
+
+  draw() {
+    const x = this.x, y = this.y, r = this.r;
+    const a = this.opacity;
+
+    const {r:cr, g:cg, b:cb} = this.color;
+
+    // outer soft glow — emotion color
+    const glow = ctx.createRadialGradient(x,y,r*0.4,x,y,r*2.2);
+    glow.addColorStop(0, `rgba(${cr},${cg},${cb},${a*0.65})`);
+    glow.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+    ctx.beginPath(); ctx.arc(x,y,r*2.2,0,Math.PI*2);
+    ctx.fillStyle=glow; ctx.fill();
+
+    // glass shell — tinted with emotion color
+    const shell = ctx.createRadialGradient(x-r*0.32,y-r*0.32,r*0.01, x,y,r);
+    shell.addColorStop(0.00, `rgba(255,255,255,${a*0.70})`);
+    shell.addColorStop(0.12, `rgba(255,255,255,${a*0.15})`);
+    shell.addColorStop(0.55, `rgba(${cr},${cg},${cb},${a*0.48})`);
+    shell.addColorStop(0.82, `rgba(${cr},${cg},${cb},${a*0.62})`);
+    shell.addColorStop(1.00, `rgba(${cr},${cg},${cb},${a*0.75})`);
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=shell; ctx.fill();
+
+    // rim ring — emotion color tint
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${a*0.90})`;
+    ctx.lineWidth = Math.max(0.5, r*0.06);
+    ctx.stroke();
+
+    // primary specular — brighter for dark areas
+    const sp = ctx.createRadialGradient(x-r*0.35,y-r*0.35,0,x-r*0.30,y-r*0.30,r*0.32);
+    sp.addColorStop(0, `rgba(255,255,255,${Math.min(1, a*1.6)})`);
+    sp.addColorStop(1, `rgba(255,255,255,0)`);
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=sp; ctx.fill();
+
+    // tiny secondary shimmer
+    const sp2 = ctx.createRadialGradient(x+r*0.38,y+r*0.30,0,x+r*0.38,y+r*0.30,r*0.14);
+    sp2.addColorStop(0, `rgba(255,255,255,${a*0.38})`);
+    sp2.addColorStop(1, `rgba(255,255,255,0)`);
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=sp2; ctx.fill();
+  }
+}
+
+const BUBBLES = Array.from({length: 55}, (_, i) => new Bubble(i > 20));
+
+// hero bubble — large, center, also rising slowly
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+function draw() {
+  requestAnimationFrame(draw);
+  t += 0.01;
+  ctx.clearRect(0, 0, W, H);
+  var bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#cdeeff');
+  bg.addColorStop(0.4, '#a8d8f0');
+  bg.addColorStop(0.7, '#7abde0');
+  bg.addColorStop(1, '#4a8fbf');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  BUBBLES.forEach(function(b) { b.update(t); b.draw(); });
+}
+window.addEventListener('resize', resize);
+resize();
+draw();
+})();
+</script>
+<div class="page-title">📒 收 获 本</div>
+<div class="page-wrap">
+
+  <!-- ════════════════════════════════════════
+       Tab 切换栏
+       ════════════════════════════════════════ -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" id="tab-mine" onclick="switchGainTab('mine')">我的收获</button>
+    <button class="tab-btn" id="tab-shared" onclick="switchGainTab('shared')">所有人的收获</button>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       Tab 1: 我的收获
+       ════════════════════════════════════════ -->
+  <div class="tab-panel active" id="panel-mine">
+
+    <!-- 我的释放数据 卡片（可折叠） -->
+    <div class="stats-card" id="statsCard">
+      <div class="stats-header" onclick="toggleStatsCard()">
+        <span class="stats-title">📊 我的释放数据</span>
+        <span class="stats-toggle">▼</span>
+      </div>
+      <div class="stats-body" id="statsBody">
+        <div class="stats-empty">加载中…</div>
+      </div>
+    </div>
+
+    <!-- 写新收获 -->
+    <div style="font-size:0.72rem;color:#5a7aa0;font-family:'Noto Sans SC',sans-serif;margin-bottom:10px;letter-spacing:0.04em;">记录每一次释放后的收获与领悟</div>
+    <div class="gain-cats" id="gainCatsSb">
+      <button class="gain-cat active" data-cat="健康" onclick="selectCat(this,'sb')">🌿 健康</button>
+      <button class="gain-cat" data-cat="财富" onclick="selectCat(this,'sb')">💰 财富</button>
+      <button class="gain-cat" data-cat="SP" onclick="selectCat(this,'sb')">💞 SP</button>
+      <button class="gain-cat" data-cat="人际关系" onclick="selectCat(this,'sb')">🤝 人际关系</button>
+      <button class="gain-cat" data-cat="学业" onclick="selectCat(this,'sb')">📚 学业</button>
+      <button class="gain-cat" data-cat="工作" onclick="selectCat(this,'sb')">💼 工作</button>
+      <button class="gain-cat" data-cat="其他" onclick="selectCat(this,'sb')">✨ 其他</button>
+    </div>
+    <div class="gain-input-row" style="margin-top:10px;">
+      <input type="text" id="gainInputSb" placeholder="写下你释放后的收获…"
+             onkeydown="if(event.key==='Enter')submitGainSb()" />
+      <button onclick="submitGainSb()">记录</button>
+    </div>
+
+    <!-- 我的收获记录 -->
+    <div class="gain-section-title" id="myGainTitleSb">我的收获记录</div>
+    <ul class="gain-list" id="myGainListSb"><li class="gain-loading">加载中…</li></ul>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       Tab 2: 所有人的收获
+       ════════════════════════════════════════ -->
+  <div class="tab-panel" id="panel-shared">
+    <div class="gain-filter-row">
+      <span class="gain-filter-label">筛选：</span>
+      <button class="gain-filter active" data-filter="all" onclick="selectFilterSb(this)">全部</button>
+      <button class="gain-filter" data-filter="健康" onclick="selectFilterSb(this)">🌿</button>
+      <button class="gain-filter" data-filter="财富" onclick="selectFilterSb(this)">💰</button>
+      <button class="gain-filter" data-filter="SP" onclick="selectFilterSb(this)">💞</button>
+      <button class="gain-filter" data-filter="人际关系" onclick="selectFilterSb(this)">🤝</button>
+      <button class="gain-filter" data-filter="学业" onclick="selectFilterSb(this)">📚</button>
+      <button class="gain-filter" data-filter="工作" onclick="selectFilterSb(this)">💼</button>
+      <button class="gain-filter" data-filter="其他" onclick="selectFilterSb(this)">✨</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px;">
+      <div class="gain-section-title" id="sharedGainTitleSb" style="margin:0;">所有人的收获</div>
+      <div style="display:flex;gap:6px;">
+        <button class="gain-sort-btn active" id="sortLikesSb" onclick="setSortSb('likes')">❤️ 最多赞</button>
+        <button class="gain-sort-btn" id="sortTimeSb" onclick="setSortSb('time')">🕐 最新</button>
+      </div>
+    </div>
+    <ul class="gain-list" id="sharedGainListSb"><li class="gain-loading">加载中…</li></ul>
+  </div>
+
+</div>
+
+<!-- 登录/注册弹窗 -->
+<div id="auth-overlay-gains" onclick="if(event.target===this)closeAuthG()">
+  <div class="auth-card-g">
+    <button class="auth-close-g" onclick="closeAuthG()">✕</button>
+    <div class="auth-title-g">Freed</div>
+    <div class="auth-subtitle-g">登录以跨设备同步你的收获</div>
+    <div class="auth-tabs-g">
+      <button class="auth-tab-g active" id="g-tab-login" onclick="switchAuthTabG('login')">登录</button>
+      <button class="auth-tab-g" id="g-tab-signup" onclick="switchAuthTabG('signup')">注册</button>
+    </div>
+    <input type="text" id="g-auth-nickname" class="auth-input-g" placeholder="昵称" maxlength="20" style="display:none;" />
+    <input type="email" id="g-auth-email" class="auth-input-g" placeholder="邮箱" autocomplete="email" />
+    <input type="password" id="g-auth-password" class="auth-input-g" placeholder="密码（至少 6 位）" autocomplete="current-password" />
+    <button class="auth-submit-g" id="g-auth-submit-btn" onclick="doAuthSubmitG()">登 录</button>
+    <div class="auth-msg-g" id="g-auth-msg"></div>
+  </div>
+</div>
+
+<script>
+const currentLang = 'zh';
+const CAT_ICONS = {'健康':'🌿','财富':'💰','SP':'💞','人际关系':'🤝','学业':'📚','工作':'💼','其他':'✨'};
+const SUPA_URL  = 'https://ryoaxziysgdkjcjiuqti.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5b2F4eml5c2dka2pjaml1cXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDg2MDAsImV4cCI6MjA4OTA4NDYwMH0.ORG_8Ue8LjYfReMvKo1iQOFNGN7fcTz1_fMs8Gq1Kds';
+const GAIN_MAX = 500;
+
+// ════════════════════════════════════════
+// Supabase 客户端 + 登录态
+// ════════════════════════════════════════
+
+// 兼容老用户：如果之前用过 'freed-auth' 这个 key，迁移到默认 key
+const DEFAULT_STORAGE_KEY = 'sb-ryoaxziysgdkjcjiuqti-auth-token';
+try {
+  const oldVal = localStorage.getItem('freed-auth');
+  const newVal = localStorage.getItem(DEFAULT_STORAGE_KEY);
+  if (oldVal && !newVal) {
+    localStorage.setItem(DEFAULT_STORAGE_KEY, oldVal);
+  }
+} catch(_) {}
+
+const supaAuth = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    storageKey: 'sb-ryoaxziysgdkjcjiuqti-auth-token',
+  }
+});
+window.freedSupa = supaAuth;
+let currentUser = null;          // 当前登录的 user 对象（null 表示未登录）
+let migrationDone = false;       // 防止重复迁移本地数据
+
+// ════════════════════════════════════════
+// 状态
+// ════════════════════════════════════════
+let gainSelectedCat = '健康';
+let gainSelectedFilterSb = 'all';
+let gainSortSb = 'likes';
+let activeGainTab = 'mine';       // 当前 tab：'mine' 或 'shared'
+const likedKeys = new Set();
+
+// ════════════════════════════════════════
+// 本地存储工具
+// ════════════════════════════════════════
+function getMyItems() {
+  try { return JSON.parse(localStorage.getItem('freed-my-gains') || '[]'); } catch(e) { return []; }
+}
+function saveMyItems(items) {
+  try { localStorage.setItem('freed-my-gains', JSON.stringify(items)); } catch(e) {}
+}
+function tf(key, n) {
+  const map = {
+    'my_gains': '我的收获记录（' + n + ' 条）',
+    'shared_gains': '所有人的收获（' + n + ' 条）',
+    'gain_recorded': '✨ 已记录到 ' + n,
+  };
+  return map[key] || key;
+}
+function showToast(msg) {
+  var el = document.getElementById('gainsToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'gainsToast';
+    el.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(10,40,80,0.85);color:#fff;padding:10px 20px;border-radius:99px;font-size:0.85rem;z-index:9999;transition:opacity 0.4s;pointer-events:none;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(function() { el.style.opacity = '0'; }, 2500);
+}
+
+async function supaFetch(path, opts = {}) {
+  // 默认用 anon key（读取最稳定）
+  // 写入带 user_id 的记录时，传 useAuth: true 用 user token
+  let token = SUPA_KEY;
+  if (opts.useAuth) {
+    try {
+      const sess = await supaAuth.auth.getSession();
+      const t = sess && sess.data && sess.data.session && sess.data.session.access_token;
+      if (t) token = t;
+    } catch(_) {}
+    delete opts.useAuth;
+  }
+  const res = await fetch(SUPA_URL + path, {
+    ...opts,
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) return null;
+  const ct = res.headers.get('content-type') || '';
+  return ct.includes('json') ? res.json() : res.text();
+}
+
+
+// ════════════════════════════════════════
+// Tab 切换
+// ════════════════════════════════════════
+function switchGainTab(tab) {
+  activeGainTab = tab;
+  document.getElementById('tab-mine').classList.toggle('active', tab === 'mine');
+  document.getElementById('tab-shared').classList.toggle('active', tab === 'shared');
+  document.getElementById('panel-mine').classList.toggle('active', tab === 'mine');
+  document.getElementById('panel-shared').classList.toggle('active', tab === 'shared');
+
+  if (tab === 'shared') {
+    loadSharedGains();
+  } else {
+    // 切回我的收获，用缓存数据立即渲染（不会等加载）
+    if (cachedMyItems !== null) {
+      renderStatsFromCache();
+    } else {
+      loadMyData();
+    }
+  }
+}
+
+// ════════════════════════════════════════
+// 释放数据折叠
+// ════════════════════════════════════════
+function toggleStatsCard() {
+  const card = document.getElementById('statsCard');
+  const collapsed = card.classList.toggle('collapsed');
+  // 用户主动收起后，本次会话内保持收起状态
+  try {
+    if (collapsed) sessionStorage.setItem('freed-stats-collapsed', '1');
+    else sessionStorage.removeItem('freed-stats-collapsed');
+  } catch(_) {}
+}
+// 初始化折叠状态：会话内有标记 → 收起；否则展开
+(function initStatsCollapse(){
+  try {
+    if (sessionStorage.getItem('freed-stats-collapsed') === '1') {
+      document.addEventListener('DOMContentLoaded', function(){
+        document.getElementById('statsCard').classList.add('collapsed');
+      });
+    }
+  } catch(_) {}
+})();
+
+
+// ════════════════════════════════════════
+// 渲染收获列表
+// ════════════════════════════════════════
+function renderGainList(el, items, isShared) {
+  if (!items.length) {
+    const emptyText = isShared ? '还没有人分享，成为第一个吧 🌸' : '还没有记录，写下第一条收获吧 🌊';
+    el.innerHTML = '<li class="gain-empty" style="padding:20px 0;text-align:center;color:#8aaac0;font-size:0.78rem;">' + emptyText + '</li>';
+    return;
+  }
+  el.innerHTML = items.map(function(item) {
+    const icon = CAT_ICONS[item.cat] || '🌸';
+    const badge = item.cat ? '<span class="gain-badge">' + icon + ' ' + item.cat + '</span>' : '';
+    const likes = item.likes || 0;
+    const itemId = isShared ? (item.id + '') : (item.ts + '');
+    const liked = likedKeys.has(itemId);
+    const likeBtn = isShared
+      ? '<button class="gain-like-btn ' + (liked ? 'liked' : '') + '" onclick="likeGain(\'' + item.id + '\', this)">' +
+        (liked ? '❤️' : '🤍') + ' <span class="gain-like-count">' + (likes > 0 ? likes : '赞') + '</span></button>'
+      : '<span class="gain-meta">' + (likes > 0 ? '❤️ ' + likes : '') + '</span>';
+    return '<li class="gain-item ' + (isShared ? 'shared' : '') + '">' +
+      '<span class="gain-text">' + escapeHtml(item.text) + '</span>' +
+      '<div class="gain-footer">' +
+      '<div style="display:flex;align-items:center;gap:6px;">' + badge +
+      '<span class="gain-meta">' + formatRelTime(item.ts) + '</span></div>' +
+      likeBtn + '</div></li>';
+  }).join('');
+}
+
+// ════════════════════════════════════════
+// 加载「我的收获」数据 — 同时更新列表和统计
+// 登录用户：从云端拉自己的记录（一次拉取，列表+统计共用）
+// 未登录用户：从 localStorage 读
+// ════════════════════════════════════════
+let cachedMyItems = null;  // 缓存当前用户的"我的收获"数据
+
+async function loadMyData() {
+  const myEl = document.getElementById('myGainListSb');
+  const myTitleEl = document.getElementById('myGainTitleSb');
+
+  let myItems = [];
+
+  if (currentUser) {
+    // 登录用户：从云端拉
+    myEl.innerHTML = '<li class="gain-loading">加载中…</li>';
+    try {
+      const rows = await supaFetch(
+        '/rest/v1/gain_entries?user_id=eq.' + currentUser.id +
+        '&select=*&order=ts.desc&limit=' + GAIN_MAX
+      );
+      myItems = rows || [];
+    } catch(e) {
+      console.error('Load my gains error:', e);
+      myItems = [];
+    }
+  } else {
+    // 未登录：从 localStorage 读
+    myItems = getMyItems();
+  }
+
+  cachedMyItems = myItems;
+
+  // 更新列表（按时间倒序，所以直接用）
+  if (myTitleEl) myTitleEl.textContent = tf('my_gains', myItems.length);
+  renderGainList(myEl, myItems, false);
+
+  // 更新统计
+  renderStatsFromCache();
+}
+
+// 兼容旧调用名
+async function loadMyGains() { return loadMyData(); }
+
+// ════════════════════════════════════════
+// 加载「所有人的收获」
+// ════════════════════════════════════════
+async function loadSharedGains() {
+  const sharedEl = document.getElementById('sharedGainListSb');
+  const titleEl  = document.getElementById('sharedGainTitleSb');
+  sharedEl.innerHTML = '<li class="gain-loading">加载中…</li>';
+
+  try {
+    const order = gainSortSb === 'likes' ? 'likes.desc,ts.desc' : 'ts.desc';
+    let url = `/rest/v1/gain_entries?select=*&order=${order}&limit=${GAIN_MAX}`;
+    if (gainSelectedFilterSb !== 'all') url += `&cat=eq.${encodeURIComponent(gainSelectedFilterSb)}`;
+    const items = await supaFetch(url);
+    if (titleEl) titleEl.textContent = tf('shared_gains', (items||[]).length);
+    renderGainList(sharedEl, items || [], true);
+  } catch(e) {
+    console.error('Supabase error:', e);
+    sharedEl.innerHTML = `<li class="gain-empty">加载失败</li>`;
+  }
+}
+
+function selectCat(btn, ctx) {
+  const scopeId = ctx === 'sb' ? 'gainCatsSb' : 'gainCats';
+  const scope = document.getElementById(scopeId);
+  if (scope) scope.querySelectorAll('.gain-cat').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  gainSelectedCat = btn.dataset.cat;
+}
+
+function selectFilterSb(btn) {
+  document.querySelectorAll('#panel-shared .gain-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  gainSelectedFilterSb = btn.dataset.filter;
+  loadSharedGains();
+}
+
+function setSortSb(s) {
+  gainSortSb = s;
+  document.getElementById('sortLikesSb').classList.toggle('active', s === 'likes');
+  document.getElementById('sortTimeSb').classList.toggle('active', s === 'time');
+  loadSharedGains();
+}
+
+async function submitGainSb() {
+  const input = document.getElementById('gainInputSb');
+  const text  = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  await _submitGainEntry(text, gainSelectedCat);
+  showToast(tf('gain_recorded', gainSelectedCat));
+  // 写完后清空缓存并刷新「我的收获」
+  cachedMyItems = null;
+  if (activeGainTab === 'mine') {
+    loadMyData();
+  }
+  // 「所有人的收获」也刷新一下（登录用户写的会出现在公开池）
+  loadSharedGains();
+}
+
+async function _submitGainEntry(text, cat) {
+  const ts = Date.now();
+  const entry = { text, cat, ts, likes: 0 };
+  // 登录用户带上 user_id
+  if (currentUser) entry.user_id = currentUser.id;
+
+  // 本地也存一份（兜底，未登录用户用，登录用户作为冗余）
+  const myItems = getMyItems();
+  myItems.unshift({ text, cat, ts, likes: 0 });
+  saveMyItems(myItems);
+
+  // 写云端（公开池里所有人都能看到）
+  // 登录用户必须用 user token（RLS 要求 user_id = auth.uid()）
+  try {
+    await supaFetch('/rest/v1/gain_entries', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(entry),
+      useAuth: !!currentUser,
+    });
+  } catch(_) {}
+}
+
+async function likeGain(id, btn) {
+  if (likedKeys.has(id + '')) return;
+  likedKeys.add(id + '');
+  btn.classList.add('liked');
+  btn.innerHTML = '❤️ <span class="gain-like-count">…</span>';
+  try {
+    const rows = await supaFetch(`/rest/v1/gain_entries?id=eq.${id}&select=likes`);
+    const current = (rows && rows[0]) ? (rows[0].likes || 0) : 0;
+    const newLikes = current + 1;
+    await supaFetch(`/rest/v1/gain_entries?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ likes: newLikes }),
+    });
+    btn.querySelector('.gain-like-count').textContent = newLikes;
+  } catch(e) {
+    btn.querySelector('.gain-like-count').textContent = '赞';
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatRelTime(ts) {
+  const diff = Date.now() - ts;
+  if (diff < 60000)    return '刚刚';
+  if (diff < 3600000)  return Math.floor(diff/60000) + ' 分钟前';
+  if (diff < 86400000) return Math.floor(diff/3600000) + ' 小时前';
+  return Math.floor(diff/86400000) + ' 天前';
+}
+
+// ════════════════════════════════════════
+// 「我的释放数据」工具函数
+// 注：温暖语录、里程碑提示已按产品决策移除
+// 里程碑功能未来可能在用户写完第 N 条收获时弹出 toast 庆祝（待开发）
+// ════════════════════════════════════════
+
+function formatDate(ts) {
+  const d = new Date(ts);
+  return (d.getMonth()+1) + ' 月 ' + d.getDate() + ' 日';
+}
+
+function daysSince(ts) {
+  return Math.floor((Date.now() - ts) / 86400000);
+}
+
+// ════════════════════════════════════════
+// 「我的释放数据」渲染
+// 未登录用户：整个卡片改成引导卡片（不显示任何统计）
+// 登录用户：显示 6 条核心数据（不再显示温暖语录、里程碑）
+// ════════════════════════════════════════
+
+// 控制整个卡片的显示
+function setStatsCardForLoggedOut() {
+  const card = document.getElementById('statsCard');
+  // 未登录：卡片标题改成引导，body 显示登录按钮
+  card.innerHTML =
+    '<div class="stats-header" style="cursor:default;">' +
+      '<span class="stats-title">🌊 登录后查看你的释放足迹</span>' +
+    '</div>' +
+    '<div class="stats-body" style="margin-top:10px;max-height:none;opacity:1;">' +
+      '<div class="login-hint" style="margin-top:0;">' +
+        '<div class="login-hint-text">登录后可以跨设备同步你的收获，并看到自己的释放数据 ✨</div>' +
+        '<button class="login-hint-btn" onclick="openAuthG()">登 录</button>' +
+      '</div>' +
+    '</div>';
+  card.classList.remove('collapsed');
+}
+
+function setStatsCardForLoggedIn() {
+  const card = document.getElementById('statsCard');
+  // 登录：恢复成可折叠的标准结构
+  card.innerHTML =
+    '<div class="stats-header" onclick="toggleStatsCard()">' +
+      '<span class="stats-title">📊 我的释放数据</span>' +
+      '<span class="stats-toggle">▼</span>' +
+    '</div>' +
+    '<div class="stats-body" id="statsBody">' +
+      '<div class="stats-empty">加载中…</div>' +
+    '</div>';
+  // 应用会话内的折叠记忆
+  try {
+    if (sessionStorage.getItem('freed-stats-collapsed') === '1') {
+      card.classList.add('collapsed');
+    }
+  } catch(_) {}
+}
+
+function renderStatsFromCache() {
+  // 未登录：直接展示引导卡片，不计算任何数据
+  if (!currentUser) {
+    setStatsCardForLoggedOut();
+    return;
+  }
+
+  // 登录：把卡片切换成标准结构（如果之前是引导态）
+  const card = document.getElementById('statsCard');
+  const isLoggedOutLayout = !card.querySelector('#statsBody');
+  if (isLoggedOutLayout) {
+    setStatsCardForLoggedIn();
+  }
+
+  const body = document.getElementById('statsBody');
+  if (!body) return;
+
+  const items = (cachedMyItems || []).slice().sort((a,b) => a.ts - b.ts);
+  const total = items.length;
+
+  // 登录但还没记录任何收获
+  if (total === 0) {
+    body.innerHTML = '<div class="stats-empty">写下第一条收获，开启你的释放之旅 🌸</div>';
+    return;
+  }
+
+  // 计算各项数据
+  const firstTs = items[0].ts;
+  const lastTs = items[items.length - 1].ts;
+  const journeyDays = Math.max(1, daysSince(firstTs) + 1);
+  const lastDays = daysSince(lastTs);
+
+  // 最擅长的类别（≥3 条才显示）
+  let topCat = null;
+  if (total >= 3) {
+    const counts = {};
+    items.forEach(it => {
+      const c = it.cat || '其他';
+      counts[c] = (counts[c] || 0) + 1;
+    });
+    let max = 0, best = null;
+    Object.keys(counts).forEach(k => {
+      if (counts[k] > max) { max = counts[k]; best = k; }
+    });
+    if (best) topCat = best;
+  }
+
+  // 平均每周释放次数
+  const weeks = Math.max(1, journeyDays / 7);
+  const perWeek = (total / weeks).toFixed(1).replace(/\.0$/, '');
+
+  // 最近一次释放的友好描述
+  let lastDesc;
+  if (lastDays === 0) lastDesc = '今天';
+  else if (lastDays === 1) lastDesc = '昨天';
+  else lastDesc = lastDays + ' 天前';
+
+  // 拼接 HTML — 6 条核心数据（不含温暖语录、不含里程碑）
+  let html = '';
+  html += '<div class="stats-line">• 你已经记录了 <strong>' + total + '</strong> 条收获 🌸</div>';
+  html += '<div class="stats-line">• 释放之旅持续 <strong>' + journeyDays + '</strong> 天 🌊</div>';
+  html += '<div class="stats-line">• 第一次释放是 <strong>' + formatDate(firstTs) + '</strong> 🌸</div>';
+  html += '<div class="stats-line">• 上次释放是 <strong>' + lastDesc + '</strong> ✨</div>';
+  if (topCat) {
+    const icon = CAT_ICONS[topCat] || '✨';
+    html += '<div class="stats-line">• <strong>' + topCat + '</strong> 是你最深的成长 ' + icon + '</div>';
+  }
+  html += '<div class="stats-line">• 平均每周释放 <strong>' + perWeek + '</strong> 次 🌊</div>';
+
+  body.innerHTML = html;
+}
+
+// 兼容旧调用名（不发新请求，用缓存）
+async function renderStats() { renderStatsFromCache(); }
+
+// ════════════════════════════════════════
+// 登录态管理 + 首次登录的"沉默迁移"
+// ════════════════════════════════════════
+
+// 直接从 localStorage 里读 token 并解析 JWT —— 绕过 Supabase SDK 的异步加载时序
+// 这个方法是同步的，结果立即可用
+function readUserFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('sb-ryoaxziysgdkjcjiuqti-auth-token');
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    const token = obj && obj.access_token;
+    if (!token) return null;
+    // 解析 JWT 的 payload（中间那段 base64）
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    // base64url 解码
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload || !payload.sub) return null;
+    // 检查是否过期
+    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+    return {
+      id: payload.sub,
+      email: payload.email || '',
+    };
+  } catch(_) { return null; }
+}
+
+async function refreshUser() {
+  // 优先用 localStorage 直读（同步、立即可用）
+  const localUser = readUserFromLocalStorage();
+  if (localUser) {
+    currentUser = localUser;
+    return;
+  }
+  // 兜底：再让 SDK 试一次
+  try {
+    const { data } = await supaAuth.auth.getSession();
+    const session = (data && data.session) || null;
+    currentUser = (session && session.user) || null;
+  } catch(_) {
+    currentUser = null;
+  }
+}
+
+async function migrateLocalToCloud() {
+  // 只在用户登录后执行一次；把 localStorage 里的本地记录上传到云端
+  if (!currentUser || migrationDone) return;
+  migrationDone = true;
+  try {
+    // 检查云端是不是已经有这个用户的记录了
+    const existing = await supaFetch(
+      '/rest/v1/gain_entries?user_id=eq.' + currentUser.id +
+      '&select=ts&limit=1'
+    );
+    if (existing && existing.length > 0) {
+      // 已经有了 — 说明之前迁移过，不再迁移（避免重复）
+      return;
+    }
+    const local = getMyItems();
+    if (!local.length) return;
+    // 批量上传，每条带上 user_id
+    const payload = local.map(it => ({
+      text: it.text,
+      cat: it.cat,
+      ts: it.ts,
+      likes: it.likes || 0,
+      user_id: currentUser.id
+    }));
+    await supaFetch('/rest/v1/gain_entries', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(payload),
+      useAuth: true,
+    });
+  } catch(e) {
+    console.warn('迁移失败（不影响使用）：', e);
+  }
+}
+
+// 监听登录态变化（其他页面登录/登出时自动响应）
+supaAuth.auth.onAuthStateChange(async (event, session) => {
+  await refreshUser();
+  if (currentUser) {
+    await migrateLocalToCloud();
+  }
+  // 重置缓存
+  cachedMyItems = null;
+  // 当前 tab 重新加载
+  if (activeGainTab === 'mine') {
+    loadMyData();
+  } else {
+    loadSharedGains();
+    // shared tab 时也悄悄刷新 mine 数据，下次切换就能用
+    loadMyData();
+  }
+});
+
+// ════════════════════════════════════════
+// gains.html 内置登录弹窗（与 index.html 共用同一 Supabase 会话）
+// ════════════════════════════════════════
+let gAuthTab = 'login';
+function $g(id) { return document.getElementById(id); }
+function showAuthMsgG(text, type) {
+  const el = $g('g-auth-msg');
+  el.textContent = text;
+  el.className = 'auth-msg-g ' + (type || '');
+}
+function clearAuthMsgG() {
+  const el = $g('g-auth-msg');
+  el.textContent = '';
+  el.className = 'auth-msg-g';
+}
+window.openAuthG = function() {
+  clearAuthMsgG();
+  $g('auth-overlay-gains').classList.add('show');
+};
+window.closeAuthG = function() {
+  $g('auth-overlay-gains').classList.remove('show');
+};
+window.switchAuthTabG = function(tab) {
+  gAuthTab = tab;
+  clearAuthMsgG();
+  $g('g-tab-login').classList.toggle('active', tab === 'login');
+  $g('g-tab-signup').classList.toggle('active', tab === 'signup');
+  $g('g-auth-nickname').style.display = (tab === 'signup') ? 'block' : 'none';
+  $g('g-auth-submit-btn').textContent = (tab === 'signup') ? '注 册' : '登 录';
+};
+window.doAuthSubmitG = async function() {
+  const email = $g('g-auth-email').value.trim();
+  const password = $g('g-auth-password').value;
+  const nickname = $g('g-auth-nickname').value.trim();
+
+  if (!email || !password) { showAuthMsgG('请填写邮箱和密码', 'error'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAuthMsgG('邮箱格式不正确', 'error'); return; }
+  if (password.length < 6) { showAuthMsgG('密码至少 6 位', 'error'); return; }
+  if (gAuthTab === 'signup' && !nickname) { showAuthMsgG('请填写昵称', 'error'); return; }
+
+  const btn = $g('g-auth-submit-btn');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = '请稍候…';
+  clearAuthMsgG();
+
+  try {
+    if (gAuthTab === 'signup') {
+      const { data, error } = await supaAuth.auth.signUp({ email, password });
+      if (error) throw error;
+      if (data.user) {
+        try {
+          await supaAuth.from('user_profiles').insert({ id: data.user.id, nickname: nickname });
+        } catch(_) {}
+      }
+      showAuthMsgG('注册成功 🌊', 'success');
+      setTimeout(() => closeAuthG(), 800);
+    } else {
+      const { error } = await supaAuth.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      showAuthMsgG('登录成功 ✨', 'success');
+      setTimeout(() => closeAuthG(), 600);
+    }
+  } catch (err) {
+    let msg = err.message || '操作失败';
+    if (msg.includes('Invalid login credentials')) msg = '邮箱或密码错误';
+    else if (msg.includes('User already registered')) msg = '该邮箱已注册，请直接登录';
+    else if (msg.includes('Password should be')) msg = '密码至少 6 位';
+    else if (msg.includes('Email rate limit')) msg = '请求过于频繁，请稍后再试';
+    showAuthMsgG(msg, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+};
+
+// ════════════════════════════════════════
+// 启动
+// ════════════════════════════════════════
+(async function init() {
+  // refreshUser 现在直接读 localStorage，立即可用
+  await refreshUser();
+
+  if (currentUser) {
+    await migrateLocalToCloud();
+  }
+  // 初始 tab 是「我的收获」— 加载我的数据（含统计）
+  loadMyData();
+  // 「所有人的收获」延迟一点再加载，避免和上面的请求互相挤占
+  setTimeout(() => loadSharedGains(), 200);
+})();
+</script>
+<script src="nav-orb.js"></script>
+</body>
+</html>

@@ -1,0 +1,1011 @@
+<!-- goals v17 - no migration, cloud only -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>目标表 · Freed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=Noto+Sans+SC:wght@300;400&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',serif; padding:80px 16px 32px; }
+.page-title { text-align:center; font-size:1.1rem; letter-spacing:0.2em; color:rgba(3,80,140,0.7); margin-bottom:24px; }
+.page-wrap { max-width:480px; margin:0 auto; background:rgba(255,255,255,0.75); border-radius:20px; padding:20px 16px; box-shadow:0 8px 32px rgba(0,60,120,0.10); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.85); }
+.gain-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .gain-input-row input {
+    flex: 1; padding: 9px 14px;
+    border: 1.5px solid rgba(100,160,220,0.4); border-radius: 12px;
+    background: rgba(255,255,255,0.7);
+    font-family: 'Noto Sans SC', sans-serif; font-size: 0.88rem; color: #0e2840;
+    outline: none; transition: border-color 0.2s;
+  }
+  .gain-input-row input:focus { border-color: rgba(80,140,220,0.8); }
+  .gain-input-row button {
+    padding: 9px 16px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #4a9fd4, #2a7abf); color: #fff;
+    font-family: 'Noto Serif SC', serif; font-size: 0.84rem;
+    cursor: pointer; white-space: nowrap;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .gain-input-row button:hover { opacity: 0.88; transform: scale(1.04); }
+  .gain-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .gain-cat {
+    padding: 4px 10px; border-radius: 20px;
+    border: 1.5px solid rgba(100,160,220,0.4);
+    background: rgba(255,255,255,0.55);
+    font-family: 'Noto Sans SC', sans-serif; font-size: 0.72rem;
+    color: #2a5080; cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .gain-cat:hover { background: rgba(200,230,255,0.7); }
+  .gain-cat.active {
+    background: linear-gradient(135deg, rgba(74,159,212,0.85), rgba(42,122,191,0.85));
+    border-color: rgba(74,159,212,0.6); color: #fff;
+  }
+  .gain-filter-row {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 14px;
+  }
+  .gain-filter-label { font-size: 0.72rem; color: #5a7aa0; font-family: 'Noto Sans SC', sans-serif; }
+  .gain-filter {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid rgba(100,160,220,0.4);
+    background: rgba(255,255,255,0.55);
+    font-size: 0.9rem; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    transition: all 0.18s ease;
+  }
+  .gain-filter[data-filter="all"] { width: auto; padding: 0 10px; font-size: 0.72rem; font-family: 'Noto Sans SC', sans-serif; color: #5a7aa0; }
+  .gain-filter:hover { background: rgba(200,230,255,0.7); }
+  .gain-filter.active {
+    background: linear-gradient(135deg, rgba(74,159,212,0.85), rgba(42,122,191,0.85));
+    border-color: rgba(74,159,212,0.6); color: #fff;
+  }
+  .gain-section-title {
+    font-size: 0.78rem; color: #2a5080; letter-spacing: 0.08em;
+    margin: 14px 0 8px; font-weight: 600;
+  }
+  .gain-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .gain-item {
+    background: rgba(255,255,255,0.62); border-radius: 12px;
+    padding: 10px 14px; border: 1px solid rgba(100,160,220,0.2);
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .gain-item.shared { background: rgba(230,245,255,0.62); }
+  .gain-text { font-size: 0.84rem; color: #0e2840; line-height: 1.5; }
+  .gain-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: rgba(74,159,212,0.15); border-radius: 10px;
+    padding: 2px 8px; font-size: 0.68rem; color: #2a6090;
+    font-family: 'Noto Sans SC', sans-serif; align-self: flex-start;
+  }
+  .gain-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 2px;
+  }
+  .gain-meta { font-size: 0.64rem; color: #7a9ab0; font-family: 'Noto Sans SC', sans-serif; }
+  .gain-like-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: none; border: 1px solid rgba(100,160,220,0.25);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 0.7rem; color: #7a9ab0;
+    font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer; transition: all 0.18s ease;
+    line-height: 1;
+  }
+  .gain-like-btn:hover { background: rgba(255,100,130,0.08); border-color: rgba(255,100,130,0.4); color: #e05080; }
+  .gain-like-btn.liked { background: rgba(255,100,130,0.12); border-color: rgba(255,100,130,0.5); color: #e05080; }
+  .gain-like-count { font-weight: 600; }
+  .gain-sort-btn {
+    padding: 4px 10px; border-radius: 14px;
+    border: 1.5px solid rgba(100,160,220,0.35);
+    background: rgba(255,255,255,0.5);
+    font-size: 0.68rem; color: #5a7aa0;
+    font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer; transition: all 0.18s ease;
+  }
+  .gain-sort-btn:hover { background: rgba(200,230,255,0.7); }
+  .gain-sort-btn.active {
+    background: linear-gradient(135deg, rgba(74,159,212,0.85), rgba(42,122,191,0.85));
+    border-color: rgba(74,159,212,0.6); color: #fff;
+  }
+  .gain-loading { font-size: 0.78rem; color: #8aaac0; text-align: center; padding: 10px 0; }
+  .gain-close-btn {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; font-size: 1.1rem;
+    color: #5a7aa0; cursor: pointer; line-height: 1;
+    transition: color 0.15s, transform 0.15s;
+  }
+  .gain-close-btn:hover { color: #0e2840; transform: scale(1.2); }
+
+
+  
+.goal-item {
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(180,210,240,0.4);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.goal-item-text {
+  font-size: 0.92rem;
+  color: #0e2840;
+  line-height: 1.6;
+  margin: 0;
+}
+.goal-item-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.goal-btn-release {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(80,140,220,0.75);
+  color: #fff;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: 'Noto Serif SC', serif;
+}
+.goal-btn-drop {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(210,160,20,0.85);
+  color: #fff;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: 'Noto Serif SC', serif;
+}
+.goal-btn-del {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(220,80,80,0.12);
+  color: rgba(200,60,60,0.7);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* ════════════════════════════════════════
+   登录引导弹窗 — 进入目标表时弹一次
+   ════════════════════════════════════════ */
+#login-prompt-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10, 40, 75, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#login-prompt-overlay.show { display: flex; opacity: 1; }
+.login-prompt-card {
+  position: relative; width: 100%; max-width: 320px;
+  padding: 28px 24px 20px; border-radius: 24px;
+  background: radial-gradient(circle at 30% 25%,
+    rgba(255,255,255,0.92) 0%,
+    rgba(230,245,255,0.82) 35%,
+    rgba(180,220,250,0.72) 70%,
+    rgba(140,200,240,0.65) 100%);
+  box-shadow:
+    inset 0 0 24px rgba(180,220,255,0.55),
+    inset 0 0 6px rgba(255,255,255,0.55),
+    0 12px 36px rgba(10,50,100,0.30),
+    0 0 40px rgba(140,200,240,0.25);
+  backdrop-filter: blur(6px);
+  text-align: center;
+  transform: scale(0.92);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+#login-prompt-overlay.show .login-prompt-card { transform: scale(1); }
+.login-prompt-emoji {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+.login-prompt-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.95rem;
+  color: #0e3560;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.login-prompt-subtitle {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.74rem;
+  color: rgba(20, 60, 110, 0.68);
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+.login-prompt-btns {
+  display: flex; gap: 10px;
+}
+.login-prompt-btns button {
+  flex: 1; padding: 10px 0;
+  border: none; border-radius: 12px;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.login-prompt-btns button:active { transform: scale(0.96); }
+.login-prompt-skip {
+  background: rgba(255,255,255,0.55);
+  color: #4a6080;
+}
+.login-prompt-go {
+  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(42,122,191,0.30);
+}
+
+/* ════════════════════════════════════════
+   登录/注册弹窗（玻璃气泡风格）
+   ════════════════════════════════════════ */
+#auth-overlay-goals {
+  position: fixed; inset: 0; z-index: 210;
+  background: rgba(10, 40, 75, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#auth-overlay-goals.show { display: flex; opacity: 1; }
+.auth-card-go {
+  position: relative; width: 100%; max-width: 340px;
+  padding: 32px 26px 26px; border-radius: 28px;
+  background: radial-gradient(circle at 30% 25%,
+    rgba(255,255,255,0.88) 0%,
+    rgba(230,245,255,0.72) 30%,
+    rgba(180,220,250,0.60) 60%,
+    rgba(140,200,240,0.55) 100%);
+  box-shadow:
+    inset 0 0 30px rgba(180,220,255,0.55),
+    inset 0 0 8px rgba(255,255,255,0.60),
+    0 12px 40px rgba(10,50,100,0.35),
+    0 0 50px rgba(140,200,240,0.30);
+  backdrop-filter: blur(6px);
+  transform: scale(0.92);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+#auth-overlay-goals.show .auth-card-go { transform: scale(1); }
+.auth-card-go .auth-close-go {
+  position: absolute; top: 12px; right: 14px;
+  width: 28px; height: 28px;
+  border: none; background: transparent;
+  font-size: 1.1rem; color: rgba(20, 60, 110, 0.55);
+  cursor: pointer; line-height: 1;
+}
+.auth-card-go .auth-title-go {
+  text-align: center;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.05rem; font-weight: 400;
+  color: #0e3560; letter-spacing: 0.15em;
+  margin-bottom: 4px;
+}
+.auth-card-go .auth-subtitle-go {
+  text-align: center;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.68rem; color: rgba(20, 60, 110, 0.62);
+  margin-bottom: 22px; letter-spacing: 0.04em;
+}
+.auth-card-go .auth-tabs-go {
+  display: flex; gap: 4px; margin-bottom: 18px;
+  padding: 3px; background: rgba(255,255,255,0.40);
+  border-radius: 12px;
+}
+.auth-card-go .auth-tab-go {
+  flex: 1; padding: 8px 0;
+  border: none; background: transparent;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.78rem; color: rgba(20, 60, 110, 0.65);
+  cursor: pointer; border-radius: 9px;
+  transition: all 0.2s ease;
+}
+.auth-card-go .auth-tab-go.active {
+  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
+  color: #fff; box-shadow: 0 2px 8px rgba(42,122,191,0.30);
+}
+.auth-card-go .auth-input-go {
+  width: 100%; padding: 11px 14px; margin-bottom: 12px;
+  border: 1.5px solid rgba(120,170,220,0.40);
+  border-radius: 12px; background: rgba(255,255,255,0.75);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.85rem; color: #0e2840;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.auth-card-go .auth-input-go:focus {
+  border-color: rgba(80,140,210,0.85);
+  background: rgba(255,255,255,0.92);
+}
+.auth-card-go .auth-submit-go {
+  width: 100%; padding: 12px 0; margin-top: 6px;
+  border: none; border-radius: 14px;
+  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
+  color: #fff;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.92rem; letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(42,122,191,0.35);
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+.auth-card-go .auth-submit-go:active { transform: scale(0.97); }
+.auth-card-go .auth-submit-go:disabled { opacity: 0.55; cursor: not-allowed; }
+.auth-card-go .auth-msg-go {
+  margin-top: 12px; padding: 8px 12px;
+  border-radius: 10px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.75rem; text-align: center;
+  display: none;
+}
+.auth-card-go .auth-msg-go.error {
+  display: block;
+  background: rgba(220, 80, 80, 0.15);
+  color: #a02020;
+  border: 1px solid rgba(220, 80, 80, 0.30);
+}
+.auth-card-go .auth-msg-go.success {
+  display: block;
+  background: rgba(80, 180, 130, 0.18);
+  color: #1a6f48;
+  border: 1px solid rgba(80, 180, 130, 0.35);
+}
+
+</style>
+</head>
+<body>
+<script>
+(function() {
+var canvas = document.createElement('canvas');
+canvas.id = 'bgCanvas';
+canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;';
+document.body.insertBefore(canvas, document.body.firstChild);
+var ctx = canvas.getContext('2d');
+var W, H, t = 0;
+
+const EMOTION_COLORS = [
+  {r:144, g:96,  b:208}, // 恐惧 紫
+  {r:48,  g:80,  b:176}, // 悲苦 深蓝
+  {r:80,  g:110, b:160}, // 万念俱灰 蓝灰
+  {r:192, g:96,  b:16 }, // 贪求 橙
+  {r:192, g:32,  b:32 }, // 愤怒 红
+  {r:176, g:128, b:0  }, // 自尊自傲 金
+  {r:16,  g:160, b:144}, // 无畏 青绿
+  {r:16,  g:160, b:80 }, // 接纳 绿
+  {r:74,  g:176, b:224}, // 平和 天蓝
+];
+
+
+class Bubble {
+  constructor(fromBottom) {
+    this.reset(fromBottom);
+  }
+
+  reset(startAtBottom) {
+    this.x    = Math.random() * W;
+    this.y    = startAtBottom ? H + 20 + Math.random()*100 : Math.random() * H;
+    this.r    = 2 + Math.random() * 22;
+    this.vy   = -(0.4 + Math.random() * 1.2);
+    this.vx   = 0;
+    this.wobbleAmp   = 0.4 + Math.random() * 1.2;
+    this.wobbleFreq  = 0.8 + Math.random() * 1.5;
+    this.wobblePhase = Math.random() * Math.PI * 2;
+    this.opacity = 0.20 + Math.random() * 0.20;
+    this.life    = 0;
+    this.maxLife = (H + 200) / Math.abs(this.vy) * (0.7 + Math.random()*0.5);
+    this.vy *= (0.8 + this.r / 30);
+    this.color = EMOTION_COLORS[Math.floor(Math.random() * EMOTION_COLORS.length)];
+  }
+
+  update(t) {
+    this.life++;
+    // wobbly horizontal drift — classic bubble sway
+    this.x += Math.sin(t * this.wobbleFreq + this.wobblePhase) * this.wobbleAmp;
+    this.y += this.vy;
+
+    // fade in at bottom, fade out at top
+    const progress = this.life / this.maxLife;
+    if (progress < 0.08) {
+      this.opacity = (progress / 0.08) * (0.25 + Math.random()*0.01);
+    } else if (progress > 0.85) {
+      this.opacity *= 0.97;
+    }
+
+    if (this.y < -this.r * 3 || this.life > this.maxLife) {
+      this.reset(true);
+    }
+  }
+
+  draw() {
+    const x = this.x, y = this.y, r = this.r;
+    const a = this.opacity;
+
+    const {r:cr, g:cg, b:cb} = this.color;
+
+    // outer soft glow — emotion color
+    const glow = ctx.createRadialGradient(x,y,r*0.4,x,y,r*2.2);
+    glow.addColorStop(0, `rgba(${cr},${cg},${cb},${a*0.65})`);
+    glow.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+    ctx.beginPath(); ctx.arc(x,y,r*2.2,0,Math.PI*2);
+    ctx.fillStyle=glow; ctx.fill();
+
+    // glass shell — tinted with emotion color
+    const shell = ctx.createRadialGradient(x-r*0.32,y-r*0.32,r*0.01, x,y,r);
+    shell.addColorStop(0.00, `rgba(255,255,255,${a*0.70})`);
+    shell.addColorStop(0.12, `rgba(255,255,255,${a*0.15})`);
+    shell.addColorStop(0.55, `rgba(${cr},${cg},${cb},${a*0.48})`);
+    shell.addColorStop(0.82, `rgba(${cr},${cg},${cb},${a*0.62})`);
+    shell.addColorStop(1.00, `rgba(${cr},${cg},${cb},${a*0.75})`);
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=shell; ctx.fill();
+
+    // rim ring — emotion color tint
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${a*0.90})`;
+    ctx.lineWidth = Math.max(0.5, r*0.06);
+    ctx.stroke();
+
+    // primary specular — brighter for dark areas
+    const sp = ctx.createRadialGradient(x-r*0.35,y-r*0.35,0,x-r*0.30,y-r*0.30,r*0.32);
+    sp.addColorStop(0, `rgba(255,255,255,${Math.min(1, a*1.6)})`);
+    sp.addColorStop(1, `rgba(255,255,255,0)`);
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=sp; ctx.fill();
+
+    // tiny secondary shimmer
+    const sp2 = ctx.createRadialGradient(x+r*0.38,y+r*0.30,0,x+r*0.38,y+r*0.30,r*0.14);
+    sp2.addColorStop(0, `rgba(255,255,255,${a*0.38})`);
+    sp2.addColorStop(1, `rgba(255,255,255,0)`);
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=sp2; ctx.fill();
+  }
+}
+
+const BUBBLES = Array.from({length: 55}, (_, i) => new Bubble(i > 20));
+
+// hero bubble — large, center, also rising slowly
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+function draw() {
+  requestAnimationFrame(draw);
+  t += 0.01;
+  ctx.clearRect(0, 0, W, H);
+  
+  var bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#cdeeff');
+  bg.addColorStop(0.4, '#a8d8f0');
+  bg.addColorStop(0.7, '#7abde0');
+  bg.addColorStop(1, '#4a8fbf');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  
+  BUBBLES.forEach(function(b) { b.update(t); b.draw(); });
+}
+
+window.addEventListener('resize', resize);
+resize();
+draw();
+})();
+</script>
+
+
+
+
+
+<div class="page-title">🎯 目 标 表</div>
+<div class="page-wrap">
+  <div class="gain-cats" id="goalCats" style="margin-bottom:10px;">
+    <button class="gain-cat active" data-cat="健康" onclick="selectGoalCat(this)">🌿 健康</button>
+    <button class="gain-cat" data-cat="财富" onclick="selectGoalCat(this)">💰 财富</button>
+    <button class="gain-cat" data-cat="SP" onclick="selectGoalCat(this)">💞 SP</button>
+    <button class="gain-cat" data-cat="人际关系" onclick="selectGoalCat(this)">🤝 人际</button>
+    <button class="gain-cat" data-cat="学业" onclick="selectGoalCat(this)">📚 学业</button>
+    <button class="gain-cat" data-cat="工作" onclick="selectGoalCat(this)">💼 工作</button>
+    <button class="gain-cat" data-cat="其他" onclick="selectGoalCat(this)">✨ 其他</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <input type="text" id="goalInput" placeholder="写下你想要释放的目标…"
+           onkeydown="if(event.key==='Enter')addGoal()"
+           style="flex:1;padding:12px 16px;border:1.5px solid rgba(100,160,220,0.4);border-radius:14px;background:rgba(255,255,255,0.8);font-size:0.95rem;color:#0e2840;outline:none;" />
+    <button onclick="addGoal()"
+            style="padding:12px 20px;border:none;border-radius:14px;background:rgba(60,130,220,0.85);color:#fff;font-size:0.9rem;cursor:pointer;white-space:nowrap;">添加</button>
+  </div>
+  <ul class="goals-list" id="goalsList" style="list-style:none;padding:0;"></ul>
+</div>
+
+<script>
+const CAT_ICONS = {'健康':'🌿','财富':'💰','SP':'💞','人际关系':'🤝','学业':'📚','工作':'💼','其他':'✨'};
+const SUPA_URL  = 'https://ryoaxziysgdkjcjiuqti.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5b2F4eml5c2dka2pjaml1cXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDg2MDAsImV4cCI6MjA4OTA4NDYwMH0.ORG_8Ue8LjYfReMvKo1iQOFNGN7fcTz1_fMs8Gq1Kds';
+let goalSelectedCat = '健康';
+
+// ════════════════════════════════════════
+// 登录态读取（同步、立即可用）
+// ════════════════════════════════════════
+function readGoalsUserFromStorage() {
+  try {
+    var raw = localStorage.getItem('sb-ryoaxziysgdkjcjiuqti-auth-token');
+    if (!raw) return null;
+    var obj = JSON.parse(raw);
+    var token = obj && obj.access_token;
+    if (!token) return null;
+    var parts = token.split('.');
+    if (parts.length !== 3) return null;
+    var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload || !payload.sub) return null;
+    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+    return { id: payload.sub, email: payload.email || '', token: token };
+  } catch(_) { return null; }
+}
+
+// ════════════════════════════════════════
+// 本地存储（缓存 + 未登录兜底）
+// ════════════════════════════════════════
+function getGoals() {
+  try { return JSON.parse(localStorage.getItem('freed-goals') || '[]'); } catch(e) { return []; }
+}
+function saveGoals(g) {
+  try { localStorage.setItem('freed-goals', JSON.stringify(g)); } catch(e) {}
+}
+
+// ════════════════════════════════════════
+// 通用工具
+// ════════════════════════════════════════
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg) {
+  var el = document.getElementById('goalsToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'goalsToast';
+    el.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(10,40,80,0.85);color:#fff;padding:10px 20px;border-radius:99px;font-size:0.85rem;z-index:9999;transition:opacity 0.4s;pointer-events:none;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(function() { el.style.opacity = '0'; }, 2500);
+}
+function selectGoalCat(btn) {
+  goalSelectedCat = btn.dataset.cat;
+  document.querySelectorAll('#goalCats .gain-cat').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+// ════════════════════════════════════════
+// Supabase 请求
+// path 例如 '/rest/v1/user_goals'
+// useAuth=true 用 user token（写带 user_id 的数据时必须）
+// ════════════════════════════════════════
+async function supaFetch(path, opts) {
+  opts = opts || {};
+  var token = SUPA_KEY;
+  if (opts.useAuth) {
+    var u = readGoalsUserFromStorage();
+    if (u && u.token) token = u.token;
+    delete opts.useAuth;
+  }
+  var res = await fetch(SUPA_URL + path, Object.assign({}, opts, {
+    headers: Object.assign({
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }, opts.headers || {})
+  }));
+  if (!res.ok) return null;
+  var ct = res.headers.get('content-type') || '';
+  return ct.includes('json') ? res.json() : res.text();
+}
+
+// ════════════════════════════════════════
+// 云端：拉取登录用户的所有目标
+// ════════════════════════════════════════
+async function loadGoalsFromCloud() {
+  var u = readGoalsUserFromStorage();
+  if (!u) return null;
+  // 读取也必须用 user token，因为 RLS 策略只允许读自己的（auth.uid() = user_id）
+  var rows = await supaFetch('/rest/v1/user_goals?user_id=eq.' + u.id + '&select=*&order=ts.desc', {
+    useAuth: true
+  });
+  if (!rows) return null;
+  // 转成本地格式
+  return rows.map(function(r) {
+    return { id: r.id, text: r.text, cat: r.cat || '其他', ts: r.ts };
+  });
+}
+
+// ════════════════════════════════════════
+// 云端：添加目标
+// ════════════════════════════════════════
+async function addGoalToCloud(text, cat) {
+  var u = readGoalsUserFromStorage();
+  if (!u) return null;
+  var ts = Date.now();
+  var rows = await supaFetch('/rest/v1/user_goals', {
+    method: 'POST',
+    body: JSON.stringify({ user_id: u.id, text: text, cat: cat, ts: ts }),
+    useAuth: true
+  });
+  if (rows && rows.length > 0) {
+    var r = rows[0];
+    return { id: r.id, text: r.text, cat: r.cat || '其他', ts: r.ts };
+  }
+  return { text: text, cat: cat, ts: ts };  // 即使失败也返回数据，本地能显示
+}
+
+// ════════════════════════════════════════
+// 云端：删除目标（按云端 id）
+// ════════════════════════════════════════
+async function deleteGoalFromCloud(cloudId) {
+  if (!cloudId) return false;
+  await supaFetch('/rest/v1/user_goals?id=eq.' + encodeURIComponent(cloudId), {
+    method: 'DELETE',
+    useAuth: true
+  });
+  return true;
+}
+
+// ════════════════════════════════════════
+// 渲染列表
+// ════════════════════════════════════════
+function renderGoals() {
+  var goals = getGoals();
+  var list = document.getElementById('goalsList');
+  if (!goals.length) {
+    list.innerHTML = '<li style="color:#8aa8c0;font-size:0.88rem;padding:12px 4px;font-family:Noto Sans SC,sans-serif;">还没有目标，添加一个吧 🌱</li>';
+    return;
+  }
+  list.innerHTML = goals.map(function(g, i) {
+    var icon = CAT_ICONS[g.cat] || '✨';
+    return '<li class="goal-item" id="goal-item-' + i + '">' +
+      '<span class="gain-badge">' + icon + ' ' + escapeHtml(g.cat || '') + '</span>' +
+      '<p class="goal-item-text">' + escapeHtml(g.text) + '</p>' +
+      '<div class="goal-item-actions">' +
+      '<button class="goal-btn-release" onclick="releaseGoal(' + i + ')">🫧 释放</button>' +
+      '<button class="goal-btn-drop" onclick="dropGoal(' + i + ')">✨ 掉落</button>' +
+      '<button class="goal-btn-del" onclick="deleteGoal(' + i + ')">✕</button>' +
+      '</div></li>';
+  }).join('');
+}
+
+// ════════════════════════════════════════
+// 添加目标
+// ════════════════════════════════════════
+async function addGoal() {
+  var input = document.getElementById('goalInput');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  var u = readGoalsUserFromStorage();
+  if (u) {
+    // 登录：先写云端，再更新本地缓存
+    var cloud = await addGoalToCloud(text, goalSelectedCat);
+    var goals = getGoals();
+    goals.unshift({
+      id: cloud && cloud.id,
+      text: text,
+      cat: goalSelectedCat,
+      ts: cloud && cloud.ts ? cloud.ts : Date.now()
+    });
+    saveGoals(goals);
+  } else {
+    // 未登录：本地存
+    var goals2 = getGoals();
+    goals2.unshift({ text: text, cat: goalSelectedCat, ts: Date.now() });
+    saveGoals(goals2);
+  }
+  renderGoals();
+  showToast('🎯 目标已添加');
+}
+
+// ════════════════════════════════════════
+// 删除目标
+// ════════════════════════════════════════
+async function deleteGoal(i) {
+  var goals = getGoals();
+  var goal = goals[i];
+  if (!goal) return;
+
+  var u = readGoalsUserFromStorage();
+  if (u && goal.id) {
+    // 登录用户：删云端
+    await deleteGoalFromCloud(goal.id);
+  }
+  // 不论登录与否，本地都删
+  goals.splice(i, 1);
+  saveGoals(goals);
+  renderGoals();
+}
+
+// ════════════════════════════════════════
+// 释放目标（跳到 desire.html，不动数据库——目标在 desire 完成后会被清掉）
+// ════════════════════════════════════════
+function releaseGoal(i) {
+  var goals = getGoals();
+  var goal = goals[i];
+  if (!goal) return;
+  sessionStorage.setItem('releaseGoalText', goal.text);
+  // 把云端 id 也带过去，desire.html 完成释放后能删云端记录（未来 desire 改造时用）
+  if (goal.id) sessionStorage.setItem('releaseGoalCloudId', goal.id);
+  window.location.href = 'desire.html';
+}
+
+// ════════════════════════════════════════
+// 掉落目标 → 写入收获本（gain_entries）+ 删除目标
+// ════════════════════════════════════════
+async function dropGoal(i) {
+  var goals = getGoals();
+  var goal = goals[i];
+  if (!goal) return;
+
+  var u = readGoalsUserFromStorage();
+  var entry = { text: goal.text, cat: goal.cat || '其他', ts: Date.now(), likes: 0 };
+  if (u) entry.user_id = u.id;
+
+  // 本地"我的收获"也加一条（兼容老逻辑）
+  var myItems = [];
+  try { myItems = JSON.parse(localStorage.getItem('freed-my-gains') || '[]'); } catch(e) {}
+  myItems.unshift({ text: goal.text, cat: goal.cat || '其他', ts: entry.ts, likes: 0 });
+  try { localStorage.setItem('freed-my-gains', JSON.stringify(myItems)); } catch(e) {}
+
+  // 写云端收获本
+  try {
+    await supaFetch('/rest/v1/gain_entries', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(entry),
+      useAuth: !!u
+    });
+  } catch(_) {}
+
+  // 删除这个目标（登录则删云端，本地都删）
+  if (u && goal.id) {
+    try { await deleteGoalFromCloud(goal.id); } catch(_) {}
+  }
+  goals.splice(i, 1);
+  saveGoals(goals);
+  renderGoals();
+  showToast('✨ 目标已掉落并记录到收获本');
+}
+
+// ════════════════════════════════════════
+// 启动：登录用户拉云端覆盖本地，未登录用本地
+// ════════════════════════════════════════
+(async function initGoals() {
+  var u = readGoalsUserFromStorage();
+  if (u) {
+    // 登录用户：直接拉云端，覆盖本地（登录前的本地目标会被丢弃）
+    var cloudGoals = await loadGoalsFromCloud();
+    saveGoals(cloudGoals || []);
+  }
+  // 渲染（登录用户用云端，未登录用本地）
+  renderGoals();
+})();
+</script>
+
+<!-- ════════════════════════════════════════
+     登录引导弹窗（未登录时进入目标表会弹一次）
+     ════════════════════════════════════════ -->
+<div id="login-prompt-overlay" onclick="if(event.target===this)skipLoginPrompt()">
+  <div class="login-prompt-card">
+    <div class="login-prompt-emoji">🌊</div>
+    <div class="login-prompt-title">登录后跨设备同步目标</div>
+    <div class="login-prompt-subtitle">不登录也可以使用，<br>但目标只保存在这台设备</div>
+    <div class="login-prompt-btns">
+      <button class="login-prompt-skip" onclick="skipLoginPrompt()">先跳过</button>
+      <button class="login-prompt-go" onclick="goToLogin()">去登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- 登录/注册弹窗 -->
+<div id="auth-overlay-goals" onclick="if(event.target===this)closeAuthGo()">
+  <div class="auth-card-go">
+    <button class="auth-close-go" onclick="closeAuthGo()">✕</button>
+    <div class="auth-title-go">Freed</div>
+    <div class="auth-subtitle-go">登录以跨设备同步你的目标</div>
+    <div class="auth-tabs-go">
+      <button class="auth-tab-go active" id="go-tab-login" onclick="switchAuthTabGo('login')">登录</button>
+      <button class="auth-tab-go" id="go-tab-signup" onclick="switchAuthTabGo('signup')">注册</button>
+    </div>
+    <input type="text" id="go-auth-nickname" class="auth-input-go" placeholder="昵称" maxlength="20" style="display:none;" />
+    <input type="email" id="go-auth-email" class="auth-input-go" placeholder="邮箱" autocomplete="email" />
+    <input type="password" id="go-auth-password" class="auth-input-go" placeholder="密码（至少 6 位）" autocomplete="current-password" />
+    <button class="auth-submit-go" id="go-auth-submit-btn" onclick="doAuthSubmitGo()">登 录</button>
+    <div class="auth-msg-go" id="go-auth-msg"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ===== Supabase 客户端 =====
+  const SUPA_URL_AUTH = 'https://ryoaxziysgdkjcjiuqti.supabase.co';
+  const SUPA_KEY_AUTH = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5b2F4eml5c2dka2pjaml1cXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDg2MDAsImV4cCI6MjA4OTA4NDYwMH0.ORG_8Ue8LjYfReMvKo1iQOFNGN7fcTz1_fMs8Gq1Kds';
+
+  // 兼容老 storageKey
+  const DEFAULT_STORAGE_KEY = 'sb-ryoaxziysgdkjcjiuqti-auth-token';
+  try {
+    const oldVal = localStorage.getItem('freed-auth');
+    const newVal = localStorage.getItem(DEFAULT_STORAGE_KEY);
+    if (oldVal && !newVal) {
+      localStorage.setItem(DEFAULT_STORAGE_KEY, oldVal);
+    }
+  } catch(_) {}
+
+  if (!window.supabase) return;
+
+  const supa = window.supabase.createClient(SUPA_URL_AUTH, SUPA_KEY_AUTH, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      storageKey: 'sb-ryoaxziysgdkjcjiuqti-auth-token',
+    }
+  });
+
+  // 直接从 localStorage 读 token 解析（绕过 SDK 加载时序问题）
+  function readUserFromLocalStorage() {
+    try {
+      const raw = localStorage.getItem('sb-ryoaxziysgdkjcjiuqti-auth-token');
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      const token = obj && obj.access_token;
+      if (!token) return null;
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (!payload || !payload.sub) return null;
+      if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+      return { id: payload.sub, email: payload.email || '' };
+    } catch(_) { return null; }
+  }
+
+  // ===== 检查登录态 =====
+  async function checkLoginAndPrompt() {
+    // 优先用 localStorage 直读
+    let user = readUserFromLocalStorage();
+    if (!user) {
+      // 兜底：让 SDK 试一次
+      try {
+        const { data } = await supa.auth.getSession();
+        const session = (data && data.session) || null;
+        user = (session && session.user) || null;
+      } catch(_) {}
+    }
+
+    if (user) return;  // 已登录，不弹
+
+    try {
+      // 用版本化 key，确保升级后会重新弹一次
+      if (sessionStorage.getItem('freed-goals-prompt-skipped-v2') === '1') return;
+    } catch(_) {}
+
+    document.getElementById('login-prompt-overlay').classList.add('show');
+  }
+
+  // ===== 引导窗按钮 =====
+  window.skipLoginPrompt = function() {
+    document.getElementById('login-prompt-overlay').classList.remove('show');
+    try { sessionStorage.setItem('freed-goals-prompt-skipped-v2', '1'); } catch(_) {}
+  };
+
+  // 改成弹出登录窗，不再跳走
+  window.goToLogin = function() {
+    document.getElementById('login-prompt-overlay').classList.remove('show');
+    openAuthGo();
+  };
+
+  // ===== 登录/注册弹窗逻辑 =====
+  let goAuthTab = 'login';
+  function $go(id) { return document.getElementById(id); }
+  function showAuthMsgGo(text, type) {
+    const el = $go('go-auth-msg');
+    el.textContent = text;
+    el.className = 'auth-msg-go ' + (type || '');
+  }
+  function clearAuthMsgGo() {
+    const el = $go('go-auth-msg');
+    el.textContent = '';
+    el.className = 'auth-msg-go';
+  }
+
+  window.openAuthGo = function() {
+    clearAuthMsgGo();
+    $go('auth-overlay-goals').classList.add('show');
+  };
+  window.closeAuthGo = function() {
+    $go('auth-overlay-goals').classList.remove('show');
+  };
+  window.switchAuthTabGo = function(tab) {
+    goAuthTab = tab;
+    clearAuthMsgGo();
+    $go('go-tab-login').classList.toggle('active', tab === 'login');
+    $go('go-tab-signup').classList.toggle('active', tab === 'signup');
+    $go('go-auth-nickname').style.display = (tab === 'signup') ? 'block' : 'none';
+    $go('go-auth-submit-btn').textContent = (tab === 'signup') ? '注 册' : '登 录';
+  };
+
+  window.doAuthSubmitGo = async function() {
+    const email = $go('go-auth-email').value.trim();
+    const password = $go('go-auth-password').value;
+    const nickname = $go('go-auth-nickname').value.trim();
+
+    if (!email || !password) { showAuthMsgGo('请填写邮箱和密码', 'error'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAuthMsgGo('邮箱格式不正确', 'error'); return; }
+    if (password.length < 6) { showAuthMsgGo('密码至少 6 位', 'error'); return; }
+    if (goAuthTab === 'signup' && !nickname) { showAuthMsgGo('请填写昵称', 'error'); return; }
+
+    const btn = $go('go-auth-submit-btn');
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = '请稍候…';
+    clearAuthMsgGo();
+
+    try {
+      if (goAuthTab === 'signup') {
+        const { data, error } = await supa.auth.signUp({ email, password });
+        if (error) throw error;
+        if (data.user) {
+          try {
+            await supa.from('user_profiles').insert({ id: data.user.id, nickname: nickname });
+          } catch(_) {}
+        }
+        showAuthMsgGo('注册成功 🌊', 'success');
+        setTimeout(() => {
+          closeAuthGo();
+          // 注册成功后刷新页面，触发从云端拉取目标 + 沉默迁移本地数据
+          setTimeout(() => { window.location.reload(); }, 300);
+        }, 800);
+      } else {
+        const { error } = await supa.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showAuthMsgGo('登录成功 ✨', 'success');
+        setTimeout(() => {
+          closeAuthGo();
+          // 登录成功后刷新页面，触发从云端拉取目标
+          setTimeout(() => { window.location.reload(); }, 300);
+        }, 600);
+      }
+    } catch (err) {
+      let msg = err.message || '操作失败';
+      if (msg.includes('Invalid login credentials')) msg = '邮箱或密码错误';
+      else if (msg.includes('User already registered')) msg = '该邮箱已注册，请直接登录';
+      else if (msg.includes('Password should be')) msg = '密码至少 6 位';
+      else if (msg.includes('Email rate limit')) msg = '请求过于频繁，请稍后再试';
+      showAuthMsgGo(msg, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = orig;
+    }
+  };
+
+  // 启动
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkLoginAndPrompt);
+  } else {
+    checkLoginAndPrompt();
+  }
+})();
+</script>
+
+<script src="nav-orb.js"></script>
+</body>
+</html>
