@@ -1,0 +1,70 @@
+# Codemagic CI/CD 配置文件
+# 文档：https://docs.codemagic.io/yaml-quick-start/building-a-native-ios-app/
+
+workflows:
+  ios-workflow:
+    name: Freed 释放 iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Codemagic Admin
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.freedreleasing.app
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        APP_STORE_APPLE_ID: 6768422531  # 上架后从 App Store Connect 获取，先填占位
+      node: 20.11.0
+      xcode: latest
+      cocoapods: default
+
+    scripts:
+      - name: 安装 npm 依赖
+        script: |
+          npm install
+
+      - name: 同步 Capacitor 到 iOS
+        script: |
+          npx cap add ios || npx cap sync ios
+
+      - name: 生成 App 图标
+        script: |
+          npm install -g @capacitor/assets
+          npx capacitor-assets generate --ios
+
+      - name: 安装 CocoaPods
+        script: |
+          cd ios/App && pod install
+
+      - name: 设置代码签名
+        script: |
+          keychain initialize
+          keychain add-certificates
+          xcode-project use-profiles
+
+      - name: 自增构建号
+        script: |
+          cd $CM_BUILD_DIR/ios/App
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" || echo 0)
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+
+      - name: 构建 ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        # 提交到 TestFlight，跑通后再打开 App Store 提交
+        submit_to_testflight: true
+        # submit_to_app_store: false
