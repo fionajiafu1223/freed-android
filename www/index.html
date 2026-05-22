@@ -849,11 +849,152 @@ const _origDraw = draw;
     <input type="email" id="auth-email" class="auth-input" placeholder="邮箱" autocomplete="email" />
     <input type="password" id="auth-password" class="auth-input" placeholder="密码（至少 6 位）" autocomplete="current-password" />
 
+    <!-- 协议勾选（仅注册时显示） -->
+    <div id="eula-row" style="display:none;margin:14px 4px 6px;font-family:'Noto Sans SC',sans-serif;font-size:0.72rem;color:rgba(20,60,110,0.78);line-height:1.6;">
+      <label style="display:flex;align-items:flex-start;cursor:pointer;gap:8px;">
+        <input type="checkbox" id="eula-checkbox" style="margin-top:3px;flex-shrink:0;width:14px;height:14px;cursor:pointer;" onchange="updateSubmitState()" />
+        <span>我已阅读并同意<a href="javascript:void(0)" onclick="openEulaModal()" style="color:#2a7abf;text-decoration:underline;">《用户协议与社区准则》</a>，理解本应用对不良内容采取零容忍政策。</span>
+      </label>
+    </div>
+
     <button class="auth-submit" id="auth-submit-btn" onclick="doAuthSubmit()">登 录</button>
 
     <div class="auth-msg" id="auth-msg"></div>
   </div>
 </div>
+
+<!-- ════════════════════════════════════════
+     EULA 协议全文弹窗
+     ════════════════════════════════════════ -->
+<style>
+#eula-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 60, 110, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+#eula-overlay.show { display: flex; }
+.eula-card {
+  background: rgba(255,255,255,0.96);
+  border-radius: 18px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(20, 60, 110, 0.25);
+  overflow: hidden;
+}
+.eula-head {
+  padding: 18px 22px 12px;
+  border-bottom: 1px solid rgba(20,60,110,0.10);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.eula-head-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.0rem;
+  color: #143c6e;
+  font-weight: 600;
+}
+.eula-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: rgba(20,60,110,0.55);
+  padding: 4px 8px;
+}
+.eula-body {
+  padding: 16px 22px 22px;
+  overflow-y: auto;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.82rem;
+  color: rgba(20,60,110,0.85);
+  line-height: 1.75;
+}
+.eula-body h3 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.92rem;
+  color: #143c6e;
+  margin: 16px 0 6px;
+}
+.eula-body p { margin: 0 0 8px; }
+.eula-body ul { margin: 4px 0 10px; padding-left: 22px; }
+.eula-body li { margin-bottom: 4px; }
+</style>
+
+<div id="eula-overlay" onclick="if(event.target===this)closeEulaModal()">
+  <div class="eula-card">
+    <div class="eula-head">
+      <div class="eula-head-title">用户协议与社区准则</div>
+      <button class="eula-close" onclick="closeEulaModal()">✕</button>
+    </div>
+    <div class="eula-body">
+      <p>欢迎使用 Freed 释放（以下简称"本应用"）。在创建账号并使用本应用的"收获本"等内容分享功能前，请仔细阅读并同意以下条款。勾选"我已阅读并同意"即表示你接受本协议全部内容。</p>
+
+      <h3>一、关于内容分享</h3>
+      <p>本应用的"收获本"允许你发布文字内容，并与其他用户共享。你发布的内容将对其他用户可见。</p>
+
+      <h3>二、内容行为准则（零容忍）</h3>
+      <p>本应用对以下内容采取零容忍政策。你承诺不会发布任何包含以下性质的内容：</p>
+      <ul>
+        <li>辱骂、骚扰、威胁、仇恨或歧视他人的言论</li>
+        <li>色情、低俗或性暗示内容</li>
+        <li>暴力、血腥或令人不适的描述</li>
+        <li>垃圾广告、营销推广、诈骗信息</li>
+        <li>侵犯他人隐私（如泄露他人个人信息）</li>
+        <li>违反所在地区法律法规的内容</li>
+        <li>任何其他不当、冒犯或对他人有害的内容</li>
+      </ul>
+
+      <h3>三、违规处理</h3>
+      <ul>
+        <li>我们对所有被举报的内容会在 24 小时内进行审核处理。</li>
+        <li>一经发现违规内容，我们将立即删除该内容。</li>
+        <li>对发布违规内容的用户，我们有权暂停或永久封禁其账号。</li>
+      </ul>
+
+      <h3>四、举报与屏蔽</h3>
+      <ul>
+        <li>你可以对任何不当内容使用"举报"功能。举报后该内容会立即从你的视图中移除，并通知我们审核。</li>
+        <li>你可以"屏蔽"任何用户。屏蔽后，你将不再看到该用户发布的任何内容。</li>
+      </ul>
+
+      <h3>五、你的责任</h3>
+      <ul>
+        <li>你对自己发布的全部内容负责。</li>
+        <li>你理解并同意，发布违规内容可能导致账号被封禁。</li>
+        <li>你不得利用本应用从事任何违法或损害他人的行为。</li>
+      </ul>
+
+      <h3>六、免责声明</h3>
+      <ul>
+        <li>本应用为情绪释放与自我练习的辅助工具，不能替代专业心理咨询或医疗服务。</li>
+        <li>用户发布的内容仅代表其个人观点，不代表本应用立场。</li>
+      </ul>
+
+      <h3>七、协议变更</h3>
+      <p>我们可能不时更新本协议。重大变更会通过应用内通知告知。继续使用本应用即表示你接受更新后的协议。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+window.openEulaModal = function() {
+  document.getElementById('eula-overlay').classList.add('show');
+};
+window.closeEulaModal = function() {
+  document.getElementById('eula-overlay').classList.remove('show');
+};
+</script>
 
 <!-- ════════════════════════════════════════
      登录系统 — JavaScript 逻辑
@@ -932,6 +1073,21 @@ const _origDraw = draw;
     $('auth-submit-btn').textContent = (tab === 'signup') ? '注 册' : '登 录';
     $('auth-password').setAttribute('autocomplete',
       tab === 'signup' ? 'new-password' : 'current-password');
+    // 协议勾选框仅注册时显示
+    $('eula-row').style.display = (tab === 'signup') ? 'block' : 'none';
+    // 切换 tab 时更新按钮置灰状态
+    updateSubmitState();
+  };
+
+  // —— 根据勾选状态更新提交按钮 ——
+  window.updateSubmitState = function() {
+    const btn = $('auth-submit-btn');
+    if (currentTab === 'signup') {
+      const checked = $('eula-checkbox').checked;
+      btn.disabled = !checked;
+    } else {
+      btn.disabled = false;
+    }
   };
 
   // —— 提交（注册或登录） ——
@@ -952,6 +1108,9 @@ const _origDraw = draw;
     }
     if (currentTab === 'signup' && !nickname) {
       showMsg('请填写昵称', 'error'); return;
+    }
+    if (currentTab === 'signup' && !$('eula-checkbox').checked) {
+      showMsg('请先阅读并同意《用户协议与社区准则》', 'error'); return;
     }
 
     setBtnLoading(true);

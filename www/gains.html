@@ -98,6 +98,44 @@ body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',ser
   .gain-like-btn:hover { background: rgba(255,100,130,0.08); border-color: rgba(255,100,130,0.4); color: #e05080; }
   .gain-like-btn.liked { background: rgba(255,100,130,0.12); border-color: rgba(255,100,130,0.5); color: #e05080; }
   .gain-like-count { font-weight: 600; }
+  /* ⚠️ 举报/屏蔽按钮 */
+  .gain-warn-btn {
+    padding: 3px 8px; border-radius: 14px;
+    border: 1.5px solid rgba(180,150,80,0.30);
+    background: rgba(255,255,255,0.45);
+    font-size: 0.74rem; color: #a08020;
+    cursor: pointer; transition: all 0.18s ease;
+    line-height: 1;
+    margin-left: 4px;
+  }
+  .gain-warn-btn:hover { background: rgba(255,200,80,0.12); border-color: rgba(180,150,80,0.5); }
+  /* 举报/屏蔽 弹出菜单 */
+  #warn-menu-overlay {
+    position: fixed; inset: 0; z-index: 9000;
+    background: rgba(20,60,110,0.30);
+    display: none; align-items: center; justify-content: center;
+  }
+  #warn-menu-overlay.show { display: flex; }
+  .warn-menu {
+    background: rgba(255,255,255,0.98);
+    border-radius: 16px; padding: 12px;
+    min-width: 200px;
+    box-shadow: 0 6px 24px rgba(20,60,110,0.25);
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+  .warn-menu button {
+    display: block; width: 100%;
+    padding: 12px 14px; margin: 4px 0;
+    border: none; border-radius: 10px;
+    background: transparent; text-align: left;
+    font-size: 0.85rem; color: #143c6e;
+    cursor: pointer; transition: background 0.15s;
+    font-family: inherit;
+  }
+  .warn-menu button:hover { background: rgba(100,160,220,0.10); }
+  .warn-menu button.danger { color: #c04040; }
+  .warn-menu button.danger:hover { background: rgba(200,80,80,0.10); }
+  .warn-menu button.cancel { color: #8aaac0; }
   .gain-sort-btn {
     padding: 4px 10px; border-radius: 14px;
     border: 1.5px solid rgba(100,160,220,0.35);
@@ -519,6 +557,13 @@ draw();
 <div class="page-title">📒 收 获 本</div>
 <div class="page-wrap">
 
+  <!-- 未登录提示卡片 -->
+  <div id="login-required-card" style="display:none;text-align:center;padding:48px 24px;background:rgba(255,255,255,0.6);border-radius:18px;margin-top:24px;">
+    <div style="font-size:1.1rem;color:#3a5a80;margin-bottom:12px;font-family:'Noto Sans SC',sans-serif;">请登录后使用收获本</div>
+    <div style="font-size:0.85rem;color:#7a90a8;margin-bottom:24px;font-family:'Noto Sans SC',sans-serif;">登录后即可记录你的释放收获、查看释放数据、与他人分享</div>
+    <button class="login-hint-btn" onclick="openAuthG()" style="font-size:0.95rem;padding:10px 32px;">登 录 / 注 册</button>
+  </div>
+
   <!-- ════════════════════════════════════════
        Tab 切换栏
        ════════════════════════════════════════ -->
@@ -775,12 +820,17 @@ function renderGainList(el, items, isShared) {
       ? '<button class="gain-like-btn ' + (liked ? 'liked' : '') + '" onclick="likeGain(\'' + item.id + '\', this)">' +
         (liked ? '❤️' : '🤍') + ' <span class="gain-like-count">' + (likes > 0 ? likes : '赞') + '</span></button>'
       : '<span class="gain-meta">' + (likes > 0 ? '❤️ ' + likes : '') + '</span>';
+    // ⚠️ 按钮：只在「所有人的收获」里、且不是自己发的内容时显示
+    const showWarn = isShared && currentUser && item.user_id && item.user_id !== currentUser.id;
+    const warnBtn = showWarn
+      ? '<button class="gain-warn-btn" onclick="openWarnMenu(\'' + item.id + '\', \'' + item.user_id + '\')">⚠️</button>'
+      : '';
     return '<li class="gain-item ' + (isShared ? 'shared' : '') + '">' +
       '<span class="gain-text">' + escapeHtml(item.text) + '</span>' +
       '<div class="gain-footer">' +
       '<div style="display:flex;align-items:center;gap:6px;">' + badge +
       '<span class="gain-meta">' + formatRelTime(item.ts) + '</span></div>' +
-      likeBtn + '</div></li>';
+      '<div style="display:flex;align-items:center;">' + likeBtn + warnBtn + '</div></li>';
   }).join('');
 }
 
@@ -840,9 +890,17 @@ async function loadSharedGains() {
     const order = gainSortSb === 'likes' ? 'likes.desc,ts.desc' : 'ts.desc';
     let url = `/rest/v1/gain_entries?select=*&order=${order}&limit=${GAIN_MAX}`;
     if (gainSelectedFilterSb !== 'all') url += `&cat=eq.${encodeURIComponent(gainSelectedFilterSb)}`;
-    const items = await supaFetch(url);
-    if (titleEl) titleEl.textContent = tf('shared_gains', (items||[]).length);
-    renderGainList(sharedEl, items || [], true);
+    let items = await supaFetch(url);
+    // 过滤掉被屏蔽的用户/已举报的内容
+    const blockedUsers = getBlockedUsers();
+    const reportedIds  = getReportedIds();
+    items = (items || []).filter(it => {
+      if (it.user_id && blockedUsers.indexOf(it.user_id) !== -1) return false;
+      if (it.id && reportedIds.indexOf(it.id + '') !== -1) return false;
+      return true;
+    });
+    if (titleEl) titleEl.textContent = tf('shared_gains', items.length);
+    renderGainList(sharedEl, items, true);
   } catch(e) {
     console.error('Supabase error:', e);
     sharedEl.innerHTML = `<li class="gain-empty">加载失败</li>`;
@@ -871,10 +929,49 @@ function setSortSb(s) {
   loadSharedGains();
 }
 
+// ════════════════════════════════════════
+// 敏感词过滤（满足 Apple Guideline 1.2 内容过滤要求）
+// ════════════════════════════════════════
+const BANNED_WORDS = [
+  // 辱骂
+  '傻逼','沙比','煞笔','傻x','sb','智障','脑残','废物','贱人','婊子',
+  '狗东西','畜生','滚蛋','去死','该死','王八蛋','混蛋','操你','草你','日你',
+  'fuck','shit','bitch','asshole','idiot',
+  // 色情
+  '色情','黄片','av','做爱','性交','裸照','约炮','一夜情','卖淫','嫖娼',
+  '阴茎','阴道','性器','自慰','发骚','骚货','淫',
+  // 暴力
+  '杀人','砍死','打死','血腥','自杀','自残','炸弹','枪支','贩毒','吸毒',
+  // 广告诈骗
+  '加微信','加我vx','加qq','扫码','返利','代理','刷单','兼职日入',
+  '博彩','赌博','彩票','贷款','办卡','引流','推广加',
+  '点击链接','www.','http://','https://','.com','.cn','.net',
+];
+
+function checkContent(text) {
+  if (!text) return { ok: true };
+  const lower = text.toLowerCase();
+  for (let i = 0; i < BANNED_WORDS.length; i++) {
+    const w = BANNED_WORDS[i].toLowerCase();
+    if (w && lower.indexOf(w) !== -1) {
+      return { ok: false, word: BANNED_WORDS[i] };
+    }
+  }
+  return { ok: true };
+}
+
 async function submitGainSb() {
   const input = document.getElementById('gainInputSb');
   const text  = input.value.trim();
   if (!text) return;
+
+  // 敏感词检查
+  const check = checkContent(text);
+  if (!check.ok) {
+    showToast('内容含有不当词汇，请修改后再发布');
+    return;
+  }
+
   input.value = '';
   await _submitGainEntry(text, gainSelectedCat);
   showToast(tf('gain_recorded', gainSelectedCat));
@@ -909,6 +1006,83 @@ async function _submitGainEntry(text, cat) {
     });
   } catch(_) {}
 }
+
+// ════════════════════════════════════════
+// 举报 / 屏蔽（满足 Apple Guideline 1.2）
+// ════════════════════════════════════════
+function getBlockedUsers() {
+  try { return JSON.parse(localStorage.getItem('freed-blocked-users') || '[]'); }
+  catch(_) { return []; }
+}
+function saveBlockedUsers(list) {
+  try { localStorage.setItem('freed-blocked-users', JSON.stringify(list)); } catch(_) {}
+}
+function getReportedIds() {
+  try { return JSON.parse(localStorage.getItem('freed-reported-ids') || '[]'); }
+  catch(_) { return []; }
+}
+function saveReportedIds(list) {
+  try { localStorage.setItem('freed-reported-ids', JSON.stringify(list)); } catch(_) {}
+}
+
+let _warnTargetEntryId = null;
+let _warnTargetUserId  = null;
+
+window.openWarnMenu = function(entryId, userId) {
+  _warnTargetEntryId = entryId;
+  _warnTargetUserId  = userId;
+  document.getElementById('warn-menu-overlay').classList.add('show');
+};
+window.closeWarnMenu = function() {
+  document.getElementById('warn-menu-overlay').classList.remove('show');
+};
+
+window.doReportEntry = async function() {
+  if (!_warnTargetEntryId || !currentUser) { closeWarnMenu(); return; }
+  // 本地记下已举报的 id（立即从视图隐藏）
+  const reported = getReportedIds();
+  if (reported.indexOf(_warnTargetEntryId + '') === -1) {
+    reported.push(_warnTargetEntryId + '');
+    saveReportedIds(reported);
+  }
+  // 写入云端 gain_reports 表
+  try {
+    const sess = await supaAuth.auth.getSession();
+    const token = sess && sess.data && sess.data.session && sess.data.session.access_token;
+    if (token) {
+      await fetch(SUPA_URL + '/rest/v1/gain_reports', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPA_KEY,
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          entry_id: _warnTargetEntryId,
+          reporter_id: currentUser.id,
+        }),
+      });
+    }
+  } catch(e) {
+    console.warn('举报上报失败（已本地隐藏）:', e);
+  }
+  closeWarnMenu();
+  showToast('已举报，该内容已从你的视图中移除');
+  loadSharedGains();
+};
+
+window.doBlockUser = function() {
+  if (!_warnTargetUserId) { closeWarnMenu(); return; }
+  const blocked = getBlockedUsers();
+  if (blocked.indexOf(_warnTargetUserId) === -1) {
+    blocked.push(_warnTargetUserId);
+    saveBlockedUsers(blocked);
+  }
+  closeWarnMenu();
+  showToast('已屏蔽该用户，其所有内容已隐藏');
+  loadSharedGains();
+};
 
 async function likeGain(id, btn) {
   if (likedKeys.has(id + '')) return;
@@ -1120,45 +1294,19 @@ async function refreshUser() {
 }
 
 async function migrateLocalToCloud() {
-  // 只在用户登录后执行一次；把 localStorage 里的本地记录上传到云端
-  if (!currentUser || migrationDone) return;
-  migrationDone = true;
-  try {
-    // 检查云端是不是已经有这个用户的记录了
-    const existing = await supaFetch(
-      '/rest/v1/gain_entries?user_id=eq.' + currentUser.id +
-      '&select=ts&limit=1'
-    );
-    if (existing && existing.length > 0) {
-      // 已经有了 — 说明之前迁移过，不再迁移（避免重复）
-      return;
-    }
-    const local = getMyItems();
-    if (!local.length) return;
-    // 批量上传，每条带上 user_id
-    const payload = local.map(it => ({
-      text: it.text,
-      cat: it.cat,
-      ts: it.ts,
-      likes: it.likes || 0,
-      user_id: currentUser.id
-    }));
-    await supaFetch('/rest/v1/gain_entries', {
-      method: 'POST',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify(payload),
-      useAuth: true,
-    });
-  } catch(e) {
-    console.warn('迁移失败（不影响使用）：', e);
-  }
+  // 已废弃：本地→云端的自动迁移会导致重复记录（匿名发的+登录后迁移=显示多条）
+  // 现行策略：登录用户发的直接进云端；未登录用户的本地记录不再自动上传
+  return;
 }
 
 // 监听登录态变化（其他页面登录/登出时自动响应）
 supaAuth.auth.onAuthStateChange(async (event, session) => {
   await refreshUser();
-  if (currentUser) {
-    await migrateLocalToCloud();
+  // 根据登录态切换显示
+  applyLoginGate();
+  // 未登录时停在登录提示，不加载数据
+  if (!currentUser) {
+    return;
   }
   // 重置缓存
   cachedMyItems = null;
@@ -1251,19 +1399,50 @@ window.doAuthSubmitG = async function() {
 // ════════════════════════════════════════
 // 启动
 // ════════════════════════════════════════
+function applyLoginGate() {
+  const card = document.getElementById('login-required-card');
+  const tabsBar = document.querySelector('.tabs-bar');
+  const panelMine = document.getElementById('panel-mine');
+  const panelShared = document.getElementById('panel-shared');
+  if (currentUser) {
+    if (card) card.style.display = 'none';
+    if (tabsBar) tabsBar.style.display = '';
+    if (panelMine) panelMine.style.display = '';
+    if (panelShared) panelShared.style.display = '';
+  } else {
+    if (card) card.style.display = '';
+    if (tabsBar) tabsBar.style.display = 'none';
+    if (panelMine) panelMine.style.display = 'none';
+    if (panelShared) panelShared.style.display = 'none';
+  }
+}
+
 (async function init() {
   // refreshUser 现在直接读 localStorage，立即可用
   await refreshUser();
 
-  if (currentUser) {
-    await migrateLocalToCloud();
+  // 未登录 → 显示登录提示，隐藏其他内容，到此为止
+  if (!currentUser) {
+    applyLoginGate();
+    return;
   }
+
+  applyLoginGate();
   // 初始 tab 是「我的收获」— 加载我的数据（含统计）
   loadMyData();
   // 「所有人的收获」延迟一点再加载，避免和上面的请求互相挤占
   setTimeout(() => loadSharedGains(), 200);
 })();
 </script>
+<!-- 举报/屏蔽 弹出菜单 -->
+<div id="warn-menu-overlay" onclick="if(event.target===this)closeWarnMenu()">
+  <div class="warn-menu">
+    <button class="danger" onclick="doReportEntry()">🚩 举报此内容</button>
+    <button class="danger" onclick="doBlockUser()">🚫 屏蔽此用户</button>
+    <button class="cancel" onclick="closeWarnMenu()">取消</button>
+  </div>
+</div>
+
 <script src="nav-orb.js"></script>
 </body>
 </html>
