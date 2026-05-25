@@ -159,7 +159,7 @@ html, body { width: 100%; height: 100%; display: block; overflow: hidden; }
 .act-btn:hover { background: rgba(220, 245, 235, 0.65); }
 
 #bottomBar {
-  position: absolute; bottom: 24px; left: 50%;
+  position: absolute; top: 0; left: 50%;
   transform: translateX(-50%);
   z-index: 30; display: flex; align-items: center; gap: 10px;
   white-space: nowrap;
@@ -535,46 +535,53 @@ function positionUI(){
   const cardW = card.offsetWidth;
   const cardH = card.offsetHeight;
 
-  // Zone A: Header = safe-area-top + 44px
-  const zoneAH = sa.top + 44;
-  // Zone D: Bottom CTA = 24px button gap + safe-area-bottom
-  const zoneDH = sa.bottom + 24;
-  // Zone B: Intro/Question = up to 18% of remaining space
-  const remaining = cardH - zoneAH - zoneDH;
-  const zoneBH = Math.round(remaining * 0.18);
-  // Zone C: Main = everything else
-  const zoneCTop = zoneAH + zoneBH;
+  // 人体头顶在 SVG 360×640 坐标系里是 y=143
+  const headTopPx = (143 / 640) * cardH;
 
-  // A: section label & target name
-  sLbl.style.top    = (sa.top + 14) + 'px';
+  // A: section label & target name — 底边和导航/音乐按钮持平
+  // 导航和音乐按钮高度约 44px，底边在 sa.top + 44px 处
+  const btnBottomY = sa.top + 44;
+  sLbl.style.top    = (sa.top + 8) + 'px';
   sLbl.style.bottom = 'auto';
-  tgtName.style.top    = (sa.top + 30) + 'px';
+  tgtName.style.top    = (sa.top + 22) + 'px';
   tgtName.style.bottom = 'auto';
 
-  // B: intro / question — sits in zone B
-  qEl.style.top       = zoneAH + 'px';
-  qEl.style.bottom    = '';
-  qEl.style.maxHeight = zoneBH + 'px';
+  // B: 引导语 — 底部锚定在人体头顶上方 8px，文字向上生长
+  // 用 bottom 定位，最多往上占到导航按钮底边下方 8px
+  const qElBottom = cardH - headTopPx + 8;
+  const qElMaxH   = headTopPx - btnBottomY - 16; // 最多撑到导航按钮下方
+  qEl.style.top       = '';
+  qEl.style.bottom    = qElBottom + 'px';
+  qEl.style.maxHeight = Math.max(qElMaxH, 40) + 'px';
   qEl.style.overflowY = 'auto';
 
-  // C: body SVG is full-screen (position:absolute inset:0), no change needed
-  // Act buttons (可以/不可以) — center of zone C
-  const btnCenterY = zoneCTop + remaining * 0.52; // ~52% down zone C = chest level
+  // C: act buttons (可以/不可以) — 胸口位置 SVG y≈420
+  const chestY    = (420 / 640) * cardH;
   const btnCenterX = cardW * 0.5;
   const btnGap = 12;
-  btnA.style.top       = (btnCenterY - 18) + 'px';
+  btnA.style.top       = (chestY - 18) + 'px';
   btnA.style.left      = (btnCenterX + btnGap) + 'px';
   btnA.style.right     = 'auto';
   btnA.style.transform = 'none';
-  btnD.style.top       = (btnCenterY - 18) + 'px';
+  btnD.style.top       = (chestY - 18) + 'px';
   btnD.style.right     = (cardW - btnCenterX + btnGap) + 'px';
   btnD.style.left      = 'auto';
   btnD.style.transform = 'none';
 
-  // reflectBox — same center as act buttons
+  // reflectBox — 胸口上方一点
   const reflectEl = document.getElementById('reflectBox');
-  reflectEl.style.top    = (btnCenterY - 20) + 'px';
+  const reflectTop = chestY - 20;
+  reflectEl.style.top    = reflectTop + 'px';
   reflectEl.style.bottom = '';
+
+  // D: bottomBar — 人体轮廓底部 SVG y=580，下方 16px
+  const bodyBottomPx = (580 / 640) * cardH;
+  const bottomBar = document.getElementById('bottomBar');
+  bottomBar.style.bottom    = '';
+  bottomBar.style.top       = (bodyBottomPx + 16) + 'px';
+  bottomBar.style.left      = '50%';
+  bottomBar.style.transform = 'translateX(-50%)';
+  bottomBar.style.position  = 'absolute';
 }
 
 function showReflect(){ document.getElementById('reflectBox').classList.add('visible'); document.getElementById('reflectInput').value=''; }
@@ -997,7 +1004,7 @@ requestAnimationFrame(loop);
     }
     .music-btn {
       top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
-      right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+      right: calc(env(safe-area-inset-right, 0px) + 56px) !important;
     }
     @media (orientation: landscape) and (min-width: 600px) {
       #questionEl { font-size: 15px; }
