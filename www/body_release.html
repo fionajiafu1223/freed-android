@@ -11,7 +11,10 @@ html, body { width: 100%; height: 100%; display: block; overflow: hidden; }
 
 .card {
   position: relative; z-index: 1;
-  width: 100vw; height: 100vh;
+  width: 100vw;
+  /* 铺满全屏包含 Home 条区域 */
+  min-height: 100vh;
+  min-height: 100dvh;
   background: #e8f2ee;
   overflow: hidden;
 }
@@ -580,7 +583,7 @@ function positionUI(){
   const bodyBottomPx = (580 / 640) * visibleH;
   const bottomBar = document.getElementById('bottomBar');
   bottomBar.style.bottom    = '';
-  bottomBar.style.top       = (bodyBottomPx + 16) + 'px';
+  bottomBar.style.top       = (bodyBottomPx + 6) + 'px';
   bottomBar.style.left      = '50%';
   bottomBar.style.transform = 'translateX(-50%)';
   bottomBar.style.position  = 'absolute';
@@ -982,13 +985,8 @@ function loop(ts){
 }
 
 function setVH(){
-  const c = document.querySelector('.card');
-  // 用 CSS 变量让 card 高度 = innerHeight + safe-area-bottom
-  // 这样背景铺满屏幕，positionUI 里用 getSafeArea() 让内容避开安全区
-  const safeBottom = getSafeArea().bottom;
-  c.style.height     = (window.innerHeight + safeBottom) + 'px';
-  c.style.paddingTop = 'env(safe-area-inset-top, 0px)';
-  c.style.paddingBottom = '0px';
+  // 不用 JS 计算，直接用 CSS min-height 铺满全屏
+  // card 的高度由 CSS 控制，JS 只负责触发 positionUI
 }
 setVH();
 window.addEventListener('resize',()=>{setVH();positionUI();});
