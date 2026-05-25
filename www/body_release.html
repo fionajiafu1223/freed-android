@@ -11,7 +11,7 @@ html, body { width: 100%; height: 100%; display: block; overflow: hidden; }
 
 .card {
   position: relative; z-index: 1;
-  width: 100vw; height: 100vh; height: 100dvh;
+  width: 100vw; height: 100vh;
   background: #e8f2ee;
   overflow: hidden;
 }
@@ -159,7 +159,7 @@ html, body { width: 100%; height: 100%; display: block; overflow: hidden; }
 .act-btn:hover { background: rgba(220, 245, 235, 0.65); }
 
 #bottomBar {
-  position: absolute; bottom: max(36px, env(safe-area-inset-bottom, 36px)); left: 50%;
+  position: absolute; bottom: 24px; left: 50%;
   transform: translateX(-50%);
   z-index: 30; display: flex; align-items: center; gap: 10px;
   white-space: nowrap;
@@ -516,37 +516,65 @@ const repeatHint    = document.getElementById('repeatHint');
 
 function toPx(sx,sy){ return {x:(sx/360)*card.offsetWidth, y:(sy/640)*card.offsetHeight}; }
 
+// 获取 safe area 数值（px）
+function getSafeArea(){
+  const el = document.createElement('div');
+  el.style.cssText='position:fixed;top:env(safe-area-inset-top,0px);left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);bottom:env(safe-area-inset-bottom,0px);pointer-events:none;';
+  document.body.appendChild(el);
+  const r = el.getBoundingClientRect();
+  document.body.removeChild(el);
+  const top    = r.top;
+  const bottom = window.innerHeight - r.bottom;
+  const left   = r.left;
+  const right  = window.innerWidth - r.right;
+  return { top: top||0, bottom: bottom||0, left: left||0, right: right||0 };
+}
+
 function positionUI(){
-  const headTopPx = (143/640)*card.offsetHeight;
+  const sa = getSafeArea();
+  const cardW = card.offsetWidth;
   const cardH = card.offsetHeight;
 
-  sLbl.style.top    = 'max(18px, env(safe-area-inset-top, 18px))';
-  sLbl.style.bottom = 'auto';
+  // Zone A: Header = safe-area-top + 44px
+  const zoneAH = sa.top + 44;
+  // Zone D: Bottom CTA = 24px button gap + safe-area-bottom
+  const zoneDH = sa.bottom + 24;
+  // Zone B: Intro/Question = up to 18% of remaining space
+  const remaining = cardH - zoneAH - zoneDH;
+  const zoneBH = Math.round(remaining * 0.18);
+  // Zone C: Main = everything else
+  const zoneCTop = zoneAH + zoneBH;
 
-  tgtName.style.top    = 'calc(max(18px, env(safe-area-inset-top, 18px)) + 28px)';
+  // A: section label & target name
+  sLbl.style.top    = (sa.top + 14) + 'px';
+  sLbl.style.bottom = 'auto';
+  tgtName.style.top    = (sa.top + 30) + 'px';
   tgtName.style.bottom = 'auto';
 
-  qEl.style.top    = '';
-  qEl.style.bottom = (cardH - headTopPx + 20) + 'px';
-  qEl.style.maxHeight = (headTopPx - 60) + 'px';
+  // B: intro / question — sits in zone B
+  qEl.style.top       = zoneAH + 'px';
+  qEl.style.bottom    = '';
+  qEl.style.maxHeight = zoneBH + 'px';
   qEl.style.overflowY = 'auto';
 
-  // reflectBox: centered at chest (SVG y≈420)
-  const {y:chestY} = toPx(183, 390);
-  const reflectEl = document.getElementById('reflectBox');
-  reflectEl.style.top = chestY + 'px';
-  reflectEl.style.bottom = '';
-
-  const {x:hx, y:hy} = toPx(183, 420);
-  const btnGap = 10;
-  btnD.style.top       = (hy - 18) + 'px';
-  btnD.style.right     = (card.offsetWidth - hx + btnGap) + 'px';
-  btnD.style.left      = 'auto';
-  btnD.style.transform = 'none';
-  btnA.style.top       = (hy - 18) + 'px';
-  btnA.style.left      = (hx + btnGap) + 'px';
+  // C: body SVG is full-screen (position:absolute inset:0), no change needed
+  // Act buttons (可以/不可以) — center of zone C
+  const btnCenterY = zoneCTop + remaining * 0.52; // ~52% down zone C = chest level
+  const btnCenterX = cardW * 0.5;
+  const btnGap = 12;
+  btnA.style.top       = (btnCenterY - 18) + 'px';
+  btnA.style.left      = (btnCenterX + btnGap) + 'px';
   btnA.style.right     = 'auto';
   btnA.style.transform = 'none';
+  btnD.style.top       = (btnCenterY - 18) + 'px';
+  btnD.style.right     = (cardW - btnCenterX + btnGap) + 'px';
+  btnD.style.left      = 'auto';
+  btnD.style.transform = 'none';
+
+  // reflectBox — same center as act buttons
+  const reflectEl = document.getElementById('reflectBox');
+  reflectEl.style.top    = (btnCenterY - 20) + 'px';
+  reflectEl.style.bottom = '';
 }
 
 function showReflect(){ document.getElementById('reflectBox').classList.add('visible'); document.getElementById('reflectInput').value=''; }
@@ -944,7 +972,13 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
-function setVH(){ document.querySelector('.card').style.height=window.innerHeight+'px'; }
+function setVH(){
+  const h = window.innerHeight;
+  const c = document.querySelector('.card');
+  c.style.height = h + 'px';
+  c.style.paddingTop    = 'env(safe-area-inset-top, 0px)';
+  c.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+}
 setVH();
 window.addEventListener('resize',()=>{setVH();positionUI();});
 loadProgress();
@@ -954,5 +988,26 @@ requestAnimationFrame(loop);
 </script>
 <script src="nav-orb.js"></script>
 <script src="music-btn.js"></script>
+<script>
+(function(){
+  const css = `
+    #nav-orb-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+      left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+    }
+    .music-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+      right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+    }
+    @media (orientation: landscape) and (min-width: 600px) {
+      #questionEl { font-size: 15px; }
+      #pauseBtn, #nextSectionBtn { font-size: 13px; padding: 11px 26px; }
+    }
+  `;
+  const s = document.createElement('style');
+  s.textContent = css;
+  document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>
