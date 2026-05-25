@@ -575,7 +575,9 @@ function positionUI(){
   reflectEl.style.bottom = '';
 
   // D: bottomBar — 人体轮廓底部 SVG y=580，下方 16px
-  const bodyBottomPx = (580 / 640) * cardH;
+  // cardH 包含 safe-area-bottom，要减掉才是实际可视高度
+  const visibleH = cardH - sa.bottom;
+  const bodyBottomPx = (580 / 640) * visibleH;
   const bottomBar = document.getElementById('bottomBar');
   bottomBar.style.bottom    = '';
   bottomBar.style.top       = (bodyBottomPx + 16) + 'px';
@@ -981,12 +983,12 @@ function loop(ts){
 
 function setVH(){
   const c = document.querySelector('.card');
-  // height = innerHeight（不含 safe area），box-sizing: content-box
-  // paddingBottom 让内容让开 Home 条，但 card 背景继续延伸到屏幕底部
-  c.style.boxSizing     = 'content-box';
-  c.style.height        = window.innerHeight + 'px';
-  c.style.paddingTop    = 'env(safe-area-inset-top, 0px)';
-  c.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+  // 用 CSS 变量让 card 高度 = innerHeight + safe-area-bottom
+  // 这样背景铺满屏幕，positionUI 里用 getSafeArea() 让内容避开安全区
+  const safeBottom = getSafeArea().bottom;
+  c.style.height     = (window.innerHeight + safeBottom) + 'px';
+  c.style.paddingTop = 'env(safe-area-inset-top, 0px)';
+  c.style.paddingBottom = '0px';
 }
 setVH();
 window.addEventListener('resize',()=>{setVH();positionUI();});
@@ -1006,7 +1008,7 @@ requestAnimationFrame(loop);
     }
     .fr-music-btn {
       top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
-      right: calc(env(safe-area-inset-right, 0px) + 100px) !important;
+      right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
     }
     @media (orientation: landscape) and (min-width: 600px) {
       #questionEl { font-size: 15px; }
