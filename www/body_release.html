@@ -980,9 +980,11 @@ function loop(ts){
 }
 
 function setVH(){
-  const h = window.innerHeight;
   const c = document.querySelector('.card');
-  c.style.height = h + 'px';
+  // height = innerHeight（不含 safe area），box-sizing: content-box
+  // paddingBottom 让内容让开 Home 条，但 card 背景继续延伸到屏幕底部
+  c.style.boxSizing     = 'content-box';
+  c.style.height        = window.innerHeight + 'px';
   c.style.paddingTop    = 'env(safe-area-inset-top, 0px)';
   c.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
 }
@@ -1002,13 +1004,14 @@ requestAnimationFrame(loop);
       top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
       left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
     }
-    .music-btn {
+    .fr-music-btn {
       top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
-      right: calc(env(safe-area-inset-right, 0px) + 56px) !important;
+      right: calc(env(safe-area-inset-right, 0px) + 100px) !important;
     }
     @media (orientation: landscape) and (min-width: 600px) {
       #questionEl { font-size: 15px; }
       #pauseBtn, #nextSectionBtn { font-size: 13px; padding: 11px 26px; }
+    }
     }
   `;
   const s = document.createElement('style');
