@@ -7,7 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; display: block; overflow: hidden; }
+html { width: 100%; height: 100%; }
+body { width: 100%; min-height: 100%; display: block; overflow: hidden; }
 
 .card {
   position: relative; z-index: 1;
@@ -541,17 +542,16 @@ function positionUI(){
   // 人体头顶在 SVG 360×640 坐标系里是 y=143
   const headTopPx = (143 / 640) * cardH;
 
-  // A: section label & target name — 底边和导航/音乐按钮持平
-  // 导航和音乐按钮高度约 44px，底边在 sa.top + 44px 处
+  // A: section label & target name — 对齐情绪释放 top:22px
+  const headerTop  = Math.max(22, sa.top + 8);
   const btnBottomY = sa.top + 44;
-  sLbl.style.top    = (sa.top + 8) + 'px';
+  sLbl.style.top    = headerTop + 'px';
   sLbl.style.bottom = 'auto';
-  tgtName.style.top    = (sa.top + 22) + 'px';
+  tgtName.style.top    = (headerTop + 14) + 'px';
   tgtName.style.bottom = 'auto';
 
-  // B: 引导语 — 底部锚定在人体头顶上方 8px，文字向上生长
-  // 用 bottom 定位，最多往上占到导航按钮底边下方 8px
-  const qElBottom = cardH - headTopPx + 8;
+  // B: 引导语 — 底部锚定在人体头顶上方 20px（对齐情绪释放）
+  const qElBottom = cardH - headTopPx + 20;
   const qElMaxH   = headTopPx - btnBottomY - 16; // 最多撑到导航按钮下方
   qEl.style.top       = '';
   qEl.style.bottom    = qElBottom + 'px';
@@ -1001,11 +1001,11 @@ requestAnimationFrame(loop);
 (function(){
   const css = `
     #nav-orb-btn {
-      top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
       left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
     }
     .fr-music-btn {
-      top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
       right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
     }
     @media (orientation: landscape) and (min-width: 600px) {
