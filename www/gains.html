@@ -73,6 +73,7 @@ body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',ser
     padding: 10px 14px; border: 1px solid rgba(100,160,220,0.2);
     display: flex; flex-direction: column; gap: 5px;
   }
+  .gain-item.shared { background: rgba(230,245,255,0.62); }
   .gain-text { font-size: 0.84rem; color: #0e2840; line-height: 1.5; }
   .gain-badge {
     display: inline-flex; align-items: center; gap: 3px;
@@ -97,54 +98,6 @@ body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',ser
   .gain-like-btn:hover { background: rgba(255,100,130,0.08); border-color: rgba(255,100,130,0.4); color: #e05080; }
   .gain-like-btn.liked { background: rgba(255,100,130,0.12); border-color: rgba(255,100,130,0.5); color: #e05080; }
   .gain-like-count { font-weight: 600; }
-  /* ⚠️ 举报/屏蔽按钮 */
-  .gain-warn-btn {
-    padding: 3px 10px; border-radius: 14px;
-    border: 1px solid rgba(100,160,220,0.25);
-    background: none;
-    font-size: 0.9rem; color: #7a9ab0;
-    cursor: pointer; transition: all 0.18s ease;
-    line-height: 1;
-    margin-left: 4px;
-    letter-spacing: 1px;
-    font-weight: 600;
-  }
-  .gain-warn-btn:hover { background: rgba(200,230,255,0.7); border-color: rgba(100,160,220,0.5); }
-  /* 举报/屏蔽 弹出菜单 */
-  #warn-menu-overlay {
-    position: fixed; inset: 0; z-index: 9000;
-    background: rgba(20,60,110,0.30);
-    display: none; align-items: center; justify-content: center;
-  }
-  #warn-menu-overlay.show { display: flex; }
-  .warn-menu {
-    background: rgba(255,255,255,0.96);
-    border-radius: 18px; padding: 8px;
-    min-width: 220px;
-    box-shadow: 0 6px 24px rgba(20,60,110,0.18);
-    font-family: 'Noto Sans SC', sans-serif;
-    border: 1px solid rgba(100,160,220,0.18);
-  }
-  .warn-menu button {
-    display: block; width: 100%;
-    padding: 13px 16px; margin: 2px 0;
-    border: none; border-radius: 12px;
-    background: transparent; text-align: center;
-    font-size: 0.88rem; color: #3a5a80;
-    cursor: pointer; transition: background 0.15s;
-    font-family: inherit;
-    letter-spacing: 0.5px;
-  }
-  .warn-menu button:hover { background: rgba(200,230,255,0.6); }
-  .warn-menu .warn-divider {
-    height: 1px;
-    background: rgba(100,160,220,0.15);
-    margin: 4px 8px;
-  }
-  .warn-menu button.cancel {
-    color: #8aaac0;
-    font-size: 0.82rem;
-  }
   .gain-sort-btn {
     padding: 4px 10px; border-radius: 14px;
     border: 1.5px solid rgba(100,160,220,0.35);
@@ -566,13 +519,6 @@ draw();
 <div class="page-title">📒 收 获 本</div>
 <div class="page-wrap">
 
-  <!-- 未登录提示卡片 -->
-  <div id="login-required-card" style="display:none;text-align:center;padding:48px 24px;background:rgba(255,255,255,0.6);border-radius:18px;margin-top:24px;">
-    <div style="font-size:1.1rem;color:#3a5a80;margin-bottom:12px;font-family:'Noto Sans SC',sans-serif;">请登录后使用收获本</div>
-    <div style="font-size:0.85rem;color:#7a90a8;margin-bottom:24px;font-family:'Noto Sans SC',sans-serif;">登录后即可记录你的释放收获、查看释放数据、与他人分享</div>
-    <button class="login-hint-btn" onclick="openAuthG()" style="font-size:0.95rem;padding:10px 32px;">登 录 / 注 册</button>
-  </div>
-
   <!-- ════════════════════════════════════════
        Tab 切换栏
        ════════════════════════════════════════ -->
@@ -829,17 +775,12 @@ function renderGainList(el, items, isShared) {
       ? '<button class="gain-like-btn ' + (liked ? 'liked' : '') + '" onclick="likeGain(\'' + item.id + '\', this)">' +
         (liked ? '❤️' : '🤍') + ' <span class="gain-like-count">' + (likes > 0 ? likes : '赞') + '</span></button>'
       : '<span class="gain-meta">' + (likes > 0 ? '❤️ ' + likes : '') + '</span>';
-    // ⚠️ 按钮：只在「所有人的收获」里、且不是自己发的内容时显示
-    const showWarn = isShared && currentUser && item.user_id && item.user_id !== currentUser.id;
-    const warnBtn = showWarn
-      ? '<button class="gain-warn-btn" onclick="openWarnMenu(\'' + item.id + '\', \'' + item.user_id + '\')">⋯</button>'
-      : '';
     return '<li class="gain-item ' + (isShared ? 'shared' : '') + '">' +
       '<span class="gain-text">' + escapeHtml(item.text) + '</span>' +
       '<div class="gain-footer">' +
       '<div style="display:flex;align-items:center;gap:6px;">' + badge +
       '<span class="gain-meta">' + formatRelTime(item.ts) + '</span></div>' +
-      '<div style="display:flex;align-items:center;">' + likeBtn + warnBtn + '</div></li>';
+      likeBtn + '</div></li>';
   }).join('');
 }
 
@@ -899,17 +840,9 @@ async function loadSharedGains() {
     const order = gainSortSb === 'likes' ? 'likes.desc,ts.desc' : 'ts.desc';
     let url = `/rest/v1/gain_entries?select=*&order=${order}&limit=${GAIN_MAX}`;
     if (gainSelectedFilterSb !== 'all') url += `&cat=eq.${encodeURIComponent(gainSelectedFilterSb)}`;
-    let items = await supaFetch(url);
-    // 过滤掉被屏蔽的用户/已举报的内容
-    const blockedUsers = getBlockedUsers();
-    const reportedIds  = getReportedIds();
-    items = (items || []).filter(it => {
-      if (it.user_id && blockedUsers.indexOf(it.user_id) !== -1) return false;
-      if (it.id && reportedIds.indexOf(it.id + '') !== -1) return false;
-      return true;
-    });
-    if (titleEl) titleEl.textContent = tf('shared_gains', items.length);
-    renderGainList(sharedEl, items, true);
+    const items = await supaFetch(url);
+    if (titleEl) titleEl.textContent = tf('shared_gains', (items||[]).length);
+    renderGainList(sharedEl, items || [], true);
   } catch(e) {
     console.error('Supabase error:', e);
     sharedEl.innerHTML = `<li class="gain-empty">加载失败</li>`;
@@ -1015,83 +948,6 @@ async function _submitGainEntry(text, cat) {
     });
   } catch(_) {}
 }
-
-// ════════════════════════════════════════
-// 举报 / 屏蔽（满足 Apple Guideline 1.2）
-// ════════════════════════════════════════
-function getBlockedUsers() {
-  try { return JSON.parse(localStorage.getItem('freed-blocked-users') || '[]'); }
-  catch(_) { return []; }
-}
-function saveBlockedUsers(list) {
-  try { localStorage.setItem('freed-blocked-users', JSON.stringify(list)); } catch(_) {}
-}
-function getReportedIds() {
-  try { return JSON.parse(localStorage.getItem('freed-reported-ids') || '[]'); }
-  catch(_) { return []; }
-}
-function saveReportedIds(list) {
-  try { localStorage.setItem('freed-reported-ids', JSON.stringify(list)); } catch(_) {}
-}
-
-let _warnTargetEntryId = null;
-let _warnTargetUserId  = null;
-
-window.openWarnMenu = function(entryId, userId) {
-  _warnTargetEntryId = entryId;
-  _warnTargetUserId  = userId;
-  document.getElementById('warn-menu-overlay').classList.add('show');
-};
-window.closeWarnMenu = function() {
-  document.getElementById('warn-menu-overlay').classList.remove('show');
-};
-
-window.doReportEntry = async function() {
-  if (!_warnTargetEntryId || !currentUser) { closeWarnMenu(); return; }
-  // 本地记下已举报的 id（立即从视图隐藏）
-  const reported = getReportedIds();
-  if (reported.indexOf(_warnTargetEntryId + '') === -1) {
-    reported.push(_warnTargetEntryId + '');
-    saveReportedIds(reported);
-  }
-  // 写入云端 gain_reports 表
-  try {
-    const sess = await supaAuth.auth.getSession();
-    const token = sess && sess.data && sess.data.session && sess.data.session.access_token;
-    if (token) {
-      await fetch(SUPA_URL + '/rest/v1/gain_reports', {
-        method: 'POST',
-        headers: {
-          'apikey': SUPA_KEY,
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation',
-        },
-        body: JSON.stringify({
-          entry_id: _warnTargetEntryId,
-          reporter_id: currentUser.id,
-        }),
-      });
-    }
-  } catch(e) {
-    console.warn('举报上报失败（已本地隐藏）:', e);
-  }
-  closeWarnMenu();
-  showToast('已举报，该内容已从你的视图中移除');
-  loadSharedGains();
-};
-
-window.doBlockUser = function() {
-  if (!_warnTargetUserId) { closeWarnMenu(); return; }
-  const blocked = getBlockedUsers();
-  if (blocked.indexOf(_warnTargetUserId) === -1) {
-    blocked.push(_warnTargetUserId);
-    saveBlockedUsers(blocked);
-  }
-  closeWarnMenu();
-  showToast('已屏蔽该用户，其所有内容已隐藏');
-  loadSharedGains();
-};
 
 async function likeGain(id, btn) {
   if (likedKeys.has(id + '')) return;
@@ -1311,11 +1167,8 @@ async function migrateLocalToCloud() {
 // 监听登录态变化（其他页面登录/登出时自动响应）
 supaAuth.auth.onAuthStateChange(async (event, session) => {
   await refreshUser();
-  // 根据登录态切换显示
-  applyLoginGate();
-  // 未登录时停在登录提示，不加载数据
-  if (!currentUser) {
-    return;
+  if (currentUser) {
+    await migrateLocalToCloud();
   }
   // 重置缓存
   cachedMyItems = null;
@@ -1408,51 +1261,32 @@ window.doAuthSubmitG = async function() {
 // ════════════════════════════════════════
 // 启动
 // ════════════════════════════════════════
-function applyLoginGate() {
-  const card = document.getElementById('login-required-card');
-  const tabsBar = document.querySelector('.tabs-bar');
-  const panelMine = document.getElementById('panel-mine');
-  const panelShared = document.getElementById('panel-shared');
-  if (currentUser) {
-    if (card) card.style.display = 'none';
-    if (tabsBar) tabsBar.style.display = '';
-    if (panelMine) panelMine.style.display = '';
-    if (panelShared) panelShared.style.display = '';
-  } else {
-    if (card) card.style.display = '';
-    if (tabsBar) tabsBar.style.display = 'none';
-    if (panelMine) panelMine.style.display = 'none';
-    if (panelShared) panelShared.style.display = 'none';
-  }
-}
-
 (async function init() {
   // refreshUser 现在直接读 localStorage，立即可用
   await refreshUser();
 
-  // 未登录 → 显示登录提示，隐藏其他内容，到此为止
-  if (!currentUser) {
-    applyLoginGate();
-    return;
+  if (currentUser) {
+    await migrateLocalToCloud();
   }
-
-  applyLoginGate();
   // 初始 tab 是「我的收获」— 加载我的数据（含统计）
   loadMyData();
   // 「所有人的收获」延迟一点再加载，避免和上面的请求互相挤占
   setTimeout(() => loadSharedGains(), 200);
 })();
 </script>
-<!-- 举报/屏蔽 弹出菜单 -->
-<div id="warn-menu-overlay" onclick="if(event.target===this)closeWarnMenu()">
-  <div class="warn-menu">
-    <button onclick="doReportEntry()">举报此内容</button>
-    <button onclick="doBlockUser()">屏蔽此用户</button>
-    <div class="warn-divider"></div>
-    <button class="cancel" onclick="closeWarnMenu()">取消</button>
-  </div>
-</div>
-
 <script src="nav-orb.js"></script>
+<script>
+(function(){
+  const css = `
+    #nav-orb-btn {
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+    }
+  `;
+  const s = document.createElement('style');
+  s.textContent = css;
+  document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>

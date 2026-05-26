@@ -1007,5 +1007,18 @@ async function dropGoal(i) {
 </script>
 
 <script src="nav-orb.js"></script>
+<script>
+(function(){
+  const css = `
+    #nav-orb-btn {
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+    }
+  `;
+  const s = document.createElement('style');
+  s.textContent = css;
+  document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>
