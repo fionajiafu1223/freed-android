@@ -32,14 +32,14 @@ body { width: 100%; min-height: 100%; display: block; overflow: hidden; }
 }
 
 #questionEl {
-  position: absolute; left: 0; right: 0;
-  bottom: 80%;
+  position: fixed; left: 0; right: 0;
   text-align: center;
   font-family: 'ZCOOL XiaoWei', serif; font-size: 13px; letter-spacing: 2px;
   color: rgba(40, 80, 60, 0.85); line-height: 2;
   z-index: 30; opacity: 0; pointer-events: none;
   transition: opacity 0.6s ease;
   padding: 0 28px;
+  display: flex; flex-direction: column; justify-content: flex-end;
 }
 #questionEl.visible { opacity: 1; }
 #questionEl em { font-style: normal; color: rgba(40, 140, 90, 0.95); font-size: 15px; }
@@ -551,12 +551,14 @@ function positionUI(){
   tgtName.style.top    = (headerTop + 14) + 'px';
   tgtName.style.bottom = 'auto';
 
-  // B: 引导语 — 底部锚定在人体头顶上方 20px（对齐情绪释放）
-  // 引导语位置由 CSS bottom: 80% 控制
-  const qElMaxH = Math.max(headTopPx - btnBottomY - 16, 40);
-  qEl.style.top       = '';
-  qEl.style.bottom    = '';
-  qEl.style.maxHeight = Math.max(qElMaxH, 40) + 'px';
+  // B: 引导语 — bottom 动态计算，锚定在人体头顶上方
+  // 用视口高度计算，不受 card 高度影响
+  const viewH = window.innerHeight;
+  const headTopViewPx = (143 / 640) * viewH;
+  const qBottom = viewH - headTopViewPx + sa.top;
+  qEl.style.top       = btnBottomY + 'px';
+  qEl.style.bottom    = qBottom + 'px';
+  qEl.style.maxHeight = '';
   qEl.style.overflowY = 'auto';
 
   // C: act buttons (可以/不可以) — 胸口位置 SVG y≈420
