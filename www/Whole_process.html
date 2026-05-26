@@ -115,7 +115,7 @@ body::before {
 
 /* ── Emotion table ── */
 #ecBtn {
-  position: fixed; top: 16px; right: 68px; z-index: 100;
+  position: fixed; top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px)); right: calc(env(safe-area-inset-right, 0px) + 56px); z-index: 100;
   padding: 6px 14px; border-radius: 99px;
   border: 1px solid rgba(255,255,255,0.85);
   background: rgba(255,255,255,0.45); backdrop-filter: blur(12px);
@@ -892,5 +892,22 @@ requestAnimationFrame(loop);
 </script>
 <script src="nav-orb.js"></script>
 <script src="music-btn.js"></script>
+<script>
+(function(){
+  const css = `
+    #nav-orb-btn {
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+    }
+    .fr-music-btn {
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+    }
+  `;
+  const s = document.createElement('style');
+  s.textContent = css;
+  document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>

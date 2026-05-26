@@ -343,7 +343,8 @@ function positionUI(){
   const cardH = card.offsetHeight;
 
   // Section label: very top
-  sLbl.style.top    = '18px';
+  const headerTop = Math.max(22, getSafeArea().top + 8);
+  sLbl.style.top    = headerTop + 'px';
   sLbl.style.bottom = 'auto';
 
   // Question: just above head
@@ -719,5 +720,22 @@ requestAnimationFrame(loop);
 </script>
 <script src="nav-orb.js"></script>
 <script src="music-btn.js"></script>
+<script>
+(function(){
+  const css = `
+    #nav-orb-btn {
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+    }
+    .fr-music-btn {
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+    }
+  `;
+  const s = document.createElement('style');
+  s.textContent = css;
+  document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>

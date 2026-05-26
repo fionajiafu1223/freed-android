@@ -471,10 +471,10 @@ function positionUI(){
   const headTopPx = (143/640)*card.offsetHeight;
   const cardH = card.offsetHeight;
 
-  sLbl.style.top    = 'max(18px, env(safe-area-inset-top, 18px))';
+  const headerTop = Math.max(22, sa.top + 8);
+  sLbl.style.top    = headerTop + 'px';
   sLbl.style.bottom = 'auto';
-
-  tgtName.style.top    = 'calc(max(18px, env(safe-area-inset-top, 18px)) + 28px)';
+  tgtName.style.top    = (headerTop + 14) + 'px';
   tgtName.style.bottom = 'auto';
 
   qEl.style.top    = '';
@@ -906,5 +906,22 @@ requestAnimationFrame(loop);
 </script>
 <script src="nav-orb.js"></script>
 <script src="music-btn.js"></script>
+<script>
+(function(){
+  const css = `
+    #nav-orb-btn {
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      left: calc(env(safe-area-inset-left, 0px) + 12px) !important;
+    }
+    .fr-music-btn {
+      top:  max(22px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+      right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+    }
+  `;
+  const s = document.createElement('style');
+  s.textContent = css;
+  document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>
