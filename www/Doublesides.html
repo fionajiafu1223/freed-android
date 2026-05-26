@@ -115,7 +115,7 @@
   /* ══ HEADER ══ */
   .header {
     position:relative; z-index:22;
-    text-align:center; padding:18px 20px 3px; width:100%; pointer-events:none;
+    text-align:center; padding:max(18px, calc(env(safe-area-inset-top, 0px) + 8px)) 20px 3px; width:100%; pointer-events:none;
   }
   .header h1 {
     font-family:'Noto Serif SC',serif;

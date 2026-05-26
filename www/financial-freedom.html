@@ -18,6 +18,7 @@ html, body { width: 100%; height: 100%; display: block; overflow: hidden; }
 
 #questionEl {
   position: absolute; left: 0; right: 0;
+  bottom: 80%;
   text-align: center;
   font-family: 'ZCOOL XiaoWei', serif; font-size: 13px; letter-spacing: 2px;
   color: rgba(110, 60, 20, 0.85); line-height: 2;
@@ -359,11 +360,11 @@ function positionUI(){
   sLbl.style.bottom = 'auto';
 
   // Question: just above head
-  const qElBottom = cardH - headTopPx + 32;
+  // 引导语位置由 CSS bottom: 45% 控制
   const btnBottomY = sa.top + 44;
-  const qElMaxH = Math.max(headTopPx - btnBottomY - 48, 40);
+  const qElMaxH = Math.max((window.innerHeight * 0.55) - btnBottomY - 16, 40);
   qEl.style.top       = '';
-  qEl.style.bottom    = qElBottom + 'px';
+  qEl.style.bottom    = '';
   qEl.style.maxHeight = qElMaxH + 'px';
   qEl.style.overflowY = 'auto';
 

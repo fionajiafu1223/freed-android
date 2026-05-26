@@ -33,6 +33,7 @@ body { width: 100%; min-height: 100%; display: block; overflow: hidden; }
 
 #questionEl {
   position: absolute; left: 0; right: 0;
+  bottom: 80%;
   text-align: center;
   font-family: 'ZCOOL XiaoWei', serif; font-size: 13px; letter-spacing: 2px;
   color: rgba(40, 80, 60, 0.85); line-height: 2;
@@ -551,10 +552,10 @@ function positionUI(){
   tgtName.style.bottom = 'auto';
 
   // B: 引导语 — 底部锚定在人体头顶上方 20px（对齐情绪释放）
-  const qElBottom = cardH - headTopPx + 32;
-  const qElMaxH   = headTopPx - btnBottomY - 48; // 最多撑到导航按钮下方
+  // 引导语位置由 CSS bottom: 80% 控制
+  const qElMaxH = Math.max(headTopPx - btnBottomY - 16, 40);
   qEl.style.top       = '';
-  qEl.style.bottom    = qElBottom + 'px';
+  qEl.style.bottom    = '';
   qEl.style.maxHeight = Math.max(qElMaxH, 40) + 'px';
   qEl.style.overflowY = 'auto';
 
