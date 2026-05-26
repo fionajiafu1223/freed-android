@@ -17,7 +17,7 @@ style.textContent = `
 
   #nav-orb-btn {
     position: fixed;
-    top: 18px; left: 18px;
+    top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px)); left: calc(env(safe-area-inset-left, 0px) + 12px);
     width: 68px; height: 68px;
     border-radius: 50%;
     z-index: 9999;

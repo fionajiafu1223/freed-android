@@ -8,7 +8,7 @@
   var styleEl = document.createElement('style');
   styleEl.textContent = `  /* ── MUSIC BUTTON & PANEL ── */
   .fr-music-btn {
-    position: fixed; top: 16px; right: 16px; z-index: 9000;
+    position: fixed; top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px)); right: calc(env(safe-area-inset-right, 0px) + 12px); z-index: 9000;
     width: 36px; height: 36px; border-radius: 50%;
     background: rgba(255,255,255,0.2); backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
