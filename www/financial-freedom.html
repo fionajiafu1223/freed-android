@@ -359,8 +359,13 @@ function positionUI(){
   sLbl.style.bottom = 'auto';
 
   // Question: just above head
-  qEl.style.top    = '';
-  qEl.style.bottom = (cardH - headTopPx + 20) + 'px';
+  const qElBottom = cardH - headTopPx + 32;
+  const btnBottomY = sa.top + 44;
+  const qElMaxH = Math.max(headTopPx - btnBottomY - 48, 40);
+  qEl.style.top       = '';
+  qEl.style.bottom    = qElBottom + 'px';
+  qEl.style.maxHeight = qElMaxH + 'px';
+  qEl.style.overflowY = 'auto';
 
   // Buttons flanking SVG heart glow — Y matches cy="420" exactly
   const {x:hx, y:hy} = toPx(183, 420);

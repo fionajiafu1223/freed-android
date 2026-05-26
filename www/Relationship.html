@@ -488,8 +488,13 @@ function positionUI(){
   tgtName.style.top    = (headerTop + 14) + 'px';
   tgtName.style.bottom = 'auto';
 
-  qEl.style.top    = '';
-  qEl.style.bottom = (cardH - headTopPx + 20) + 'px';
+  const qElBottom = cardH - headTopPx + 32;
+  const btnBottomY = sa.top + 44;
+  const qElMaxH = Math.max(headTopPx - btnBottomY - 48, 40);
+  qEl.style.top       = '';
+  qEl.style.bottom    = qElBottom + 'px';
+  qEl.style.maxHeight = qElMaxH + 'px';
+  qEl.style.overflowY = 'auto';
 
   // reflectBox: centered at chest (SVG y≈420)
   const {y:chestY} = toPx(183, 390);

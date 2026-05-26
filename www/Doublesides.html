@@ -7,6 +7,8 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+SC:wght@300;400&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --sat: env(safe-area-inset-top, 0px); }
+
 
   body {
     font-family:'Noto Sans SC',sans-serif;
@@ -828,7 +830,9 @@ function skyCardTop() {
   // Returns the top value for any centered sky card
   // Positions it in the lower half of the sky area, just above waterline
   const wy = waterY();
-  const headerBottom = 72;
+  // 动态获取 safe area top，让标题避开刘海
+  const safeTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0') || 0;
+  const headerBottom = Math.max(90, safeTop + 80);  // F按钮底边以下
   return headerBottom + (wy - headerBottom) * 0.62;
 }
 

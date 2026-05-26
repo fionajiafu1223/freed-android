@@ -28,7 +28,7 @@ body::before {
 
 /* App title — no pointer events */
 .app-title {
-  position: absolute; top: 22px; left: 0; right: 0;
+  position: absolute; top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px)); left: 0; right: 0;
   text-align: center; z-index: 10; pointer-events: none;
 }
 .app-title h1 {
