@@ -931,7 +931,6 @@ function showFinalChoice(){
       btnA.textContent='可以'; btnD.textContent='不可以';
       btnA.style.transform='none'; btnD.style.transform='none';
       btnA.removeEventListener('click',onWorth); btnD.removeEventListener('click',onRepeat);
-      btnA.addEventListener('click',handleDecision); btnD.addEventListener('click',handleDecision);
     }
     btnA.removeEventListener('click',handleDecision); btnD.removeEventListener('click',handleDecision);
     btnA.addEventListener('click',onWorth); btnD.addEventListener('click',onRepeat);
