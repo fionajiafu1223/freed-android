@@ -467,7 +467,18 @@ const repeatHint    = document.getElementById('repeatHint');
 
 function toPx(sx,sy){ return {x:(sx/360)*card.offsetWidth, y:(sy/640)*card.offsetHeight}; }
 
+
+function getSafeArea(){
+  const el = document.createElement('div');
+  el.style.cssText='position:fixed;top:env(safe-area-inset-top,0px);left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);bottom:env(safe-area-inset-bottom,0px);pointer-events:none;visibility:hidden;';
+  document.body.appendChild(el);
+  const r = el.getBoundingClientRect();
+  document.body.removeChild(el);
+  return { top: r.top||0, bottom: window.innerHeight-r.bottom||0, left: r.left||0, right: window.innerWidth-r.right||0 };
+}
+
 function positionUI(){
+  const sa = getSafeArea();
   const headTopPx = (143/640)*card.offsetHeight;
   const cardH = card.offsetHeight;
 
