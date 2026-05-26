@@ -664,8 +664,11 @@ function showFinalChoice(){
     const {x:bx,y:by}=toPx(TARGET_X,TARGET_Y);
     btnA.textContent='是的，我坚定地相信我值得';
     btnD.textContent='不确定，我还是觉得自己不值得';
-    btnA.style.top=(by+50)+'px'; btnA.style.left=(bx-90)+'px'; btnA.style.right='auto';
-    btnD.style.top=(by+50)+'px'; btnD.style.right=(card.offsetWidth-bx-90)+'px'; btnD.style.left='auto';
+    // 上下排列，居中，允许换行
+    btnA.style.top=(by+40)+'px'; btnA.style.left='50%'; btnA.style.right='auto';
+    btnA.style.transform='translateX(-50%)'; btnA.style.whiteSpace='normal'; btnA.style.maxWidth='70%'; btnA.style.textAlign='center';
+    btnD.style.top=(by+90)+'px'; btnD.style.left='50%'; btnD.style.right='auto';
+    btnD.style.transform='translateX(-50%)'; btnD.style.whiteSpace='normal'; btnD.style.maxWidth='70%'; btnD.style.textAlign='center';
     showQ('允许自己对于拥有充裕自由的财务这件事感到心安理得。\n是时候了，就让自己接受充裕自由的财富进入你的生活吧。\n你值得的，不是吗？');
     showButtons();
     function onWorth(){
