@@ -39,7 +39,6 @@ body { width: 100%; min-height: 100%; display: block; overflow: hidden; }
   z-index: 30; opacity: 0; pointer-events: none;
   transition: opacity 0.6s ease;
   padding: 0 28px;
-  display: flex; flex-direction: column; justify-content: flex-end;
 }
 #questionEl.visible { opacity: 1; }
 #questionEl em { font-style: normal; color: rgba(40, 140, 90, 0.95); font-size: 15px; }
@@ -545,7 +544,7 @@ function positionUI(){
 
   // A: section label & target name — 对齐情绪释放 top:22px
   const headerTop  = Math.max(22, sa.top + 8);
-  const btnBottomY = sa.top + 44;
+  const btnBottomY = sa.top + 88;  // F按钮(68px) + 间距(10px) + safe area
   sLbl.style.top    = headerTop + 'px';
   sLbl.style.bottom = 'auto';
   tgtName.style.top    = (headerTop + 14) + 'px';
@@ -557,9 +556,8 @@ function positionUI(){
   const headTopViewPx = (143 / 640) * viewH;
   const qBottom = viewH - headTopViewPx + sa.top;
   qEl.style.top       = btnBottomY + 'px';
-  qEl.style.bottom    = qBottom + 'px';
+  qEl.style.bottom    = '';
   qEl.style.maxHeight = '';
-  qEl.style.overflowY = 'auto';
 
   // C: act buttons (可以/不可以) — 胸口位置 SVG y≈420
   const chestY    = (420 / 640) * cardH;
