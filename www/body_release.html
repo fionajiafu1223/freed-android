@@ -863,7 +863,7 @@ function onClickDesire(b){
   requestAnimationFrame(fly);
 }
 
-function handleDecision(isA){
+function handleDecision(){
   if(phase==='yesno'){
     btnA.textContent='可以'; btnD.textContent='不可以';
     hideQ(); hideButtons();
@@ -871,7 +871,7 @@ function handleDecision(isA){
     const step=SECTIONS[currentSection].steps[currentStep];
     setTimeout(()=>{
       if(step&&step.finalStep) showFinalChoice();
-      else if(step&&step.skipNextOnA&&isA){
+      else if(step&&step.skipNextOnA&&true){
         // skip N steps ahead
         currentStep += step.skipNextOnA;
         if(currentStep>=SECTIONS[currentSection].steps.length){
@@ -897,8 +897,8 @@ function handleDecision(isA){
     runStep();
   }));
 }
-btnA.addEventListener('click',()=>handleDecision(true));
-btnD.addEventListener('click',()=>handleDecision(false));
+btnA.addEventListener('click',handleDecision);
+btnD.addEventListener('click',handleDecision);
 
 function showFinalChoice(){
   clearAllBubbles(()=>{
@@ -931,6 +931,7 @@ function showFinalChoice(){
       btnA.textContent='可以'; btnD.textContent='不可以';
       btnA.style.transform='none'; btnD.style.transform='none';
       btnA.removeEventListener('click',onWorth); btnD.removeEventListener('click',onRepeat);
+      btnA.addEventListener('click',handleDecision); btnD.addEventListener('click',handleDecision);
     }
     btnA.removeEventListener('click',handleDecision); btnD.removeEventListener('click',handleDecision);
     btnA.addEventListener('click',onWorth); btnD.addEventListener('click',onRepeat);
