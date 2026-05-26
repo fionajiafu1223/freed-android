@@ -149,11 +149,11 @@ git push -u origin main
 
 ## 已知待办（首版后再做）
 
-- [ ] App 图标（1024x1024 PNG，主题色调）
+- [x] App 图标（1024x1024 PNG，主题色调）
 - [ ] 启动图（Splash Screen）
 - [ ] 隐私政策页面（必需，审核会查）
 - [ ] 用户协议页面
-- [ ] iOS 安全区域适配（顶部 notch、底部 home indicator）
+- [x] iOS 安全区域适配（顶部 notch、底部 home indicator）
 - [ ] 网络状态检测（联网/离线提示）
 - [ ] 内购订阅（首版全免费，跑通主流程后再加）
 - [ ] 推送通知（可选）
