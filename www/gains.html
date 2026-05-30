@@ -85,79 +85,6 @@ body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',ser
     margin-top: 2px;
   }
   .gain-meta { font-size: 0.64rem; color: #7a9ab0; font-family: 'Noto Sans SC', sans-serif; }
-  .gain-like-btn {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: none; border: 1px solid rgba(100,160,220,0.25);
-    border-radius: 20px; padding: 3px 10px;
-    font-size: 0.7rem; color: #7a9ab0;
-    font-family: 'Noto Sans SC', sans-serif;
-    cursor: pointer; transition: all 0.18s ease;
-    line-height: 1;
-  }
-  .gain-like-btn:hover { background: rgba(255,100,130,0.08); border-color: rgba(255,100,130,0.4); color: #e05080; }
-  .gain-like-btn.liked { background: rgba(255,100,130,0.12); border-color: rgba(255,100,130,0.5); color: #e05080; }
-  .gain-like-count { font-weight: 600; }
-  /* ⚠️ 举报/屏蔽按钮 */
-  .gain-warn-btn {
-    padding: 3px 10px; border-radius: 14px;
-    border: 1px solid rgba(100,160,220,0.25);
-    background: none;
-    font-size: 0.9rem; color: #7a9ab0;
-    cursor: pointer; transition: all 0.18s ease;
-    line-height: 1;
-    margin-left: 4px;
-    letter-spacing: 1px;
-    font-weight: 600;
-  }
-  .gain-warn-btn:hover { background: rgba(200,230,255,0.7); border-color: rgba(100,160,220,0.5); }
-  /* 举报/屏蔽 弹出菜单 */
-  #warn-menu-overlay {
-    position: fixed; inset: 0; z-index: 9000;
-    background: rgba(20,60,110,0.30);
-    display: none; align-items: center; justify-content: center;
-  }
-  #warn-menu-overlay.show { display: flex; }
-  .warn-menu {
-    background: rgba(255,255,255,0.96);
-    border-radius: 18px; padding: 8px;
-    min-width: 220px;
-    box-shadow: 0 6px 24px rgba(20,60,110,0.18);
-    font-family: 'Noto Sans SC', sans-serif;
-    border: 1px solid rgba(100,160,220,0.18);
-  }
-  .warn-menu button {
-    display: block; width: 100%;
-    padding: 13px 16px; margin: 2px 0;
-    border: none; border-radius: 12px;
-    background: transparent; text-align: center;
-    font-size: 0.88rem; color: #3a5a80;
-    cursor: pointer; transition: background 0.15s;
-    font-family: inherit;
-    letter-spacing: 0.5px;
-  }
-  .warn-menu button:hover { background: rgba(200,230,255,0.6); }
-  .warn-menu .warn-divider {
-    height: 1px;
-    background: rgba(100,160,220,0.15);
-    margin: 4px 8px;
-  }
-  .warn-menu button.cancel {
-    color: #8aaac0;
-    font-size: 0.82rem;
-  }
-  .gain-sort-btn {
-    padding: 4px 10px; border-radius: 14px;
-    border: 1.5px solid rgba(100,160,220,0.35);
-    background: rgba(255,255,255,0.5);
-    font-size: 0.68rem; color: #5a7aa0;
-    font-family: 'Noto Sans SC', sans-serif;
-    cursor: pointer; transition: all 0.18s ease;
-  }
-  .gain-sort-btn:hover { background: rgba(200,230,255,0.7); }
-  .gain-sort-btn.active {
-    background: linear-gradient(135deg, rgba(74,159,212,0.85), rgba(42,122,191,0.85));
-    border-color: rgba(74,159,212,0.6); color: #fff;
-  }
   .gain-loading { font-size: 0.78rem; color: #8aaac0; text-align: center; padding: 10px 0; }
   .gain-close-btn {
     position: absolute; top: 14px; right: 16px;
@@ -167,38 +94,6 @@ body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',ser
   }
   .gain-close-btn:hover { color: #0e2840; transform: scale(1.2); }
 
-
-/* ════════════════════════════════════════
-   Tab 切换栏 — 我的收获 / 所有人的收获
-   ════════════════════════════════════════ */
-.tabs-bar {
-  display: flex;
-  gap: 4px;
-  padding: 3px;
-  background: rgba(220, 235, 250, 0.55);
-  border-radius: 14px;
-  margin-bottom: 16px;
-}
-.tab-btn {
-  flex: 1;
-  padding: 9px 0;
-  border: none;
-  background: transparent;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.85rem;
-  color: #5a7aa0;
-  cursor: pointer;
-  border-radius: 11px;
-  transition: all 0.2s ease;
-  letter-spacing: 0.05em;
-}
-.tab-btn.active {
-  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(42,122,191,0.25);
-}
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
 
 /* ════════════════════════════════════════
    我的释放数据 — 折叠卡片
@@ -569,80 +464,41 @@ draw();
   <!-- 未登录提示卡片 -->
   <div id="login-required-card" style="display:none;text-align:center;padding:48px 24px;background:rgba(255,255,255,0.6);border-radius:18px;margin-top:24px;">
     <div style="font-size:1.1rem;color:#3a5a80;margin-bottom:12px;font-family:'Noto Sans SC',sans-serif;">请登录后使用收获本</div>
-    <div style="font-size:0.85rem;color:#7a90a8;margin-bottom:24px;font-family:'Noto Sans SC',sans-serif;">登录后即可记录你的释放收获、查看释放数据、与他人分享</div>
+    <div style="font-size:0.85rem;color:#7a90a8;margin-bottom:24px;font-family:'Noto Sans SC',sans-serif;">登录后即可记录你的释放收获、查看释放数据、跨设备同步</div>
     <button class="login-hint-btn" onclick="openAuthG()" style="font-size:0.95rem;padding:10px 32px;">登 录 / 注 册</button>
   </div>
 
-  <!-- ════════════════════════════════════════
-       Tab 切换栏
-       ════════════════════════════════════════ -->
-  <div class="tabs-bar">
-    <button class="tab-btn active" id="tab-mine" onclick="switchGainTab('mine')">我的收获</button>
-    <button class="tab-btn" id="tab-shared" onclick="switchGainTab('shared')">所有人的收获</button>
+  <!-- 我的释放数据 卡片（可折叠） -->
+  <div class="stats-card" id="statsCard">
+    <div class="stats-header" onclick="toggleStatsCard()">
+      <span class="stats-title">📊 我的释放数据</span>
+      <span class="stats-toggle">▼</span>
+    </div>
+    <div class="stats-body" id="statsBody">
+      <div class="stats-empty">加载中…</div>
+    </div>
   </div>
 
-  <!-- ════════════════════════════════════════
-       Tab 1: 我的收获
-       ════════════════════════════════════════ -->
-  <div class="tab-panel active" id="panel-mine">
-
-    <!-- 我的释放数据 卡片（可折叠） -->
-    <div class="stats-card" id="statsCard">
-      <div class="stats-header" onclick="toggleStatsCard()">
-        <span class="stats-title">📊 我的释放数据</span>
-        <span class="stats-toggle">▼</span>
-      </div>
-      <div class="stats-body" id="statsBody">
-        <div class="stats-empty">加载中…</div>
-      </div>
-    </div>
-
-    <!-- 写新收获 -->
-    <div style="font-size:0.72rem;color:#5a7aa0;font-family:'Noto Sans SC',sans-serif;margin-bottom:10px;letter-spacing:0.04em;">记录每一次释放后的收获与领悟</div>
-    <div class="gain-cats" id="gainCatsSb">
-      <button class="gain-cat active" data-cat="健康" onclick="selectCat(this,'sb')">🌿 健康</button>
-      <button class="gain-cat" data-cat="财富" onclick="selectCat(this,'sb')">💰 财富</button>
-      <button class="gain-cat" data-cat="SP" onclick="selectCat(this,'sb')">💞 SP</button>
-      <button class="gain-cat" data-cat="人际关系" onclick="selectCat(this,'sb')">🤝 人际关系</button>
-      <button class="gain-cat" data-cat="学业" onclick="selectCat(this,'sb')">📚 学业</button>
-      <button class="gain-cat" data-cat="工作" onclick="selectCat(this,'sb')">💼 工作</button>
-      <button class="gain-cat" data-cat="其他" onclick="selectCat(this,'sb')">✨ 其他</button>
-    </div>
-    <div class="gain-input-row" style="margin-top:10px;">
-      <input type="text" id="gainInputSb" placeholder="写下你释放后的收获…"
-             onkeydown="if(event.key==='Enter')submitGainSb()" />
-      <button onclick="submitGainSb()">记录</button>
-    </div>
-
-    <!-- 我的收获记录 -->
-    <div class="gain-section-title" id="myGainTitleSb">我的收获记录</div>
-    <ul class="gain-list" id="myGainListSb"><li class="gain-loading">加载中…</li></ul>
+  <!-- 写新收获 -->
+  <div style="font-size:0.72rem;color:#5a7aa0;font-family:'Noto Sans SC',sans-serif;margin-bottom:10px;letter-spacing:0.04em;">记录每一次释放后的收获与领悟</div>
+  <div class="gain-cats" id="gainCatsSb">
+    <button class="gain-cat" data-cat="健康" onclick="selectCat(this,'sb')">🌿 健康</button>
+    <button class="gain-cat" data-cat="财富" onclick="selectCat(this,'sb')">💰 财富</button>
+    <button class="gain-cat" data-cat="SP" onclick="selectCat(this,'sb')">💞 SP</button>
+    <button class="gain-cat" data-cat="人际关系" onclick="selectCat(this,'sb')">🤝 人际关系</button>
+    <button class="gain-cat" data-cat="学业" onclick="selectCat(this,'sb')">📚 学业</button>
+    <button class="gain-cat" data-cat="工作" onclick="selectCat(this,'sb')">💼 工作</button>
+    <button class="gain-cat" data-cat="其他" onclick="selectCat(this,'sb')">✨ 其他</button>
+  </div>
+  <div class="gain-input-row" style="margin-top:10px;">
+    <input type="text" id="gainInputSb" placeholder="写下你释放后的收获…"
+           onkeydown="if(event.key==='Enter')submitGainSb()" />
+    <button onclick="submitGainSb()">记录</button>
   </div>
 
-  <!-- ════════════════════════════════════════
-       Tab 2: 所有人的收获
-       ════════════════════════════════════════ -->
-  <div class="tab-panel" id="panel-shared">
-    <div class="gain-filter-row">
-      <span class="gain-filter-label">筛选：</span>
-      <button class="gain-filter active" data-filter="all" onclick="selectFilterSb(this)">全部</button>
-      <button class="gain-filter" data-filter="健康" onclick="selectFilterSb(this)">🌿</button>
-      <button class="gain-filter" data-filter="财富" onclick="selectFilterSb(this)">💰</button>
-      <button class="gain-filter" data-filter="SP" onclick="selectFilterSb(this)">💞</button>
-      <button class="gain-filter" data-filter="人际关系" onclick="selectFilterSb(this)">🤝</button>
-      <button class="gain-filter" data-filter="学业" onclick="selectFilterSb(this)">📚</button>
-      <button class="gain-filter" data-filter="工作" onclick="selectFilterSb(this)">💼</button>
-      <button class="gain-filter" data-filter="其他" onclick="selectFilterSb(this)">✨</button>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px;">
-      <div class="gain-section-title" id="sharedGainTitleSb" style="margin:0;">所有人的收获</div>
-      <div style="display:flex;gap:6px;">
-        <button class="gain-sort-btn active" id="sortLikesSb" onclick="setSortSb('likes')">❤️ 最多赞</button>
-        <button class="gain-sort-btn" id="sortTimeSb" onclick="setSortSb('time')">🕐 最新</button>
-      </div>
-    </div>
-    <ul class="gain-list" id="sharedGainListSb"><li class="gain-loading">加载中…</li></ul>
-  </div>
+  <!-- 我的收获记录 -->
+  <div class="gain-section-title" id="myGainTitleSb">我的收获记录</div>
+  <ul class="gain-list" id="myGainListSb"><li class="gain-loading">加载中…</li></ul>
 
 </div>
 
@@ -699,11 +555,7 @@ let migrationDone = false;       // 防止重复迁移本地数据
 // ════════════════════════════════════════
 // 状态
 // ════════════════════════════════════════
-let gainSelectedCat = '健康';
-let gainSelectedFilterSb = 'all';
-let gainSortSb = 'likes';
-let activeGainTab = 'mine';       // 当前 tab：'mine' 或 'shared'
-const likedKeys = new Set();
+let gainSelectedCat = '';
 
 // ════════════════════════════════════════
 // 本地存储工具
@@ -717,7 +569,6 @@ function saveMyItems(items) {
 function tf(key, n) {
   const map = {
     'my_gains': '我的收获记录（' + n + ' 条）',
-    'shared_gains': '所有人的收获（' + n + ' 条）',
     'gain_recorded': '✨ 已记录到 ' + n,
   };
   return map[key] || key;
@@ -765,28 +616,6 @@ async function supaFetch(path, opts = {}) {
 
 
 // ════════════════════════════════════════
-// Tab 切换
-// ════════════════════════════════════════
-function switchGainTab(tab) {
-  activeGainTab = tab;
-  document.getElementById('tab-mine').classList.toggle('active', tab === 'mine');
-  document.getElementById('tab-shared').classList.toggle('active', tab === 'shared');
-  document.getElementById('panel-mine').classList.toggle('active', tab === 'mine');
-  document.getElementById('panel-shared').classList.toggle('active', tab === 'shared');
-
-  if (tab === 'shared') {
-    loadSharedGains();
-  } else {
-    // 切回我的收获，用缓存数据立即渲染（不会等加载）
-    if (cachedMyItems !== null) {
-      renderStatsFromCache();
-    } else {
-      loadMyData();
-    }
-  }
-}
-
-// ════════════════════════════════════════
 // 释放数据折叠
 // ════════════════════════════════════════
 function toggleStatsCard() {
@@ -813,33 +642,22 @@ function toggleStatsCard() {
 // ════════════════════════════════════════
 // 渲染收获列表
 // ════════════════════════════════════════
-function renderGainList(el, items, isShared) {
+function renderGainList(el, items) {
   if (!items.length) {
-    const emptyText = isShared ? '还没有人分享，成为第一个吧 🌸' : '还没有记录，写下第一条收获吧 🌊';
-    el.innerHTML = '<li class="gain-empty" style="padding:20px 0;text-align:center;color:#8aaac0;font-size:0.78rem;">' + emptyText + '</li>';
+    el.innerHTML = '<li class="gain-empty" style="padding:20px 0;text-align:center;color:#8aaac0;font-size:0.78rem;">还没有记录，写下第一条收获吧 🌊</li>';
     return;
   }
   el.innerHTML = items.map(function(item) {
     const icon = CAT_ICONS[item.cat] || '🌸';
     const badge = item.cat ? '<span class="gain-badge">' + icon + ' ' + item.cat + '</span>' : '';
     const likes = item.likes || 0;
-    const itemId = isShared ? (item.id + '') : (item.ts + '');
-    const liked = likedKeys.has(itemId);
-    const likeBtn = isShared
-      ? '<button class="gain-like-btn ' + (liked ? 'liked' : '') + '" onclick="likeGain(\'' + item.id + '\', this)">' +
-        (liked ? '❤️' : '🤍') + ' <span class="gain-like-count">' + (likes > 0 ? likes : '赞') + '</span></button>'
-      : '<span class="gain-meta">' + (likes > 0 ? '❤️ ' + likes : '') + '</span>';
-    // ⚠️ 按钮：只在「所有人的收获」里、且不是自己发的内容时显示
-    const showWarn = isShared && currentUser && item.user_id && item.user_id !== currentUser.id;
-    const warnBtn = showWarn
-      ? '<button class="gain-warn-btn" onclick="openWarnMenu(\'' + item.id + '\', \'' + item.user_id + '\')">⋯</button>'
-      : '';
-    return '<li class="gain-item ' + (isShared ? 'shared' : '') + '">' +
+    return '<li class="gain-item">' +
       '<span class="gain-text">' + escapeHtml(item.text) + '</span>' +
       '<div class="gain-footer">' +
       '<div style="display:flex;align-items:center;gap:6px;">' + badge +
       '<span class="gain-meta">' + formatRelTime(item.ts) + '</span></div>' +
-      '<div style="display:flex;align-items:center;">' + likeBtn + warnBtn + '</div></li>';
+      '<span class="gain-meta">' + (likes > 0 ? '❤️ ' + likes : '') + '</span>' +
+      '</div></li>';
   }).join('');
 }
 
@@ -876,97 +694,47 @@ async function loadMyData() {
 
   cachedMyItems = myItems;
 
-  // 更新列表（按时间倒序，所以直接用）
-  if (myTitleEl) myTitleEl.textContent = tf('my_gains', myItems.length);
-  renderGainList(myEl, myItems, false);
+  // 根据当前选中的分类过滤显示（未选 = 显示全部）
+  const displayItems = gainSelectedCat
+    ? myItems.filter(it => it.cat === gainSelectedCat)
+    : myItems;
 
-  // 更新统计
+  // 更新列表标题（用过滤后的数量）和列表
+  if (myTitleEl) myTitleEl.textContent = tf('my_gains', displayItems.length);
+  renderGainList(myEl, displayItems);
+
+  // 更新统计（统计始终基于全部数据）
   renderStatsFromCache();
 }
 
 // 兼容旧调用名
 async function loadMyGains() { return loadMyData(); }
 
-// ════════════════════════════════════════
-// 加载「所有人的收获」
-// ════════════════════════════════════════
-async function loadSharedGains() {
-  const sharedEl = document.getElementById('sharedGainListSb');
-  const titleEl  = document.getElementById('sharedGainTitleSb');
-  sharedEl.innerHTML = '<li class="gain-loading">加载中…</li>';
-
-  try {
-    const order = gainSortSb === 'likes' ? 'likes.desc,ts.desc' : 'ts.desc';
-    let url = `/rest/v1/gain_entries?select=*&order=${order}&limit=${GAIN_MAX}`;
-    if (gainSelectedFilterSb !== 'all') url += `&cat=eq.${encodeURIComponent(gainSelectedFilterSb)}`;
-    let items = await supaFetch(url);
-    // 过滤掉被屏蔽的用户/已举报的内容
-    const blockedUsers = getBlockedUsers();
-    const reportedIds  = getReportedIds();
-    items = (items || []).filter(it => {
-      if (it.user_id && blockedUsers.indexOf(it.user_id) !== -1) return false;
-      if (it.id && reportedIds.indexOf(it.id + '') !== -1) return false;
-      return true;
-    });
-    if (titleEl) titleEl.textContent = tf('shared_gains', items.length);
-    renderGainList(sharedEl, items, true);
-  } catch(e) {
-    console.error('Supabase error:', e);
-    sharedEl.innerHTML = `<li class="gain-empty">加载失败</li>`;
-  }
-}
-
 function selectCat(btn, ctx) {
   const scopeId = ctx === 'sb' ? 'gainCatsSb' : 'gainCats';
   const scope = document.getElementById(scopeId);
+  const isActive = btn.classList.contains('active');
+  // 先清空所有 active 状态
   if (scope) scope.querySelectorAll('.gain-cat').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  gainSelectedCat = btn.dataset.cat;
-}
 
-function selectFilterSb(btn) {
-  document.querySelectorAll('#panel-shared .gain-filter').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  gainSelectedFilterSb = btn.dataset.filter;
-  loadSharedGains();
-}
-
-function setSortSb(s) {
-  gainSortSb = s;
-  document.getElementById('sortLikesSb').classList.toggle('active', s === 'likes');
-  document.getElementById('sortTimeSb').classList.toggle('active', s === 'time');
-  loadSharedGains();
-}
-
-// ════════════════════════════════════════
-// 敏感词过滤（满足 Apple Guideline 1.2 内容过滤要求）
-// ════════════════════════════════════════
-const BANNED_WORDS = [
-  // 辱骂
-  '傻逼','沙比','煞笔','傻x','sb','智障','脑残','废物','贱人','婊子',
-  '狗东西','畜生','滚蛋','去死','该死','王八蛋','混蛋','操你','草你','日你',
-  'fuck','shit','bitch','asshole','idiot',
-  // 色情
-  '色情','黄片','av','做爱','性交','裸照','约炮','一夜情','卖淫','嫖娼',
-  '阴茎','阴道','性器','自慰','发骚','骚货','淫',
-  // 暴力
-  '杀人','砍死','打死','血腥','自杀','自残','炸弹','枪支','贩毒','吸毒',
-  // 广告诈骗
-  '加微信','加我vx','加qq','扫码','返利','代理','刷单','兼职日入',
-  '博彩','赌博','彩票','贷款','办卡','引流','推广加',
-  '点击链接','www.','http://','https://','.com','.cn','.net',
-];
-
-function checkContent(text) {
-  if (!text) return { ok: true };
-  const lower = text.toLowerCase();
-  for (let i = 0; i < BANNED_WORDS.length; i++) {
-    const w = BANNED_WORDS[i].toLowerCase();
-    if (w && lower.indexOf(w) !== -1) {
-      return { ok: false, word: BANNED_WORDS[i] };
-    }
+  if (isActive) {
+    // 再点一次已选中的 → 取消选中（显示全部）
+    gainSelectedCat = '';
+  } else {
+    // 切换到这个分类
+    btn.classList.add('active');
+    gainSelectedCat = btn.dataset.cat;
   }
-  return { ok: true };
+  // 刷新列表（用缓存,不用重新请求）
+  if (cachedMyItems !== null) {
+    const myEl = document.getElementById('myGainListSb');
+    const myTitleEl = document.getElementById('myGainTitleSb');
+    const displayItems = gainSelectedCat
+      ? cachedMyItems.filter(it => it.cat === gainSelectedCat)
+      : cachedMyItems;
+    if (myTitleEl) myTitleEl.textContent = tf('my_gains', displayItems.length);
+    renderGainList(myEl, displayItems);
+  }
 }
 
 async function submitGainSb() {
@@ -974,10 +742,9 @@ async function submitGainSb() {
   const text  = input.value.trim();
   if (!text) return;
 
-  // 敏感词检查
-  const check = checkContent(text);
-  if (!check.ok) {
-    showToast('内容含有不当词汇，请修改后再发布');
+  // 必须选择分类
+  if (!gainSelectedCat) {
+    showToast('请先选择分类');
     return;
   }
 
@@ -986,11 +753,7 @@ async function submitGainSb() {
   showToast(tf('gain_recorded', gainSelectedCat));
   // 写完后清空缓存并刷新「我的收获」
   cachedMyItems = null;
-  if (activeGainTab === 'mine') {
-    loadMyData();
-  }
-  // 「所有人的收获」也刷新一下（登录用户写的会出现在公开池）
-  loadSharedGains();
+  loadMyData();
 }
 
 async function _submitGainEntry(text, cat) {
@@ -1004,8 +767,7 @@ async function _submitGainEntry(text, cat) {
   myItems.unshift({ text, cat, ts, likes: 0 });
   saveMyItems(myItems);
 
-  // 写云端（公开池里所有人都能看到）
-  // 登录用户必须用 user token（RLS 要求 user_id = auth.uid()）
+  // 登录用户写云端（用户私密表，只有自己能看到）
   try {
     await supaFetch('/rest/v1/gain_entries', {
       method: 'POST',
@@ -1014,103 +776,6 @@ async function _submitGainEntry(text, cat) {
       useAuth: !!currentUser,
     });
   } catch(_) {}
-}
-
-// ════════════════════════════════════════
-// 举报 / 屏蔽（满足 Apple Guideline 1.2）
-// ════════════════════════════════════════
-function getBlockedUsers() {
-  try { return JSON.parse(localStorage.getItem('freed-blocked-users') || '[]'); }
-  catch(_) { return []; }
-}
-function saveBlockedUsers(list) {
-  try { localStorage.setItem('freed-blocked-users', JSON.stringify(list)); } catch(_) {}
-}
-function getReportedIds() {
-  try { return JSON.parse(localStorage.getItem('freed-reported-ids') || '[]'); }
-  catch(_) { return []; }
-}
-function saveReportedIds(list) {
-  try { localStorage.setItem('freed-reported-ids', JSON.stringify(list)); } catch(_) {}
-}
-
-let _warnTargetEntryId = null;
-let _warnTargetUserId  = null;
-
-window.openWarnMenu = function(entryId, userId) {
-  _warnTargetEntryId = entryId;
-  _warnTargetUserId  = userId;
-  document.getElementById('warn-menu-overlay').classList.add('show');
-};
-window.closeWarnMenu = function() {
-  document.getElementById('warn-menu-overlay').classList.remove('show');
-};
-
-window.doReportEntry = async function() {
-  if (!_warnTargetEntryId || !currentUser) { closeWarnMenu(); return; }
-  // 本地记下已举报的 id（立即从视图隐藏）
-  const reported = getReportedIds();
-  if (reported.indexOf(_warnTargetEntryId + '') === -1) {
-    reported.push(_warnTargetEntryId + '');
-    saveReportedIds(reported);
-  }
-  // 写入云端 gain_reports 表
-  try {
-    const sess = await supaAuth.auth.getSession();
-    const token = sess && sess.data && sess.data.session && sess.data.session.access_token;
-    if (token) {
-      await fetch(SUPA_URL + '/rest/v1/gain_reports', {
-        method: 'POST',
-        headers: {
-          'apikey': SUPA_KEY,
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation',
-        },
-        body: JSON.stringify({
-          entry_id: _warnTargetEntryId,
-          reporter_id: currentUser.id,
-        }),
-      });
-    }
-  } catch(e) {
-    console.warn('举报上报失败（已本地隐藏）:', e);
-  }
-  closeWarnMenu();
-  showToast('已举报，该内容已从你的视图中移除');
-  loadSharedGains();
-};
-
-window.doBlockUser = function() {
-  if (!_warnTargetUserId) { closeWarnMenu(); return; }
-  const blocked = getBlockedUsers();
-  if (blocked.indexOf(_warnTargetUserId) === -1) {
-    blocked.push(_warnTargetUserId);
-    saveBlockedUsers(blocked);
-  }
-  closeWarnMenu();
-  showToast('已屏蔽该用户，其所有内容已隐藏');
-  loadSharedGains();
-};
-
-async function likeGain(id, btn) {
-  if (likedKeys.has(id + '')) return;
-  likedKeys.add(id + '');
-  btn.classList.add('liked');
-  btn.innerHTML = '❤️ <span class="gain-like-count">…</span>';
-  try {
-    const rows = await supaFetch(`/rest/v1/gain_entries?id=eq.${id}&select=likes`);
-    const current = (rows && rows[0]) ? (rows[0].likes || 0) : 0;
-    const newLikes = current + 1;
-    await supaFetch(`/rest/v1/gain_entries?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ likes: newLikes }),
-    });
-    btn.querySelector('.gain-like-count').textContent = newLikes;
-  } catch(e) {
-    btn.querySelector('.gain-like-count').textContent = '赞';
-  }
 }
 
 function escapeHtml(s) {
@@ -1317,16 +982,9 @@ supaAuth.auth.onAuthStateChange(async (event, session) => {
   if (!currentUser) {
     return;
   }
-  // 重置缓存
+  // 重置缓存并重新加载
   cachedMyItems = null;
-  // 当前 tab 重新加载
-  if (activeGainTab === 'mine') {
-    loadMyData();
-  } else {
-    loadSharedGains();
-    // shared tab 时也悄悄刷新 mine 数据，下次切换就能用
-    loadMyData();
-  }
+  loadMyData();
 });
 
 // ════════════════════════════════════════
@@ -1410,20 +1068,21 @@ window.doAuthSubmitG = async function() {
 // ════════════════════════════════════════
 function applyLoginGate() {
   const card = document.getElementById('login-required-card');
-  const tabsBar = document.querySelector('.tabs-bar');
-  const panelMine = document.getElementById('panel-mine');
-  const panelShared = document.getElementById('panel-shared');
-  if (currentUser) {
-    if (card) card.style.display = 'none';
-    if (tabsBar) tabsBar.style.display = '';
-    if (panelMine) panelMine.style.display = '';
-    if (panelShared) panelShared.style.display = '';
-  } else {
-    if (card) card.style.display = '';
-    if (tabsBar) tabsBar.style.display = 'none';
-    if (panelMine) panelMine.style.display = 'none';
-    if (panelShared) panelShared.style.display = 'none';
-  }
+  const statsCard = document.getElementById('statsCard');
+  const gainCats = document.getElementById('gainCatsSb');
+  const gainInput = document.querySelector('.gain-input-row');
+  const intro = gainCats ? gainCats.previousElementSibling : null;
+  const myTitle = document.getElementById('myGainTitleSb');
+  const myList = document.getElementById('myGainListSb');
+  const show = currentUser ? '' : 'none';
+  const showCard = currentUser ? 'none' : '';
+  if (card) card.style.display = showCard;
+  if (statsCard) statsCard.style.display = show;
+  if (intro) intro.style.display = show;
+  if (gainCats) gainCats.style.display = show;
+  if (gainInput) gainInput.style.display = show;
+  if (myTitle) myTitle.style.display = show;
+  if (myList) myList.style.display = show;
 }
 
 (async function init() {
@@ -1437,21 +1096,10 @@ function applyLoginGate() {
   }
 
   applyLoginGate();
-  // 初始 tab 是「我的收获」— 加载我的数据（含统计）
+  // 加载我的数据（含统计）
   loadMyData();
-  // 「所有人的收获」延迟一点再加载，避免和上面的请求互相挤占
-  setTimeout(() => loadSharedGains(), 200);
 })();
 </script>
-<!-- 举报/屏蔽 弹出菜单 -->
-<div id="warn-menu-overlay" onclick="if(event.target===this)closeWarnMenu()">
-  <div class="warn-menu">
-    <button onclick="doReportEntry()">举报此内容</button>
-    <button onclick="doBlockUser()">屏蔽此用户</button>
-    <div class="warn-divider"></div>
-    <button class="cancel" onclick="closeWarnMenu()">取消</button>
-  </div>
-</div>
 
 <script src="nav-orb.js"></script>
 </body>
