@@ -1290,6 +1290,10 @@ const _origDraw = draw;
       setTimeout(async () => {
         try { await window.freedSupa.auth.signOut(); } catch(_) {}
         localStorage.removeItem('sb-ryoaxziysgdkjcjiuqti-auth-token');
+        localStorage.removeItem('freed-my-gains');
+        localStorage.removeItem('freed-goals');
+        localStorage.removeItem('freed-blocked-users');
+        localStorage.removeItem('freed-reported-ids');
         location.reload();
       }, 1500);
 
