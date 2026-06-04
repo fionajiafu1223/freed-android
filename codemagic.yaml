@@ -1,6 +1,3 @@
-去 GitHub 全选替换 `codemagic.yaml`，粘贴这个：
-
-```yaml
 # Codemagic CI/CD 配置文件
 # 文档：https://docs.codemagic.io/yaml-quick-start/building-a-native-ios-app/
 workflows:
