@@ -79,8 +79,8 @@ workflows:
           npx cap add android || npx cap sync android
       - name: 设置 Target SDK
         script: |
-          sed -i 's/targetSdkVersion 34/targetSdkVersion 35/g' android/app/build.gradle
-          sed -i 's/compileSdkVersion 34/compileSdkVersion 35/g' android/app/build.gradle
+          sed -i '' 's/targetSdkVersion 34/targetSdkVersion 35/g' android/app/build.gradle
+          sed -i '' 's/compileSdkVersion 34/compileSdkVersion 35/g' android/app/build.gradle
       - name: 生成 App 图标
         script: |
           npm install -g @capacitor/assets
