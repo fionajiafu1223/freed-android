@@ -79,17 +79,19 @@ workflows:
           npx cap add android || npx cap sync android
       - name: 设置版本号和 Target SDK
         script: |
+          BUILD_NUM=${BUILD_NUMBER:-10}
           python3 -c "
-          import re
+          import re, sys
+          build_num = sys.argv[1]
           with open('android/app/build.gradle', 'r') as f:
               content = f.read()
           content = re.sub(r'targetSdkVersion\s+\d+', 'targetSdkVersion 35', content)
           content = re.sub(r'compileSdkVersion\s+\d+', 'compileSdkVersion 35', content)
-          content = re.sub(r'versionCode\s+\d+', 'versionCode $BUILD_NUMBER', content)
+          content = re.sub(r'versionCode\s+\d+', 'versionCode ' + build_num, content)
           with open('android/app/build.gradle', 'w') as f:
               f.write(content)
-          print('Done')
-          "
+          print('Done, versionCode=' + build_num)
+          " $BUILD_NUM
       - name: 生成 App 图标
         script: |
           npm install -g @capacitor/assets
