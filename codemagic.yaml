@@ -1,5 +1,3 @@
-# Codemagic CI/CD 配置文件
-# 文档：https://docs.codemagic.io/yaml-quick-start/building-a-native-ios-app/
 workflows:
   ios-workflow:
     name: Freed 释放 iOS Build
@@ -81,6 +79,7 @@ workflows:
           npx cap add android || npx cap sync android
       - name: 生成 App 图标
         script: |
+          npm install -g @capacitor/assets
           npx capacitor-assets generate --android
       - name: 构建 AAB
         script: |
