@@ -77,6 +77,18 @@ workflows:
       - name: 同步 Capacitor 到 Android
         script: |
           npx cap add android || npx cap sync android
+      - name: 设置 Target SDK
+        script: |
+          python3 << 'PYEOF'
+          import re
+          with open('android/app/build.gradle', 'r') as f:
+              content = f.read()
+          content = re.sub(r'targetSdkVersion\s+\d+', 'targetSdkVersion 35', content)
+          content = re.sub(r'compileSdkVersion\s+\d+', 'compileSdkVersion 35', content)
+          with open('android/app/build.gradle', 'w') as f:
+              f.write(content)
+          print('Done')
+          PYEOF
       - name: 生成 App 图标
         script: |
           npm install -g @capacitor/assets
