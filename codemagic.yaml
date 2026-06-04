@@ -79,6 +79,8 @@ workflows:
           npx cap add android || npx cap sync android
       - name: 设置 Target SDK
         script: |
+          echo "=== 修改前 ==="
+          cat android/app/build.gradle
           python3 << 'PYEOF'
           import re
           with open('android/app/build.gradle', 'r') as f:
@@ -89,6 +91,8 @@ workflows:
               f.write(content)
           print('Done')
           PYEOF
+          echo "=== 修改后 ==="
+          cat android/app/build.gradle
       - name: 生成 App 图标
         script: |
           npm install -g @capacitor/assets
