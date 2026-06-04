@@ -1,3 +1,6 @@
+去 GitHub 全选替换 `codemagic.yaml`，粘贴这个：
+
+```yaml
 # Codemagic CI/CD 配置文件
 # 文档：https://docs.codemagic.io/yaml-quick-start/building-a-native-ios-app/
 workflows:
@@ -75,7 +78,7 @@ workflows:
       - name: 安装 npm 依赖
         script: |
           npm install
-          npm install @capacitor/android
+          npm install @capacitor/android@6 --legacy-peer-deps
       - name: 同步 Capacitor 到 Android
         script: |
           npx cap add android || npx cap sync android
@@ -88,3 +91,4 @@ workflows:
           ./gradlew bundleRelease
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab
+```
