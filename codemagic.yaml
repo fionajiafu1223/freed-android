@@ -18,10 +18,10 @@ workflows:
       node: 20.11.0
       xcode: latest
       cocoapods: default
+    scripts:
       - name: 安装 npm 依赖
         script: |
           npm install
-          npm install @capacitor/android
       - name: 同步 Capacitor 到 iOS
         script: |
           npx cap add ios || npx cap sync ios
@@ -75,6 +75,7 @@ workflows:
       - name: 安装 npm 依赖
         script: |
           npm install
+          npm install @capacitor/android
       - name: 同步 Capacitor 到 Android
         script: |
           npx cap add android || npx cap sync android
@@ -87,4 +88,3 @@ workflows:
           ./gradlew bundleRelease
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab
-  
