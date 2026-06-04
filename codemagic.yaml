@@ -77,6 +77,9 @@ workflows:
       - name: 同步 Capacitor 到 Android
         script: |
           npx cap add android || npx cap sync android
+      - name: 设置版本号
+        script: |
+          sed -i '' "s/versionCode 1/versionCode $BUILD_NUMBER/g" android/app/build.gradle
       - name: 设置 Target SDK
         script: |
           sed -i '' 's/targetSdkVersion 34/targetSdkVersion 35/g' android/app/build.gradle
