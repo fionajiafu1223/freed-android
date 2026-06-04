@@ -77,13 +77,19 @@ workflows:
       - name: 同步 Capacitor 到 Android
         script: |
           npx cap add android || npx cap sync android
-      - name: 设置版本号
+      - name: 设置版本号和 Target SDK
         script: |
-          sed -i '' "s/versionCode 1/versionCode $BUILD_NUMBER/g" android/app/build.gradle
-      - name: 设置 Target SDK
-        script: |
-          sed -i '' 's/targetSdkVersion 34/targetSdkVersion 35/g' android/app/build.gradle
-          sed -i '' 's/compileSdkVersion 34/compileSdkVersion 35/g' android/app/build.gradle
+          python3 -c "
+          import re
+          with open('android/app/build.gradle', 'r') as f:
+              content = f.read()
+          content = re.sub(r'targetSdkVersion\s+\d+', 'targetSdkVersion 35', content)
+          content = re.sub(r'compileSdkVersion\s+\d+', 'compileSdkVersion 35', content)
+          content = re.sub(r'versionCode\s+\d+', 'versionCode $BUILD_NUMBER', content)
+          with open('android/app/build.gradle', 'w') as f:
+              f.write(content)
+          print('Done')
+          "
       - name: 生成 App 图标
         script: |
           npm install -g @capacitor/assets
