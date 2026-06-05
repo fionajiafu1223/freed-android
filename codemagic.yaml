@@ -76,7 +76,12 @@ workflows:
           npm install @capacitor/android@6 --legacy-peer-deps
       - name: 同步 Capacitor 到 Android
         script: |
-          npx cap add android || npx cap sync android
+          rm -rf android
+          npx cap add android
+          npx cap sync android
+          perl -pi -e 's/compileSdkVersion = \d+/compileSdkVersion = 35/g' android/variables.gradle
+          perl -pi -e 's/targetSdkVersion = \d+/targetSdkVersion = 35/g' android/variables.gradle
+          cat android/variables.gradle
       - name: 生成 App 图标
         script: |
           npm install -g @capacitor/assets
