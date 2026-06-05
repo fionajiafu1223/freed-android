@@ -29,7 +29,8 @@ workflows:
           npx capacitor-assets generate --ios
       - name: 安装 CocoaPods
         script: |
-          cd ios/App && pod install
+          cd ios/App
+          pod install
       - name: 设置代码签名
         script: |
           keychain initialize
@@ -42,7 +43,9 @@ workflows:
           TF_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
           LATEST=$(( AS_BUILD > TF_BUILD ? AS_BUILD : TF_BUILD ))
           NEW_BUILD=$(( LATEST + 1 ))
-          echo "App Store 最新: $AS_BUILD | TestFlight 最新: $TF_BUILD | 本次构建号: $NEW_BUILD"
+          echo "App Store 最新: $AS_BUILD"
+          echo "TestFlight 最新: $TF_BUILD"
+          echo "本次构建号: $NEW_BUILD"
           agvtool new-version -all $NEW_BUILD
       - name: 构建 ipa
         script: |
@@ -58,7 +61,6 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-
   android-workflow:
     name: Freed 释放 Android Build
     max_build_duration: 60
@@ -79,21 +81,21 @@ workflows:
           rm -rf android
           npx cap add android
           npx cap sync android
-          perl -pi -e 's/compileSdkVersion = \d+/compileSdkVersion = 35/g' android/variables.gradle
-          perl -pi -e 's/targetSdkVersion = \d+/targetSdkVersion = 35/g' android/variables.gradle
+          echo "===== 修改 SDK 版本到 35 ====="
+          perl -pi -e 's/compileSdkVersion\s*=\s*\d+/compileSdkVersion = 35/g' android/variables.gradle
+          perl -pi -e 's/targetSdkVersion\s*=\s*\d+/targetSdkVersion = 35/g' android/variables.gradle
+          echo "===== 当前 variables.gradle ====="
           cat android/variables.gradle
-      - name: 生成 App 图标
-        script: |
-          npm install -g @capacitor/assets
-          npx capacitor-assets generate --android
       - name: 构建 AAB
         script: |
           cd android
+          VERSION_CODE=$(date +%s)
+          echo "本次 Android versionCode: $VERSION_CODE"
           ./gradlew bundleRelease \
             -Pandroid.injected.signing.store.file=$CM_KEYSTORE_PATH \
             -Pandroid.injected.signing.store.password=$CM_KEYSTORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$CM_KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$CM_KEY_PASSWORD \
-            -Pandroid.injected.version.code=${BUILD_NUMBER:-300}
+            -Pandroid.injected.version.code=$VERSION_CODE
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab
