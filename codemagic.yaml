@@ -86,10 +86,14 @@ workflows:
           perl -pi -e 's/targetSdkVersion\s*=\s*\d+/targetSdkVersion = 35/g' android/variables.gradle
           echo "===== 当前 variables.gradle ====="
           cat android/variables.gradle
+          echo "===== 修改 build.gradle versionCode ====="
+          perl -pi -e 's/versionCode \d+/versionCode 1/g' android/app/build.gradle
+          echo "===== 当前 versionCode 行 ====="
+          grep versionCode android/app/build.gradle
       - name: 构建 AAB
         script: |
           cd android
-          VERSION_CODE=$(date +%s)
+          VERSION_CODE=$(( ${BUILD_NUMBER:-1} + 9 ))
           echo "本次 Android versionCode: $VERSION_CODE"
           ./gradlew bundleRelease \
             -Pandroid.injected.signing.store.file=$CM_KEYSTORE_PATH \
