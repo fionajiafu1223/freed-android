@@ -180,148 +180,6 @@ body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',ser
   padding: 6px 0;
 }
 
-/* 登录提示条 */
-.login-hint {
-  margin-top: 10px;
-  padding: 9px 12px;
-  background: rgba(180, 220, 255, 0.30);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.login-hint-text {
-  font-size: 0.72rem;
-  color: #2a5080;
-  font-family: 'Noto Sans SC', sans-serif;
-  flex: 1;
-  line-height: 1.4;
-}
-.login-hint-btn {
-  padding: 5px 14px;
-  border: none;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
-  color: #fff;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.74rem;
-  cursor: pointer;
-  white-space: nowrap;
-  letter-spacing: 0.05em;
-}
-.login-hint-btn:active { transform: scale(0.96); }
-
-/* 登录弹窗（和 index.html 同款玻璃气泡风格） */
-#auth-overlay-gains {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(10, 40, 75, 0.55);
-  backdrop-filter: blur(8px);
-  display: none; align-items: center; justify-content: center;
-  padding: 20px; opacity: 0;
-  transition: opacity 0.3s ease;
-}
-#auth-overlay-gains.show { display: flex; opacity: 1; }
-.auth-card-g {
-  position: relative; width: 100%; max-width: 340px;
-  padding: 32px 26px 26px; border-radius: 28px;
-  background: radial-gradient(circle at 30% 25%,
-    rgba(255,255,255,0.88) 0%,
-    rgba(230,245,255,0.72) 30%,
-    rgba(180,220,250,0.60) 60%,
-    rgba(140,200,240,0.55) 100%);
-  box-shadow:
-    inset 0 0 30px rgba(180,220,255,0.55),
-    inset 0 0 8px rgba(255,255,255,0.60),
-    0 12px 40px rgba(10,50,100,0.35),
-    0 0 50px rgba(140,200,240,0.30);
-  backdrop-filter: blur(6px);
-  transform: scale(0.92);
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-}
-#auth-overlay-gains.show .auth-card-g { transform: scale(1); }
-.auth-card-g .auth-close-g {
-  position: absolute; top: 12px; right: 14px;
-  width: 28px; height: 28px;
-  border: none; background: transparent;
-  font-size: 1.1rem; color: rgba(20, 60, 110, 0.55);
-  cursor: pointer; line-height: 1;
-}
-.auth-card-g .auth-title-g {
-  text-align: center;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 1.05rem; font-weight: 400;
-  color: #0e3560; letter-spacing: 0.15em;
-  margin-bottom: 4px;
-}
-.auth-card-g .auth-subtitle-g {
-  text-align: center;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 0.68rem; color: rgba(20, 60, 110, 0.62);
-  margin-bottom: 22px; letter-spacing: 0.04em;
-}
-.auth-card-g .auth-tabs-g {
-  display: flex; gap: 4px; margin-bottom: 18px;
-  padding: 3px; background: rgba(255,255,255,0.40);
-  border-radius: 12px;
-}
-.auth-card-g .auth-tab-g {
-  flex: 1; padding: 8px 0;
-  border: none; background: transparent;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.78rem; color: rgba(20, 60, 110, 0.65);
-  cursor: pointer; border-radius: 9px;
-  transition: all 0.2s ease;
-}
-.auth-card-g .auth-tab-g.active {
-  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
-  color: #fff; box-shadow: 0 2px 8px rgba(42,122,191,0.30);
-}
-.auth-card-g .auth-input-g {
-  width: 100%; padding: 11px 14px; margin-bottom: 12px;
-  border: 1.5px solid rgba(120,170,220,0.40);
-  border-radius: 12px; background: rgba(255,255,255,0.75);
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 0.85rem; color: #0e2840;
-  outline: none;
-  transition: border-color 0.2s, background 0.2s;
-}
-.auth-card-g .auth-input-g:focus {
-  border-color: rgba(80,140,210,0.85);
-  background: rgba(255,255,255,0.92);
-}
-.auth-card-g .auth-submit-g {
-  width: 100%; padding: 12px 0; margin-top: 6px;
-  border: none; border-radius: 14px;
-  background: linear-gradient(135deg, #4a9fd4, #2a7abf);
-  color: #fff;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.92rem; letter-spacing: 0.1em;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(42,122,191,0.35);
-  transition: transform 0.15s ease, opacity 0.2s ease;
-}
-.auth-card-g .auth-submit-g:active { transform: scale(0.97); }
-.auth-card-g .auth-submit-g:disabled { opacity: 0.55; cursor: not-allowed; }
-.auth-card-g .auth-msg-g {
-  margin-top: 12px; padding: 8px 12px;
-  border-radius: 10px;
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 0.75rem; text-align: center;
-  display: none;
-}
-.auth-card-g .auth-msg-g.error {
-  display: block;
-  background: rgba(220, 80, 80, 0.15);
-  color: #a02020;
-  border: 1px solid rgba(220, 80, 80, 0.30);
-}
-.auth-card-g .auth-msg-g.success {
-  display: block;
-  background: rgba(80, 180, 130, 0.18);
-  color: #1a6f48;
-  border: 1px solid rgba(80, 180, 130, 0.35);
-}
 
 </style>
 </head>
@@ -461,12 +319,6 @@ draw();
 <div class="page-title">📒 收 获 本</div>
 <div class="page-wrap">
 
-  <!-- 未登录提示卡片 -->
-  <div id="login-required-card" style="display:none;text-align:center;padding:48px 24px;background:rgba(255,255,255,0.6);border-radius:18px;margin-top:24px;">
-    <div style="font-size:1.1rem;color:#3a5a80;margin-bottom:12px;font-family:'Noto Sans SC',sans-serif;">请登录后使用收获本</div>
-    <div style="font-size:0.85rem;color:#7a90a8;margin-bottom:24px;font-family:'Noto Sans SC',sans-serif;">登录后即可记录你的释放收获、查看释放数据、跨设备同步</div>
-    <button class="login-hint-btn" onclick="openAuthG()" style="font-size:0.95rem;padding:10px 32px;">登 录 / 注 册</button>
-  </div>
 
   <!-- 我的释放数据 卡片（可折叠） -->
   <div class="stats-card" id="statsCard">
@@ -502,23 +354,6 @@ draw();
 
 </div>
 
-<!-- 登录/注册弹窗 -->
-<div id="auth-overlay-gains" onclick="if(event.target===this)closeAuthG()">
-  <div class="auth-card-g">
-    <button class="auth-close-g" onclick="closeAuthG()">✕</button>
-    <div class="auth-title-g">Freed</div>
-    <div class="auth-subtitle-g">登录以跨设备同步你的收获</div>
-    <div class="auth-tabs-g">
-      <button class="auth-tab-g active" id="g-tab-login" onclick="switchAuthTabG('login')">登录</button>
-      <button class="auth-tab-g" id="g-tab-signup" onclick="switchAuthTabG('signup')">注册</button>
-    </div>
-    <input type="text" id="g-auth-nickname" class="auth-input-g" placeholder="昵称" maxlength="20" style="display:none;" />
-    <input type="email" id="g-auth-email" class="auth-input-g" placeholder="邮箱" autocomplete="email" />
-    <input type="password" id="g-auth-password" class="auth-input-g" placeholder="密码（至少 6 位）" autocomplete="current-password" />
-    <button class="auth-submit-g" id="g-auth-submit-btn" onclick="doAuthSubmitG()">登 录</button>
-    <div class="auth-msg-g" id="g-auth-msg"></div>
-  </div>
-</div>
 
 <script>
 const currentLang = 'zh';
@@ -812,21 +647,6 @@ function daysSince(ts) {
 // ════════════════════════════════════════
 
 // 控制整个卡片的显示
-function setStatsCardForLoggedOut() {
-  const card = document.getElementById('statsCard');
-  // 未登录：卡片标题改成引导，body 显示登录按钮
-  card.innerHTML =
-    '<div class="stats-header" style="cursor:default;">' +
-      '<span class="stats-title">🌊 登录后查看你的释放足迹</span>' +
-    '</div>' +
-    '<div class="stats-body" style="margin-top:10px;max-height:none;opacity:1;">' +
-      '<div class="login-hint" style="margin-top:0;">' +
-        '<div class="login-hint-text">登录后可以跨设备同步你的收获，并看到自己的释放数据 ✨</div>' +
-        '<button class="login-hint-btn" onclick="openAuthG()">登 录</button>' +
-      '</div>' +
-    '</div>';
-  card.classList.remove('collapsed');
-}
 
 function setStatsCardForLoggedIn() {
   const card = document.getElementById('statsCard');
@@ -848,13 +668,7 @@ function setStatsCardForLoggedIn() {
 }
 
 function renderStatsFromCache() {
-  // 未登录：直接展示引导卡片，不计算任何数据
-  if (!currentUser) {
-    setStatsCardForLoggedOut();
-    return;
-  }
-
-  // 登录：把卡片切换成标准结构（如果之前是引导态）
+  // 把卡片切换成标准结构（如果之前是引导态）
   const card = document.getElementById('statsCard');
   const isLoggedOutLayout = !card.querySelector('#statsBody');
   if (isLoggedOutLayout) {
@@ -976,127 +790,19 @@ async function migrateLocalToCloud() {
 // 监听登录态变化（其他页面登录/登出时自动响应）
 supaAuth.auth.onAuthStateChange(async (event, session) => {
   await refreshUser();
-  // 根据登录态切换显示
-  applyLoginGate();
-  // 未登录时停在登录提示，不加载数据
-  if (!currentUser) {
-    return;
-  }
   // 重置缓存并重新加载
   cachedMyItems = null;
   loadMyData();
 });
 
 // ════════════════════════════════════════
-// gains.html 内置登录弹窗（与 index.html 共用同一 Supabase 会话）
-// ════════════════════════════════════════
-let gAuthTab = 'login';
-function $g(id) { return document.getElementById(id); }
-function showAuthMsgG(text, type) {
-  const el = $g('g-auth-msg');
-  el.textContent = text;
-  el.className = 'auth-msg-g ' + (type || '');
-}
-function clearAuthMsgG() {
-  const el = $g('g-auth-msg');
-  el.textContent = '';
-  el.className = 'auth-msg-g';
-}
-window.openAuthG = function() {
-  clearAuthMsgG();
-  $g('auth-overlay-gains').classList.add('show');
-};
-window.closeAuthG = function() {
-  $g('auth-overlay-gains').classList.remove('show');
-};
-window.switchAuthTabG = function(tab) {
-  gAuthTab = tab;
-  clearAuthMsgG();
-  $g('g-tab-login').classList.toggle('active', tab === 'login');
-  $g('g-tab-signup').classList.toggle('active', tab === 'signup');
-  $g('g-auth-nickname').style.display = (tab === 'signup') ? 'block' : 'none';
-  $g('g-auth-submit-btn').textContent = (tab === 'signup') ? '注 册' : '登 录';
-};
-window.doAuthSubmitG = async function() {
-  const email = $g('g-auth-email').value.trim();
-  const password = $g('g-auth-password').value;
-  const nickname = $g('g-auth-nickname').value.trim();
-
-  if (!email || !password) { showAuthMsgG('请填写邮箱和密码', 'error'); return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAuthMsgG('邮箱格式不正确', 'error'); return; }
-  if (password.length < 6) { showAuthMsgG('密码至少 6 位', 'error'); return; }
-  if (gAuthTab === 'signup' && !nickname) { showAuthMsgG('请填写昵称', 'error'); return; }
-
-  const btn = $g('g-auth-submit-btn');
-  btn.disabled = true;
-  const orig = btn.textContent;
-  btn.textContent = '请稍候…';
-  clearAuthMsgG();
-
-  try {
-    if (gAuthTab === 'signup') {
-      const { data, error } = await supaAuth.auth.signUp({ email, password });
-      if (error) throw error;
-      if (data.user) {
-        try {
-          await supaAuth.from('user_profiles').insert({ id: data.user.id, nickname: nickname });
-        } catch(_) {}
-      }
-      showAuthMsgG('注册成功 🌊', 'success');
-      setTimeout(() => closeAuthG(), 800);
-    } else {
-      const { error } = await supaAuth.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      showAuthMsgG('登录成功 ✨', 'success');
-      setTimeout(() => closeAuthG(), 600);
-    }
-  } catch (err) {
-    let msg = err.message || '操作失败';
-    if (msg.includes('Invalid login credentials')) msg = '邮箱或密码错误';
-    else if (msg.includes('User already registered')) msg = '该邮箱已注册，请直接登录';
-    else if (msg.includes('Password should be')) msg = '密码至少 6 位';
-    else if (msg.includes('Email rate limit')) msg = '请求过于频繁，请稍后再试';
-    showAuthMsgG(msg, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = orig;
-  }
-};
 
 // ════════════════════════════════════════
 // 启动
 // ════════════════════════════════════════
-function applyLoginGate() {
-  const card = document.getElementById('login-required-card');
-  const statsCard = document.getElementById('statsCard');
-  const gainCats = document.getElementById('gainCatsSb');
-  const gainInput = document.querySelector('.gain-input-row');
-  const intro = gainCats ? gainCats.previousElementSibling : null;
-  const myTitle = document.getElementById('myGainTitleSb');
-  const myList = document.getElementById('myGainListSb');
-  const show = currentUser ? '' : 'none';
-  const showCard = currentUser ? 'none' : '';
-  if (card) card.style.display = showCard;
-  if (statsCard) statsCard.style.display = show;
-  if (intro) intro.style.display = show;
-  if (gainCats) gainCats.style.display = show;
-  if (gainInput) gainInput.style.display = show;
-  if (myTitle) myTitle.style.display = show;
-  if (myList) myList.style.display = show;
-}
 
 (async function init() {
-  // refreshUser 现在直接读 localStorage，立即可用
   await refreshUser();
-
-  // 未登录 → 显示登录提示，隐藏其他内容，到此为止
-  if (!currentUser) {
-    applyLoginGate();
-    return;
-  }
-
-  applyLoginGate();
-  // 加载我的数据（含统计）
   loadMyData();
 })();
 </script>

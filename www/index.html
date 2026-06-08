@@ -787,8 +787,16 @@ function returnToHero() {
 }
 
 // hero bubble click
-document.getElementById('hero-bubble').addEventListener('click', function() {
+document.getElementById('hero-bubble').addEventListener('click', async function() {
   if (navState !== 'hero') return;
+  try {
+    const { data: { session } } = await window.freedSupa.auth.getSession();
+    if (!session) {
+      switchAuthTab('login');
+      openAuth();
+      return;
+    }
+  } catch(_) {}
   showNavMain();
 });
 
@@ -798,11 +806,34 @@ document.getElementById('nb-tools').addEventListener('click', showNavTools);
 // placeholder pages
 document.getElementById('nb-ai').addEventListener('click', () => window.location.href='assistant.html');
 document.getElementById('nb-goals').addEventListener('click', () => window.location.href='goals.html');
-document.getElementById('nb-gains').addEventListener('click', () => window.location.href='gains.html');
+document.getElementById('nb-gains').addEventListener('click', async function() {
+  if (typeof FreedPaywall !== 'undefined') {
+    const isPremium = await FreedPaywall.checkPremium();
+    if (!isPremium) {
+      FreedPaywall.showPaywall(null);
+      return;
+    }
+  }
+  window.location.href = 'gains.html';
+});
+
+// 付费工具 ID
+const PAID_TOOL_IDS = ['tool-whole','tool-sedona','tool-doublesides','tool-financial','tool-relationship','tool-body'];
 
 // tool links
 document.querySelectorAll('#nav-tools .nav-bubble[data-href]').forEach(b => {
-  b.addEventListener('click', () => { window.location.href = b.dataset.href; });
+  b.addEventListener('click', async function() {
+    if (PAID_TOOL_IDS.includes(b.id) && typeof FreedPaywall !== 'undefined') {
+      const isPremium = await FreedPaywall.checkPremium();
+      if (!isPremium) {
+        FreedPaywall.showPaywall(function() {
+          window.location.href = b.dataset.href;
+        });
+        return;
+      }
+    }
+    window.location.href = b.dataset.href;
+  });
 });
 
 // click backdrop to return
@@ -1307,5 +1338,6 @@ const _origDraw = draw;
 })();
 </script>
 
+<script src="paywall.js"></script>
 </body>
 </html>

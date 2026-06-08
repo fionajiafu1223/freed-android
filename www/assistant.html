@@ -1,4 +1,4 @@
-<!-- assistant v3 -->
+<!-- assistant v6 — 垂直三球 + 柔和治愈色 -->
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -9,241 +9,306 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=Noto+Sans+SC:wght@300;400&display=swap">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',serif; padding:80px 16px 32px; }
-.page-title { text-align:center; font-size:1.1rem; letter-spacing:0.2em; color:rgba(3,80,140,0.85); margin-bottom:24px; }
-.page-wrap { max-width:480px; margin:0 auto; background:rgba(255,255,255,0.78); border-radius:20px; padding:20px 16px; box-shadow:0 8px 32px rgba(0,60,120,0.10); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.85); }
+body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',serif; overflow:hidden; }
 
-  .asst-panel { display: flex; flex-direction: column; gap: 12px; }
-  .asst-subtitle {
-    font-size: 0.78rem; color: #5a7aa0;
-    font-family: 'Noto Sans SC', sans-serif;
-    letter-spacing: 0.04em; line-height: 1.6;
-  }
-  .asst-textarea {
-    width: 100%; min-height: 100px; padding: 12px 14px;
-    border: 1.5px solid rgba(140,180,225,0.5); border-radius: 14px;
-    background: rgba(255,255,255,0.7); color: #0e2840;
-    font-family: 'Noto Serif SC', serif; font-size: 0.92rem;
-    line-height: 1.7; outline: none; resize: vertical;
-  }
-  .asst-textarea:focus { border-color: rgba(80,140,220,0.75); }
-  .asst-submit {
-    padding: 12px; border: none; border-radius: 14px;
-    background: linear-gradient(160deg, rgba(80,140,220,0.85) 0%, rgba(60,180,150,0.75) 100%);
-    color: #fff; font-family: 'Noto Serif SC', serif; font-size: 0.92rem;
-    cursor: pointer; transition: transform 0.18s;
-  }
-  .asst-submit:hover { opacity: 0.88; transform: scale(1.04); }
-  .asst-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.page-title {
+  position: fixed;
+  top: max(28px, calc(env(safe-area-inset-top,0px) + 14px));
+  left: 50%; transform: translateX(-50%);
+  font-size: 1.1rem; letter-spacing: 0.2em; color: rgba(3,80,140,0.85);
+  z-index: 20; white-space: nowrap; pointer-events: none;
+}
 
-  .asst-result {
-    display: none; flex-direction: column; gap: 14px; margin-top: 8px;
-  }
-  .asst-result.show { display: flex; }
+/* ── 球容器 ── */
+#asst-layer {
+  position: fixed; inset: 0; z-index: 10; pointer-events: none;
+}
 
-  .asst-desire-badges { display: flex; gap: 8px; flex-wrap: wrap; }
-  .asst-badge {
-    padding: 6px 14px; border-radius: 99px;
-    font-size: 0.85rem; font-family: 'Noto Serif SC', serif;
-  }
-  .asst-badge.bc { background: rgba(255,192,210,0.55); color: #7a1030; border: 1.5px solid rgba(192,51,82,0.3); }
-  .asst-badge.ba { background: rgba(153,251,200,0.45); color: #0a4a28; border: 1.5px solid rgba(24,134,73,0.3); }
-  .asst-badge.bs { background: rgba(161,202,255,0.45); color: #0a2860; border: 1.5px solid rgba(43,74,219,0.3); }
+/* ── 球（完全复用 nav-bubble 样式）── */
+.asst-orb-wrap {
+  position: fixed;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  pointer-events: auto;
+  font-family: 'ITC Bauhaus','Josefin Sans',sans-serif;
+  font-weight: 500;
+  color: rgba(220,245,255,0.92);
+  text-shadow: 0 1px 6px rgba(0,60,120,0.4);
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  width: 88px; height: 88px;
+  font-size: 0.72rem;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  opacity: 0;
+  user-select: none;
+  backdrop-filter: blur(3px);
+  flex-direction: column; gap: 4px;
+}
+.asst-orb-wrap.visible {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  animation: navBob var(--bob-dur, 3.5s) ease-in-out infinite;
+  animation-delay: var(--bob-delay, 0s);
+  animation-fill-mode: both;
+}
+.asst-orb-wrap:active { transform: translate(-50%, -50%) scale(0.92); }
 
-  .asst-analysis {
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .asst-point {
-    background: rgba(255,255,255,0.75); border-radius: 14px;
-    padding: 12px 14px;
-    border: 1px solid rgba(180,210,240,0.4);
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .asst-point-badge {
-    align-self: flex-start; padding: 3px 10px; border-radius: 99px;
-    font-size: 0.75rem; font-family: 'Noto Serif SC', serif;
-  }
-  .asst-point-body {
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .asst-point-quote {
-    font-size: 0.92rem; color: #0e2840; font-style: italic;
-    padding: 6px 0;
-  }
-  .asst-point-reason {
-    font-size: 0.82rem; color: #5a7aa0; line-height: 1.7;
-    font-family: 'Noto Sans SC', sans-serif;
-  }
-  .asst-loading {
-    display: none; align-items: center; justify-content: center; gap: 8px;
-    padding: 24px; color: #5a7aa0;
-  }
-  .asst-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: rgba(80,140,220,0.7);
-    animation: dotPulse 1.4s ease infinite;
-  }
-  .asst-dot:nth-child(2) { animation-delay: 0.2s; }
-  .asst-dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes dotPulse {
-    0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
-    30% { opacity: 1; transform: scale(1.2); }
-  }
-  
-  .asst-go-btn {
-    width: 100%; padding: 12px; border-radius: 14px; border: none;
-    background: linear-gradient(135deg, #4a9fd4, #2a7abf); color: #fff;
-    font-family: 'Noto Serif SC', serif; font-size: 0.92rem; letter-spacing: 0.08em;
-    cursor: pointer; transition: opacity 0.2s, transform 0.15s;
-    margin-top: 4px;
-  }
-  .asst-go-btn:hover { opacity: 0.88; transform: scale(1.02); }
-  
-  .asst-error {
-    padding: 14px; color: #c04040; font-size: 0.82rem;
-    line-height: 1.7; font-family: 'Noto Sans SC', sans-serif;
-    background: rgba(255,230,230,0.6); border-radius: 12px;
-    border: 1px solid rgba(220,80,80,0.3);
-  }
+@keyframes navBob {
+  0%,100% { margin-top: 0px; }
+  50%      { margin-top: -8px; }
+}
+
+.asst-orb { display: none; } /* emoji不再用，用文字代替 */
+
+.asst-orb-name {
+  font-size: 0.72rem; letter-spacing: 0.06em;
+  color: rgba(220,245,255,0.92);
+  font-family: 'ITC Bauhaus','Josefin Sans',sans-serif;
+  text-align: center; line-height: 1.3;
+  text-shadow: 0 1px 6px rgba(0,60,120,0.4);
+}
+
+/* ── 展开面板 ── */
+#panel-blockpoint {
+  position: fixed; inset: 0; z-index: 30;
+  display: none; flex-direction: column;
+  padding: 80px 16px 32px;
+  overflow-y: auto;
+}
+#panel-blockpoint.open { display: flex; }
+.panel-back {
+  max-width: 480px; margin: 0 auto 12px; width: 100%;
+  display: flex; align-items: center; gap: 6px;
+  color: rgba(3,80,140,0.7); font-size: 0.82rem;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer; letter-spacing: 0.04em;
+}
+.panel-back:hover { color: rgba(3,80,140,1); }
+.panel-inner {
+  max-width: 480px; margin: 0 auto; width: 100%;
+  background: rgba(255,255,255,0.88);
+  border-radius: 20px; padding: 20px 16px;
+  box-shadow: 0 8px 32px rgba(0,60,120,0.10);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.85);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.panel-title { font-size: 1rem; letter-spacing: 0.1em; color: #0e2840; margin-bottom: 2px; }
+.asst-subtitle { font-size: 0.78rem; color: #5a7aa0; font-family: 'Noto Sans SC', sans-serif; letter-spacing: 0.04em; line-height: 1.6; }
+.asst-textarea {
+  width: 100%; min-height: 100px; padding: 12px 14px;
+  border: 1.5px solid rgba(140,180,225,0.5); border-radius: 14px;
+  background: rgba(255,255,255,0.7); color: #0e2840;
+  font-family: 'Noto Serif SC', serif; font-size: 0.92rem;
+  line-height: 1.7; outline: none; resize: vertical;
+}
+.asst-textarea:focus { border-color: rgba(80,140,220,0.75); }
+.asst-submit {
+  padding: 12px; border: none; border-radius: 14px;
+  background: linear-gradient(160deg, rgba(80,140,220,0.85) 0%, rgba(60,180,150,0.75) 100%);
+  color: #fff; font-family: 'Noto Serif SC', serif; font-size: 0.92rem;
+  cursor: pointer; transition: transform 0.18s;
+}
+.asst-submit:hover { opacity: 0.88; transform: scale(1.04); }
+.asst-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.asst-result { display: none; flex-direction: column; gap: 14px; margin-top: 8px; }
+.asst-result.show { display: flex; }
+.asst-desire-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.asst-badge { padding: 6px 14px; border-radius: 99px; font-size: 0.85rem; font-family: 'Noto Serif SC', serif; }
+.asst-badge.bc { background: rgba(255,192,210,0.55); color: #7a1030; border: 1.5px solid rgba(192,51,82,0.3); }
+.asst-badge.ba { background: rgba(153,251,200,0.45); color: #0a4a28; border: 1.5px solid rgba(24,134,73,0.3); }
+.asst-badge.bs { background: rgba(161,202,255,0.45); color: #0a2860; border: 1.5px solid rgba(43,74,219,0.3); }
+.asst-analysis { display: flex; flex-direction: column; gap: 10px; }
+.asst-point {
+  background: rgba(255,255,255,0.75); border-radius: 14px; padding: 12px 14px;
+  border: 1px solid rgba(180,210,240,0.4); display: flex; flex-direction: column; gap: 6px;
+}
+.asst-point-badge { align-self: flex-start; padding: 3px 10px; border-radius: 99px; font-size: 0.75rem; font-family: 'Noto Serif SC', serif; }
+.asst-point-body { display: flex; flex-direction: column; gap: 6px; }
+.asst-point-quote { font-size: 0.92rem; color: #0e2840; font-style: italic; padding: 6px 0; }
+.asst-point-reason { font-size: 0.82rem; color: #5a7aa0; line-height: 1.7; font-family: 'Noto Sans SC', sans-serif; }
+.asst-loading { display: none; align-items: center; justify-content: center; gap: 8px; padding: 24px; color: #5a7aa0; }
+.asst-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(80,140,220,0.7); animation: dotPulse 1.4s ease infinite; }
+.asst-dot:nth-child(2) { animation-delay: 0.2s; }
+.asst-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse { 0%,60%,100%{opacity:0.3;transform:scale(0.8)} 30%{opacity:1;transform:scale(1.2)} }
+.asst-go-btn {
+  width: 100%; padding: 12px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #4a9fd4, #2a7abf); color: #fff;
+  font-family: 'Noto Serif SC', serif; font-size: 0.92rem; letter-spacing: 0.08em;
+  cursor: pointer; transition: opacity 0.2s, transform 0.15s; margin-top: 4px;
+}
+.asst-go-btn:hover { opacity: 0.88; transform: scale(1.02); }
 </style>
 </head>
 <body>
+
 <script>
 (function() {
-var canvas = document.createElement('canvas');
-canvas.id = 'bgCanvas';
+const canvas = document.createElement('canvas');
 canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;';
 document.body.insertBefore(canvas, document.body.firstChild);
-var ctx = canvas.getContext('2d');
-var W, H, t = 0;
+const ctx = canvas.getContext('2d');
+let W, H, t = 0;
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+function drawBg() {
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0.00, '#c2ecf8');
+  bg.addColorStop(0.25, '#8ed4ee');
+  bg.addColorStop(0.55, '#4aaed8');
+  bg.addColorStop(0.80, '#1a7ab5');
+  bg.addColorStop(1.00, '#0d4870');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function drawRays(t) {
+  ctx.save();
+  const rayColors = [
+    'rgba(180,240,255,0.04)',
+    'rgba(160,230,255,0.03)',
+    'rgba(200,245,255,0.035)',
+  ];
+  const rays = [
+    {x:0.25, width:0.12, drift:0.015},
+    {x:0.45, width:0.08, drift:-0.010},
+    {x:0.62, width:0.14, drift:0.012},
+    {x:0.80, width:0.07, drift:-0.008},
+    {x:0.15, width:0.06, drift:0.018},
+  ];
+  rays.forEach((r, i) => {
+    const cx = (r.x + Math.sin(t*0.3 + i) * r.drift) * W;
+    const hw = r.width * W * 0.5;
+    const grad = ctx.createLinearGradient(0, 0, 0, H*0.75);
+    grad.addColorStop(0,   rayColors[i % rayColors.length].replace('0.04', String(0.055 + Math.sin(t*0.4+i)*0.015)));
+    grad.addColorStop(0.6, rayColors[i % rayColors.length]);
+    grad.addColorStop(1,   'rgba(180,240,255,0)');
+    ctx.beginPath();
+    ctx.moveTo(cx - hw*0.2, 0); ctx.lineTo(cx + hw*0.2, 0);
+    ctx.lineTo(cx + hw, H*0.75); ctx.lineTo(cx - hw, H*0.75);
+    ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+  });
+  ctx.restore();
+}
+
+function drawCaustics(t) {
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  for (let i = 0; i < 8; i++) {
+    const x = (0.1 + i*0.12 + Math.sin(t*0.5+i)*0.04) * W;
+    const y = H*0.88 + Math.sin(t*0.6+i*1.3)*12;
+    const r = (20 + Math.sin(t*0.4+i)*8);
+    const g = ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,'rgba(180,240,255,0.8)');
+    g.addColorStop(1,'rgba(180,240,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
 
 const EMOTION_COLORS = [
-  {r:144, g:96,  b:208}, // 恐惧 紫
-  {r:48,  g:80,  b:176}, // 悲苦 深蓝
-  {r:80,  g:110, b:160}, // 万念俱灰 蓝灰
-  {r:192, g:96,  b:16 }, // 贪求 橙
-  {r:192, g:32,  b:32 }, // 愤怒 红
-  {r:176, g:128, b:0  }, // 自尊自傲 金
-  {r:16,  g:160, b:144}, // 无畏 青绿
-  {r:16,  g:160, b:80 }, // 接纳 绿
-  {r:74,  g:176, b:224}, // 平和 天蓝
+  {r:144,g:96,b:208},{r:48,g:80,b:176},{r:80,g:110,b:160},
+  {r:192,g:96,b:16},{r:192,g:32,b:32},{r:176,g:128,b:0},
+  {r:16,g:160,b:144},{r:16,g:160,b:80},{r:74,g:176,b:224},
 ];
 
-
 class Bubble {
-  constructor(fromBottom) {
-    this.reset(fromBottom);
+  constructor(fromBottom) { this.reset(fromBottom); }
+  reset(s) {
+    this.x=Math.random()*W; this.y=s?H+20+Math.random()*100:Math.random()*H;
+    this.r=2+Math.random()*22; this.vy=-(0.4+Math.random()*1.2);
+    this.wobbleAmp=0.4+Math.random()*1.2; this.wobbleFreq=0.8+Math.random()*1.5;
+    this.wobblePhase=Math.random()*Math.PI*2; this.opacity=0.20+Math.random()*0.20;
+    this.life=0; this.maxLife=(H+200)/Math.abs(this.vy)*(0.7+Math.random()*0.5);
+    this.vy*=(0.8+this.r/30); this.color=EMOTION_COLORS[Math.floor(Math.random()*EMOTION_COLORS.length)];
   }
-
-  reset(startAtBottom) {
-    this.x    = Math.random() * W;
-    this.y    = startAtBottom ? H + 20 + Math.random()*100 : Math.random() * H;
-    this.r    = 2 + Math.random() * 22;
-    this.vy   = -(0.4 + Math.random() * 1.2);
-    this.vx   = 0;
-    this.wobbleAmp   = 0.4 + Math.random() * 1.2;
-    this.wobbleFreq  = 0.8 + Math.random() * 1.5;
-    this.wobblePhase = Math.random() * Math.PI * 2;
-    this.opacity = 0.20 + Math.random() * 0.20;
-    this.life    = 0;
-    this.maxLife = (H + 200) / Math.abs(this.vy) * (0.7 + Math.random()*0.5);
-    this.vy *= (0.8 + this.r / 30);
-    this.color = EMOTION_COLORS[Math.floor(Math.random() * EMOTION_COLORS.length)];
-  }
-
   update(t) {
     this.life++;
-    // wobbly horizontal drift — classic bubble sway
-    this.x += Math.sin(t * this.wobbleFreq + this.wobblePhase) * this.wobbleAmp;
-    this.y += this.vy;
-
-    // fade in at bottom, fade out at top
-    const progress = this.life / this.maxLife;
-    if (progress < 0.08) {
-      this.opacity = (progress / 0.08) * (0.25 + Math.random()*0.01);
-    } else if (progress > 0.85) {
-      this.opacity *= 0.97;
-    }
-
-    if (this.y < -this.r * 3 || this.life > this.maxLife) {
-      this.reset(true);
-    }
+    this.x+=Math.sin(t*this.wobbleFreq+this.wobblePhase)*this.wobbleAmp; this.y+=this.vy;
+    const p=this.life/this.maxLife;
+    if(p<0.08) this.opacity=(p/0.08)*(0.25+Math.random()*0.01);
+    else if(p>0.85) this.opacity*=0.97;
+    if(this.y<-this.r*3||this.life>this.maxLife) this.reset(true);
   }
-
   draw() {
-    const x = this.x, y = this.y, r = this.r;
-    const a = this.opacity;
-
-    const {r:cr, g:cg, b:cb} = this.color;
-
-    // outer soft glow — emotion color
-    const glow = ctx.createRadialGradient(x,y,r*0.4,x,y,r*2.2);
-    glow.addColorStop(0, `rgba(${cr},${cg},${cb},${a*0.65})`);
-    glow.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
-    ctx.beginPath(); ctx.arc(x,y,r*2.2,0,Math.PI*2);
-    ctx.fillStyle=glow; ctx.fill();
-
-    // glass shell — tinted with emotion color
-    const shell = ctx.createRadialGradient(x-r*0.32,y-r*0.32,r*0.01, x,y,r);
-    shell.addColorStop(0.00, `rgba(255,255,255,${a*0.70})`);
-    shell.addColorStop(0.12, `rgba(255,255,255,${a*0.15})`);
-    shell.addColorStop(0.55, `rgba(${cr},${cg},${cb},${a*0.48})`);
-    shell.addColorStop(0.82, `rgba(${cr},${cg},${cb},${a*0.62})`);
-    shell.addColorStop(1.00, `rgba(${cr},${cg},${cb},${a*0.75})`);
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.fillStyle=shell; ctx.fill();
-
-    // rim ring — emotion color tint
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${a*0.90})`;
-    ctx.lineWidth = Math.max(0.5, r*0.06);
-    ctx.stroke();
-
-    // primary specular — brighter for dark areas
-    const sp = ctx.createRadialGradient(x-r*0.35,y-r*0.35,0,x-r*0.30,y-r*0.30,r*0.32);
-    sp.addColorStop(0, `rgba(255,255,255,${Math.min(1, a*1.6)})`);
-    sp.addColorStop(1, `rgba(255,255,255,0)`);
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.fillStyle=sp; ctx.fill();
-
-    // tiny secondary shimmer
-    const sp2 = ctx.createRadialGradient(x+r*0.38,y+r*0.30,0,x+r*0.38,y+r*0.30,r*0.14);
-    sp2.addColorStop(0, `rgba(255,255,255,${a*0.38})`);
-    sp2.addColorStop(1, `rgba(255,255,255,0)`);
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.fillStyle=sp2; ctx.fill();
+    const x=this.x,y=this.y,r=this.r,a=this.opacity,{r:cr,g:cg,b:cb}=this.color;
+    const glow=ctx.createRadialGradient(x,y,r*0.4,x,y,r*2.2);
+    glow.addColorStop(0,`rgba(${cr},${cg},${cb},${a*0.65})`); glow.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);
+    ctx.beginPath();ctx.arc(x,y,r*2.2,0,Math.PI*2);ctx.fillStyle=glow;ctx.fill();
+    const shell=ctx.createRadialGradient(x-r*0.32,y-r*0.32,r*0.01,x,y,r);
+    shell.addColorStop(0.00,`rgba(255,255,255,${a*0.70})`); shell.addColorStop(0.12,`rgba(255,255,255,${a*0.15})`);
+    shell.addColorStop(0.55,`rgba(${cr},${cg},${cb},${a*0.48})`); shell.addColorStop(0.82,`rgba(${cr},${cg},${cb},${a*0.62})`);
+    shell.addColorStop(1.00,`rgba(${cr},${cg},${cb},${a*0.75})`);
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=shell;ctx.fill();
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(${cr},${cg},${cb},${a*0.90})`;ctx.lineWidth=Math.max(0.5,r*0.06);ctx.stroke();
+    const sp=ctx.createRadialGradient(x-r*0.35,y-r*0.35,0,x-r*0.30,y-r*0.30,r*0.32);
+    sp.addColorStop(0,`rgba(255,255,255,${Math.min(1,a*1.6)})`);sp.addColorStop(1,`rgba(255,255,255,0)`);
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=sp;ctx.fill();
+    const sp2=ctx.createRadialGradient(x+r*0.38,y+r*0.30,0,x+r*0.38,y+r*0.30,r*0.14);
+    sp2.addColorStop(0,`rgba(255,255,255,${a*0.38})`);sp2.addColorStop(1,`rgba(255,255,255,0)`);
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=sp2;ctx.fill();
   }
 }
 
-const BUBBLES = Array.from({length: 55}, (_, i) => new Bubble(i > 20));
+const BUBBLES = Array.from({length:55}, (_,i) => new Bubble(i>20));
 
-// hero bubble — large, center, also rising slowly
-
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
 function draw() {
   requestAnimationFrame(draw);
-  t += 0.01;
-  ctx.clearRect(0, 0, W, H);
-  var bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#cdeeff');
-  bg.addColorStop(0.4, '#a8d8f0');
-  bg.addColorStop(0.7, '#7abde0');
-  bg.addColorStop(1, '#4a8fbf');
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  BUBBLES.forEach(function(b) { b.update(t); b.draw(); });
+  t += 0.012;
+  drawBg();
+  drawRays(t);
+  drawCaustics(t);
+  ctx.globalAlpha = 0.45;
+  BUBBLES.forEach(b => { b.update(t); b.draw(); });
+  ctx.globalAlpha = 1;
 }
-window.addEventListener('resize', resize);
-resize();
 draw();
 })();
 </script>
-<div class="page-title">🫧 释 放 助 手</div>
-<div class="page-wrap">
-  <div class="asst-panel">
-    <p class="asst-subtitle">写下你对一件事的感受、担忧或执着，释放助手会帮你看见背后的欲望模式。</p>
+
+
+
+<div id="asst-layer">
+
+  <!-- 上：卡点释放 -->
+  <div class="asst-orb-wrap" id="wrap-blockpoint"
+       style="--bob-dur:3.4s;--bob-delay:0.0s;left:50%;top:30%;"
+       onclick="openBlockPoint()">
+    <div class="asst-orb-name">卡点<br>释放</div>
+  </div>
+
+  <!-- 中：限制性信念释放 -->
+  <div class="asst-orb-wrap" id="wrap-beliefs"
+       style="--bob-dur:3.9s;--bob-delay:0.5s;left:50%;top:52%;"
+       onclick="openBeliefs()">
+    <div class="asst-orb-name">限制性信念<br>释放</div>
+  </div>
+
+  <!-- 下：自我允许释放 -->
+  <div class="asst-orb-wrap" id="wrap-allowance"
+       style="--bob-dur:3.6s;--bob-delay:1.0s;left:50%;top:74%;"
+       onclick="openAllowance()">
+    <div class="asst-orb-name">自我允许<br>释放</div>
+  </div>
+
+</div>
+
+<!-- 卡点释放展开面板 -->
+<div id="panel-blockpoint">
+  <div class="panel-back" onclick="closeBlockPoint()">‹ 返回</div>
+  <div class="panel-inner">
+    <div class="panel-title">🔍 卡点释放</div>
+    <p class="asst-subtitle">写下你的感受，Freed 帮你看见背后的欲望模式。</p>
     <textarea class="asst-textarea" id="asstInput" placeholder="例：我每天都在想她什么时候才能回我消息，吃不下饭睡不着觉……"></textarea>
     <button class="asst-submit" id="asstSubmit" onclick="runAssistant()">✨ 分析</button>
     <div class="asst-loading" id="asstLoading">
@@ -254,17 +319,75 @@ draw();
   </div>
 </div>
 
+<script src="paywall.js"></script>
 <script>
-const currentLang = 'zh';
-
-const DESIRE_INFO = { control:{label:'想要控制',cls:'bc'}, approval:{label:'想要被认同',cls:'ba'}, safety:{label:'想要安全',cls:'bs'} };
-
+const DESIRE_INFO = {
+  control:{label:'想要控制',cls:'bc'},
+  approval:{label:'想要被认同',cls:'ba'},
+  safety:{label:'想要安全',cls:'bs'}
+};
 let asstPoints = [];
 
-function escapeHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── 球颜色（完全复用 nav-bubble 的 setNavBubbleColors 逻辑）──
+const ASST_GLOWS = {
+  'wrap-blockpoint': 'rgba(100,200,120,0.36)',   // 嫩绿 — 卡点释放
+  'wrap-beliefs':    'rgba(170,140,210,0.34)',    // 薰衣草紫 — 限制性信念释放
+  'wrap-allowance':  'rgba(230,155,100,0.34)',    // 淡橘 — 自我允许释放
+};
+
+function setAsstBubbleColors() {
+  document.querySelectorAll('.asst-orb-wrap').forEach(b => {
+    const glow = ASST_GLOWS[b.id] || 'rgba(80,160,255,0.35)';
+    b.style.background = [
+      'radial-gradient(circle at 32% 28%,',
+      '  rgba(255,255,255,0.75) 0%,',
+      '  rgba(220,225,230,0.45) 22%,',
+      '  ' + glow.replace('0.42','0.32') + ' 50%,',
+      '  ' + glow.replace('0.42','0.22') + ' 75%,',
+      '  ' + glow.replace('0.42','0.10') + ' 100%)',
+    ].join('');
+    b.style.border = 'none';
+    b.style.boxShadow = [
+      'inset 0 0 38px ' + glow.replace('0.36','0.72').replace('0.34','0.68'),
+      'inset 0 0 16px ' + glow.replace('0.36','0.58').replace('0.34','0.55'),
+      '0 4px 28px '     + glow.replace('0.36','0.75').replace('0.34','0.70'),
+      '0 0 44px '       + glow.replace('0.36','0.40').replace('0.34','0.38'),
+    ].join(', ');
+  });
 }
 
+window.addEventListener('DOMContentLoaded', function() {
+  setAsstBubbleColors();
+  document.querySelectorAll('.asst-orb-wrap').forEach((wrap, i) => {
+    setTimeout(() => wrap.classList.add('visible'), 150 + i * 120);
+  });
+});
+
+// ── 功能入口 ──
+function openBlockPoint() {
+  requireLoginAndPremium(function() {
+    document.getElementById('asst-layer').style.display = 'none';
+    document.getElementById('panel-blockpoint').classList.add('open');
+  });
+}
+function closeBlockPoint() {
+  document.getElementById('panel-blockpoint').classList.remove('open');
+  document.getElementById('asst-layer').style.display = 'block';
+  document.getElementById('asstResult').classList.remove('show');
+  document.getElementById('asstInput').value = '';
+}
+function openBeliefs() {
+  requireLoginAndPremium(function() {
+    showToast('🚧 即将上线，敬请期待');
+  });
+}
+function openAllowance() {
+  requireLoginAndPremium(function() {
+    showToast('🚧 即将上线，敬请期待');
+  });
+}
+
+// ── Toast ──
 function showToast(msg) {
   var el = document.getElementById('asstToast');
   if (!el) {
@@ -279,88 +402,39 @@ function showToast(msg) {
   el._t = setTimeout(function() { el.style.opacity = '0'; }, 2500);
 }
 
-function t(key) {
-  var map = {
-    'toast_no_input': '请先写下你的感受',
-    'toast_no_result': '没有可释放的结果',
-    'asst_go': '🫧 去释放这些想要',
-  };
-  return map[key] || key;
-}
-
 function startReleaseQueue() {
-  if (!asstPoints.length) { showToast(t('toast_no_result')); return; }
-  // Save to sessionStorage and go to desire page
+  if (!asstPoints.length) { showToast('没有可释放的结果'); return; }
   sessionStorage.setItem('asstReleaseQueue', JSON.stringify(asstPoints));
   window.location.href = 'desire.html';
 }
 
-function getLangSystemPrompt() {
-  if (currentLang === 'en') {
-    return 'You are a deep psychological insight guide, expert in the Sedona Method.\n\n'
-      + 'The three core desires:\n'
-      + '- control: craving to control situations, outcomes, others; fear of losing control\n'
-      + '- approval: craving acceptance, validation, love; fear of rejection, criticism, abandonment\n'
-      + '- safety: craving stability, certainty, permanence; fear of loss, change, harm\n\n'
-      + 'Tasks:\n'
-      + '1. Read deeply — sense emotional structure beneath surface words\n'
-      + '2. Map each distinct thought/feeling to its underlying desire\n'
-      + '3. Prioritise desires the user hasn\'t consciously noticed\n'
-      + '4. Note how desires intertwine\n\n'
-      + 'Principles:\n'
-      + '- Explain WHY each thought reveals this desire\n'
-      + '- Write like a warm but perceptive counselor\n'
-      + '- If user expressed A but B hides beneath, name B\n'
-      + '- 40-60 words per reason\n\n'
-      + 'Reply ONLY in this JSON format:\n'
-      + '{"points":[{"quote":"brief phrase max 20 words","desire":"control|approval|safety","reason":"insight 40-60 words"}]}\n\n'
-      + 'No limit on number of points. List every insight. Same desire can appear multiple times.';
-  }
+// ── 深度分析 ──
+function getSystemPrompt() {
   return '你是一位深度心理洞察师，精通圣多纳释放法（Sedona Method）。\n\n'
     + '三种核心欲望：\n'
     + '- control（想要控制）：渴望掌控局面、结果、他人；害怕失控、混乱、不确定\n'
     + '- approval（想要被认同）：渴望被接受、肯定、爱；害怕被拒绝、批评、抛弃\n'
     + '- safety（想要安全）：渴望稳定、保障、确定；害怕失去、改变、受伤\n\n'
     + '你的核心任务：尽可能多地挖掘用户察觉不到的深层欲望。\n\n'
-    + '分析层次（每一层都要找）：\n'
-    + '1. **表层欲望**：用户字面说出来的渴望或恐惧\n'
-    + '2. **次层欲望**：表层渴望背后的更深需求（例如想要高薪→想要安全）\n'
-    + '3. **隐藏欲望**：用户回避、不愿承认、甚至自己都不知道的欲望（这是最重要的）\n'
-    + '4. **矛盾欲望**：同一段文字里互相冲突的欲望（例如又想要又怕被看到）\n'
-    + '5. **行为背后的欲望**：每个具体行为/抗拒/拖延背后的欲望（例如不想投简历→怕被拒绝→想要认同）\n\n'
-    + '挖掘的技巧：\n'
-    + '- 看每一句话每一个词，问"这背后真正想要什么？"\n'
-    + '- 注意"不想"、"害怕"、"讨厌"、"避免"——这些都暗示着欲望\n'
-    + '- 注意"应该"、"希望"、"完美"、"必须"——这些暴露执着\n'
-    + '- 同一句话可能藏着 2-3 个欲望，都要挖出来\n'
-    + '- 用户没说但显然在意的东西，也要点出来\n\n'
-    + '输出原则：\n'
-    + '- 至少给出 5-8 个洞察点（短输入 5 个，复杂输入 8-12 个）\n'
-    + '- 每条 quote 用用户原文里的关键词，或 AI 提炼的短句（不超过 20 字）\n'
-    + '- 每条 reason 解释"为什么这背后是这种欲望"，特别强调用户自己没意识到的部分\n'
-    + '- 像温柔而犀利的咨询师说话，让人感到被看见又能揭示盲点\n'
-    + '- 每条 reason 控制在 50-80 字，把洞察讲透\n'
-    + '- 同一种欲望可以多次出现\n\n'
+    + '分析层次：表层欲望、次层欲望、隐藏欲望、矛盾欲望、行为背后的欲望。\n\n'
+    + '输出原则：至少 5-8 个洞察点，每条 quote 不超过 20 字，每条 reason 50-80 字。\n\n'
     + '严格用以下JSON格式回复，不要任何其他内容：\n'
-    + '{"points":[{"quote":"短句不超过20字","desire":"control或approval或safety","reason":"深度洞察50-80字，揭示用户没意识到的部分"}]}';
+    + '{"points":[{"quote":"短句不超过20字","desire":"control或approval或safety","reason":"深度洞察50-80字"}]}';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 async function runAssistant() {
   const text = document.getElementById('asstInput').value.trim();
-  if (!text) { showToast(t('toast_no_input')); return; }
-
+  if (!text) { showToast('请先写下你的感受'); return; }
   const loadingEl = document.getElementById('asstLoading');
   const resultEl  = document.getElementById('asstResult');
-
   loadingEl.style.display = 'flex';
   resultEl.classList.remove('show');
-
   try {
-    const SYSTEM_PROMPT = getLangSystemPrompt();
-
-    // Retry up to 3 times for network reliability
-    let res = null;
-    let lastErr = null;
+    let res = null, lastErr = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const controller = new AbortController();
@@ -370,10 +444,9 @@ async function runAssistant() {
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
           body: JSON.stringify({
-            model: 'deepseek-chat',
-            max_tokens: 4000,
+            model: 'deepseek-chat', max_tokens: 4000,
             messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'system', content: getSystemPrompt() },
               { role: 'user',   content: text },
             ],
           }),
@@ -381,62 +454,33 @@ async function runAssistant() {
         clearTimeout(timeoutId);
         if (res.ok) break;
         lastErr = new Error('HTTP ' + res.status);
-      } catch(err) {
-        lastErr = err;
-      }
-      // Wait before retry (1s, 2s)
-      if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 1000));
+      } catch(err) { lastErr = err; }
+      if (attempt < 2) await new Promise(r => setTimeout(r, (attempt+1)*1000));
     }
     if (!res || !res.ok) throw lastErr || new Error('网络请求失败，请稍后再试');
-
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
     const raw = data.choices?.[0]?.message?.content || '';
     if (!raw) throw new Error('empty response');
-
     let json = { points: [] };
-    try {
-      const start = raw.indexOf('{');
-      const end = raw.lastIndexOf('}');
-      json = JSON.parse(raw.slice(start, end + 1));
-    } catch(_) {}
-
-    // Try multiple possible field names from AI response
-    let rawPoints = json.points || json.results || json.analysis || json.data || [];
+    try { const s=raw.indexOf('{'),e=raw.lastIndexOf('}'); json=JSON.parse(raw.slice(s,e+1)); } catch(_){}
+    let rawPoints = json.points||json.results||json.analysis||json.data||[];
     if (!Array.isArray(rawPoints)) rawPoints = [];
-    
-    // Map common variations to expected schema
     asstPoints = rawPoints.map(p => {
-      // Normalize desire field
-      let desire = p.desire || p.type || p.category || '';
-      desire = String(desire).toLowerCase();
-      if (desire.includes('control') || desire.includes('控制')) desire = 'control';
-      else if (desire.includes('approval') || desire.includes('认同') || desire.includes('被爱')) desire = 'approval';
-      else if (desire.includes('safety') || desire.includes('安全') || desire.includes('survival')) desire = 'safety';
-      return {
-        desire: desire,
-        quote: p.quote || p.text || p.phrase || '',
-        reason: p.reason || p.explanation || p.analysis || ''
-      };
+      let desire = String(p.desire||p.type||p.category||'').toLowerCase();
+      if (desire.includes('control')||desire.includes('控制')) desire='control';
+      else if (desire.includes('approval')||desire.includes('认同')||desire.includes('被爱')) desire='approval';
+      else if (desire.includes('safety')||desire.includes('安全')) desire='safety';
+      return { desire, quote:p.quote||p.text||p.phrase||'', reason:p.reason||p.explanation||p.analysis||'' };
     }).filter(p => DESIRE_INFO[p.desire]);
-    
-    if (!asstPoints.length) {
-      // Show raw response so user can see what AI returned
-      console.log('Raw AI response:', raw);
-      throw new Error('AI 返回格式异常，请重试。返回内容：' + raw.slice(0, 100));
-    }
-
-    // 重置结果区结构（防止被错误信息替换掉）
+    if (!asstPoints.length) throw new Error('返回格式异常，请重试。');
     resultEl.innerHTML = '<div class="asst-desire-badges" id="asstBadges"></div>'
       + '<div class="asst-analysis" id="asstAnalysis"></div>'
-      + '<button class="asst-go-btn" id="asstGoBtn" onclick="startReleaseQueue()">' + t('asst_go') + '</button>';
-
+      + '<button class="asst-go-btn" onclick="startReleaseQueue()">🫧 去释放这些想要</button>';
     const seenBadge = new Set();
     document.getElementById('asstBadges').innerHTML = asstPoints
       .filter(p => !seenBadge.has(p.desire) && seenBadge.add(p.desire))
-      .map(p => `<span class="asst-badge ${DESIRE_INFO[p.desire].cls}">${DESIRE_INFO[p.desire].label}</span>`)
-      .join('');
-
+      .map(p => `<span class="asst-badge ${DESIRE_INFO[p.desire].cls}">${DESIRE_INFO[p.desire].label}</span>`).join('');
     document.getElementById('asstAnalysis').innerHTML = asstPoints.map(p => `
       <div class="asst-point">
         <span class="asst-point-badge ${DESIRE_INFO[p.desire].cls}">${DESIRE_INFO[p.desire].label}</span>
@@ -444,15 +488,12 @@ async function runAssistant() {
           <span class="asst-point-quote">「${escapeHtml(p.quote)}」</span>
           <span class="asst-point-reason">${escapeHtml(p.reason)}</span>
         </div>
-      </div>
-    `).join('');
-
+      </div>`).join('');
     resultEl.classList.add('show');
   } catch(e) {
-    const msg = (e && e.message) ? e.message : String(e);
-    showToast('❌ ' + msg.slice(0, 80));
-    // 同时在结果区显示完整错误
-    resultEl.innerHTML = '<div style="padding:12px;color:#c04040;font-size:0.78rem;line-height:1.6;font-family:monospace;word-break:break-all;">错误：' + msg + '</div>';
+    const msg = (e&&e.message)?e.message:String(e);
+    showToast('❌ ' + msg.slice(0,80));
+    resultEl.innerHTML = `<div style="padding:12px;color:#c04040;font-size:0.78rem;line-height:1.6;font-family:monospace;word-break:break-all;">错误：${msg}</div>`;
     resultEl.classList.add('show');
     console.error('Assistant error:', e);
   } finally {
