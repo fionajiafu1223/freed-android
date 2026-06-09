@@ -31,21 +31,30 @@ workflows:
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
             sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" "$PODFILE"
-            # 加 post_install 强制所有 Pod 使用 16.0
-            if ! grep -q "post_install" "$PODFILE"; then
-              cat >> "$PODFILE" << 'PODEOF'
-
+            # 用 python 追加 post_install 块，避免 YAML 特殊字符冲突
+            python3 -c "
+import sys
+podfile = '$PODFILE'
+with open(podfile, 'r') as f:
+    content = f.read()
+if 'post_install' not in content:
+    hook = '''
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "16.0"
     end
   end
 end
-PODEOF
-            fi
-            echo "Podfile 更新后："
-            cat "$PODFILE" | tail -15
+'''
+    with open(podfile, 'a') as f:
+        f.write(hook)
+    print('post_install hook added')
+else:
+    print('post_install already exists')
+"
+            echo "Podfile 末尾："
+            tail -15 "$PODFILE"
           fi
 
       - name: 注入 RevenueCat 初始化代码
