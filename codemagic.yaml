@@ -26,14 +26,14 @@ workflows:
       - name: 同步 Capacitor 到 iOS
         script: |
           npx cap add ios || true
-          # 提升 iOS 最低部署目标到 13.0
+          npx cap sync ios --no-deps
+          # cap sync 之后再改 Podfile，防止被覆盖
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
-            sed -i '' "s/platform :ios, '[0-9.]*/platform :ios, '13.0/" "$PODFILE"
+            sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '13.0'/" "$PODFILE"
             echo "Podfile 更新后："
             head -5 "$PODFILE"
           fi
-          npx cap sync ios
 
       - name: 注入 RevenueCat 初始化代码
         script: |
@@ -51,6 +51,8 @@ workflows:
       - name: 安装 CocoaPods
         script: |
           cd ios/App
+          # 确认 Podfile 部署目标正确
+          head -5 Podfile
           pod install
 
       - name: 设置代码签名
