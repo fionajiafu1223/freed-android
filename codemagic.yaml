@@ -30,7 +30,7 @@ workflows:
           # cap sync 之后再改 Podfile，防止被覆盖
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
-            sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '13.0'/" "$PODFILE"
+            sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '14.0'/" "$PODFILE"
             echo "Podfile 更新后："
             head -5 "$PODFILE"
           fi
