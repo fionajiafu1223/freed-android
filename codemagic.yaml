@@ -13,6 +13,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         APP_STORE_APPLE_ID: 6768422531
+        APP_VERSION: "1.1"
       node: 20.11.0
       xcode: latest
       cocoapods: default
@@ -85,9 +86,13 @@ workflows:
           keychain add-certificates
           xcode-project use-profiles
 
-      - name: 自增构建号
+      - name: 自增构建号 & 设置版本号
         script: |
           cd $CM_BUILD_DIR/ios/App
+          # 设置 Marketing Version (CFBundleShortVersionString)，必须高于已审核版本
+          agvtool new-marketing-version "$APP_VERSION"
+          echo "Marketing Version 设置为: $APP_VERSION"
+          # 自增 Build Number
           AS_BUILD=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
           TF_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
           LATEST=$(( AS_BUILD > TF_BUILD ? AS_BUILD : TF_BUILD ))
