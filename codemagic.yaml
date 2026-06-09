@@ -20,22 +20,36 @@ workflows:
       - name: 安装 npm 依赖
         script: |
           npm install
+          npm install @revenuecat/purchases-capacitor
+
       - name: 同步 Capacitor 到 iOS
         script: |
           npx cap add ios || npx cap sync ios
+
+      - name: 注入 RevenueCat 初始化代码
+        script: |
+          APPDELEGATE="ios/App/App/AppDelegate.swift"
+          if ! grep -q "Purchases.configure" "$APPDELEGATE"; then
+            sed -i '' 's/import UIKit/import UIKit\nimport RevenueCat/' "$APPDELEGATE"
+            sed -i '' 's/return super.application(app, open: url, options: options)/Purchases.configure(withAPIKey: "appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO")\n        return super.application(app, open: url, options: options)/' "$APPDELEGATE"
+          fi
+
       - name: 生成 App 图标
         script: |
           npm install -g @capacitor/assets
           npx capacitor-assets generate --ios
+
       - name: 安装 CocoaPods
         script: |
           cd ios/App
           pod install
+
       - name: 设置代码签名
         script: |
           keychain initialize
           keychain add-certificates
           xcode-project use-profiles
+
       - name: 自增构建号
         script: |
           cd $CM_BUILD_DIR/ios/App
@@ -47,6 +61,7 @@ workflows:
           echo "TestFlight 最新: $TF_BUILD"
           echo "本次构建号: $NEW_BUILD"
           agvtool new-version -all $NEW_BUILD
+
       - name: 构建 ipa
         script: |
           xcode-project build-ipa \
@@ -76,6 +91,7 @@ workflows:
         script: |
           npm install
           npm install @capacitor/android@6 --legacy-peer-deps
+
       - name: 同步 Capacitor 到 Android
         script: |
           rm -rf android
@@ -90,6 +106,7 @@ workflows:
           perl -pi -e 's/versionCode \d+/versionCode 1/g' android/app/build.gradle
           echo "===== 当前 versionCode 行 ====="
           grep versionCode android/app/build.gradle
+
       - name: 构建 AAB
         script: |
           cd android
