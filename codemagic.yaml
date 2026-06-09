@@ -23,37 +23,39 @@ workflows:
           npm install @capacitor/core@7 @capacitor/ios@7 @capacitor/cli@7 --legacy-peer-deps
           npm install @revenuecat/purchases-capacitor --legacy-peer-deps
 
+      - name: 准备 Podfile 修弹脚本
+        script: |
+          cat > /tmp/patch_podfile.py << 'INNEREOF'
+          import sys
+          podfile_path = sys.argv[1]
+          with open(podfile_path, 'r') as f:
+              content = f.read()
+          if 'post_install' not in content:
+              hook = (
+                  'post_install do |installer|\n'
+                  '  installer.pods_project.targets.each do |target|\n'
+                  '    target.build_configurations.each do |config|\n'
+                  '      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "16.0"\n'
+                  '    end\n'
+                  '  end\n'
+                  'end\n'
+              )
+              with open(podfile_path, 'a') as f:
+                  f.write('\n' + hook)
+              print('post_install hook added')
+          else:
+              print('post_install already exists')
+          INNEREOF
+
       - name: 同步 Capacitor 到 iOS
         script: |
           npx cap add ios || true
           npx cap sync ios --no-deps
-          # cap sync 之后再改 Podfile，防止被覆盖
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
             sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" "$PODFILE"
-            # 用 python 追加 post_install 块，避免 YAML 特殊字符冲突
-            python3 -c "
-import sys
-podfile = '$PODFILE'
-with open(podfile, 'r') as f:
-    content = f.read()
-if 'post_install' not in content:
-    hook = '''
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "16.0"
-    end
-  end
-end
-'''
-    with open(podfile, 'a') as f:
-        f.write(hook)
-    print('post_install hook added')
-else:
-    print('post_install already exists')
-"
-            echo "Podfile 末尾："
+            python3 /tmp/patch_podfile.py "$PODFILE"
+            echo "===== Podfile 末尾 ====="
             tail -15 "$PODFILE"
           fi
 
@@ -73,7 +75,7 @@ else:
       - name: 安装 CocoaPods
         script: |
           cd ios/App
-          # 确认 Podfile 部署目标正确
+          echo "===== Podfile 前 5 行 ====="
           head -5 Podfile
           pod install
 
@@ -109,6 +111,7 @@ else:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+
   android-workflow:
     name: Freed 释放 Android Build
     max_build_duration: 60
