@@ -20,7 +20,7 @@ workflows:
       - name: 安装 npm 依赖
         script: |
           npm install
-          npm install @revenuecat/purchases-capacitor
+          npm install @revenuecat/purchases-capacitor@5.4.0 --legacy-peer-deps
 
       - name: 同步 Capacitor 到 iOS
         script: |
