@@ -30,9 +30,22 @@ workflows:
           # cap sync 之后再改 Podfile，防止被覆盖
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
-            sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '14.0'/" "$PODFILE"
+            sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" "$PODFILE"
+            # 加 post_install 强制所有 Pod 使用 16.0
+            if ! grep -q "post_install" "$PODFILE"; then
+              cat >> "$PODFILE" << 'PODEOF'
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+    end
+  end
+end
+PODEOF
+            fi
             echo "Podfile 更新后："
-            head -5 "$PODFILE"
+            cat "$PODFILE" | tail -15
           fi
 
       - name: 注入 RevenueCat 初始化代码
