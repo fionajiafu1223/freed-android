@@ -317,29 +317,57 @@
     btn.textContent = loading ? '处理中...' : '立即订阅';
   }
 
+  // 检测是否在 Capacitor 原生环境
+  function isCapacitorNative() {
+    return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  }
+
   async function handlePurchase() {
     setBtnLoading(true); setMsg('');
     try {
-      await loadRCSDK();
-      const Purchases = window.Purchases;
-      if (!Purchases) throw new Error('RevenueCat SDK 未加载');
-      Purchases.configure({ apiKey: RC_API_KEY });
-      const userId = getUserId();
-      if (userId) { try { await Purchases.logIn(userId); } catch(_) {} }
-      const offerings = await Purchases.getOfferings();
-      const current = offerings.current;
-      if (!current) throw new Error('无法获取订阅套餐');
-      const pkg = current.availablePackages.find(p => p.identifier === _selectedPlan.rcPackage);
-      if (!pkg) throw new Error('找不到对应套餐，请稍后再试');
-      const result = await Purchases.purchasePackage(pkg);
-      if (result.customerInfo) {
-        _premiumCache = null;
-        await checkPremium(true);
-        setMsg('✓ 订阅成功，感谢支持！', 'success');
-        setTimeout(() => {
-          closePaywall();
-          if (typeof _onGrantedCallback === 'function') _onGrantedCallback();
-        }, 1200);
+      if (isCapacitorNative()) {
+        // ── 原生 iOS：用 Capacitor SDK ──
+        const { Purchases } = await import('@revenuecat/purchases-capacitor');
+        const userId = getUserId();
+        if (userId) { try { await Purchases.logIn({ appUserID: userId }); } catch(_) {} }
+        const offerings = await Purchases.getOfferings();
+        const current = offerings.current;
+        if (!current) throw new Error('无法获取订阅套餐');
+        const pkg = current.availablePackages.find(p => p.identifier === _selectedPlan.rcPackage);
+        if (!pkg) throw new Error('找不到对应套餐，请稍后再试');
+        const result = await Purchases.purchasePackage({ aPackage: pkg });
+        if (result.customerInfo) {
+          _premiumCache = null;
+          await checkPremium(true);
+          setMsg('✓ 订阅成功，感谢支持！', 'success');
+          setTimeout(() => {
+            closePaywall();
+            if (typeof _onGrantedCallback === 'function') _onGrantedCallback();
+          }, 1200);
+        }
+      } else {
+        // ── Web 浏览器：用 Web SDK ──
+        await loadRCSDK();
+        const Purchases = window.Purchases;
+        if (!Purchases) throw new Error('RevenueCat SDK 未加载');
+        Purchases.configure({ apiKey: RC_API_KEY });
+        const userId = getUserId();
+        if (userId) { try { await Purchases.logIn(userId); } catch(_) {} }
+        const offerings = await Purchases.getOfferings();
+        const current = offerings.current;
+        if (!current) throw new Error('无法获取订阅套餐');
+        const pkg = current.availablePackages.find(p => p.identifier === _selectedPlan.rcPackage);
+        if (!pkg) throw new Error('找不到对应套餐，请稍后再试');
+        const result = await Purchases.purchasePackage(pkg);
+        if (result.customerInfo) {
+          _premiumCache = null;
+          await checkPremium(true);
+          setMsg('✓ 订阅成功，感谢支持！', 'success');
+          setTimeout(() => {
+            closePaywall();
+            if (typeof _onGrantedCallback === 'function') _onGrantedCallback();
+          }, 1200);
+        }
       }
     } catch(err) {
       if (err && err.userCancelled) { setMsg('已取消', ''); }
@@ -352,19 +380,31 @@
     if (btn) { btn.disabled = true; btn.textContent = '恢复中...'; }
     setMsg('');
     try {
-      await loadRCSDK();
-      const Purchases = window.Purchases;
-      Purchases.configure({ apiKey: RC_API_KEY });
-      const userId = getUserId();
-      if (userId) { try { await Purchases.logIn(userId); } catch(_) {} }
-      const customerInfo = await Purchases.restorePurchases();
-      const entitlement = customerInfo.entitlements?.active?.['premium'];
-      if (entitlement) {
-        _premiumCache = null;
-        await checkPremium(true);
-        setMsg('✓ 购买记录已恢复', 'success');
-        setTimeout(() => { closePaywall(); if (typeof _onGrantedCallback === 'function') _onGrantedCallback(); }, 1200);
-      } else { setMsg('未找到有效的购买记录', ''); }
+      if (isCapacitorNative()) {
+        const { Purchases } = await import('@revenuecat/purchases-capacitor');
+        const customerInfo = await Purchases.restorePurchases();
+        const entitlement = customerInfo.customerInfo?.entitlements?.active?.['premium'];
+        if (entitlement) {
+          _premiumCache = null;
+          await checkPremium(true);
+          setMsg('✓ 购买记录已恢复', 'success');
+          setTimeout(() => { closePaywall(); if (typeof _onGrantedCallback === 'function') _onGrantedCallback(); }, 1200);
+        } else { setMsg('未找到有效的购买记录', ''); }
+      } else {
+        await loadRCSDK();
+        const Purchases = window.Purchases;
+        Purchases.configure({ apiKey: RC_API_KEY });
+        const userId = getUserId();
+        if (userId) { try { await Purchases.logIn(userId); } catch(_) {} }
+        const customerInfo = await Purchases.restorePurchases();
+        const entitlement = customerInfo.entitlements?.active?.['premium'];
+        if (entitlement) {
+          _premiumCache = null;
+          await checkPremium(true);
+          setMsg('✓ 购买记录已恢复', 'success');
+          setTimeout(() => { closePaywall(); if (typeof _onGrantedCallback === 'function') _onGrantedCallback(); }, 1200);
+        } else { setMsg('未找到有效的购买记录', ''); }
+      }
     } catch(err) {
       setMsg('❌ ' + (err && err.message ? err.message : String(err)).slice(0, 60), 'error');
     } finally { if (btn) { btn.disabled = false; btn.textContent = '恢复购买记录'; } }
