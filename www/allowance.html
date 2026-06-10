@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>自我允许释放</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: #ffe4d6; display: block; overflow: hidden; }
+input, select, textarea, button { font-size: 16px; }
+
+/* ─── 返回助手按钮 ─── */
+.back-to-assistant {
+  position: fixed;
+  top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px));
+  left: 14px; z-index: 100;
+  height: 36px;
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(12px);
+  border: none; border-radius: 99px;
+  padding: 0 14px;
+  font-size: 0.82rem; font-family: 'Noto Sans SC', sans-serif;
+  color: rgba(140,60,40,0.85);
+  box-shadow: 0 2px 10px rgba(140,60,40,0.12);
+  cursor: pointer; letter-spacing: 0.04em;
+  display: flex; align-items: center;
+}
+.back-to-assistant:active { opacity: 0.7; }
+
+.card {
+  position: relative; z-index: 1;
+  width: 100vw; height: 100vh;
+  background: linear-gradient(160deg, #FFF4EE 0%, #FFD8C4 42%, #FFBEA8 100%);
+}
+
+.app-title {
+  position: absolute; top: max(22px, calc(env(safe-area-inset-top,0px) + 8px));
+  left: 0; right: 0; text-align: center; z-index: 10; pointer-events: none;
+}
+.app-title h1 {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px;
+  letter-spacing: 5px; color: rgba(165,55,62,0.65); font-weight: 400;
+}
+.app-title p {
+  font-size: 8px; letter-spacing: 2.5px;
+  color: rgba(165,55,62,0.38); margin-top: 3px;
+}
+
+.svg-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  overflow: visible; z-index: 5; pointer-events: none;
+}
+
+#questionEl {
+  position: absolute; left: 0; right: 0; top: 17%;
+  text-align: center;
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px;
+  letter-spacing: 2px; color: rgba(165,55,62,0.82); line-height: 1.9;
+  z-index: 30; opacity: 0; pointer-events: none;
+  transition: opacity 1.5s ease; padding: 0 36px;
+}
+#questionEl.visible { opacity: 1; }
+
+.act-btn {
+  position: absolute; z-index: 30;
+  padding: 9px 22px; border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.95);
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,0.92) 0%,
+    rgba(255,255,255,0.78) 45%,
+    rgba(255,200,185,0.75) 100%);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 16px;
+  letter-spacing: 2.5px; color: rgba(165,55,62,0.92);
+  cursor: pointer; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  box-shadow: 0 4px 12px rgba(200,90,10,0.15), inset 0 1px 0 rgba(255,255,255,1);
+  transition: opacity 1.5s ease, transform 0.18s ease;
+  transform: translate(-50%, -50%); top: 65%;
+}
+.act-btn.visible { opacity: 1; pointer-events: auto; }
+.act-btn:active  { transform: translate(-50%,-50%) scale(0.96); }
+
+#btnCan    { left: calc(50.8% + 56px); }
+#btnCannot { left: calc(50.8% - 56px); }
+
+.ripple-el {
+  position: absolute; border-radius: 50%; pointer-events: none; z-index: 6;
+  background: radial-gradient(circle, rgba(255,128,144,0.42) 0%, rgba(255,128,144,0) 70%);
+  animation: rippleRelease 1.6s ease-out forwards;
+}
+@keyframes rippleRelease {
+  0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0.8; }
+  100% { transform: translate(-50%,-50%) scale(5);   opacity: 0; }
+}
+
+/* ── body glow animations ── */
+@keyframes hg1  { 0%,100%{opacity:0.08} 50%{opacity:0.22} }
+@keyframes hg2  { 0%,100%{opacity:0.16} 50%{opacity:0.48} }
+@keyframes hg3  { 0%,100%{opacity:0.40} 50%{opacity:0.88} }
+@keyframes hcore{ 0%,100%{opacity:0.55} 50%{opacity:1.00} }
+.hg1  { animation: hg1   6s ease-in-out infinite; }
+.hg2  { animation: hg2   5s ease-in-out infinite 0.5s; }
+.hg3  { animation: hg3   4s ease-in-out infinite 1s; }
+.hcore{ animation: hcore 4s ease-in-out infinite; }
+
+/* ── heart glow ── */
+#heartLayer circle { transform-origin: 183px 420px; }
+@keyframes heartPulse  { 0%,100%{opacity:0.45} 50%{opacity:0.88} }
+@keyframes heartPulse2 { 0%,100%{opacity:0.28} 50%{opacity:0.65} }
+#heartRing1 { animation: heartPulse  3.5s ease-in-out infinite; }
+#heartRing2 { animation: heartPulse2 3.5s ease-in-out infinite 0.4s; }
+
+@keyframes heartBoom  { 0%{transform:scale(1);opacity:0.45} 16%{transform:scale(2.6);opacity:1}    55%{transform:scale(1.6);opacity:0.65} 100%{transform:scale(1);opacity:0.45} }
+@keyframes heartBoom2 { 0%{transform:scale(1);opacity:0.28} 16%{transform:scale(2.3);opacity:0.85} 55%{transform:scale(1.4);opacity:0.48} 100%{transform:scale(1);opacity:0.28} }
+#heartLayer.boom #heartRing1 { animation: heartBoom  1.8s cubic-bezier(0.16,1,0.3,1) 1, heartPulse  3.5s ease-in-out infinite 1.8s; }
+#heartLayer.boom #heartRing2 { animation: heartBoom2 1.8s cubic-bezier(0.16,1,0.3,1) 1, heartPulse2 3.5s ease-in-out infinite 1.8s; }
+
+#bottomBar {
+  position: absolute; bottom: max(36px, env(safe-area-inset-bottom,36px));
+  left: 50%; transform: translateX(-50%);
+  z-index: 30; display: flex; align-items: center; gap: 14px;
+  white-space: nowrap; pointer-events: none;
+}
+.bottom-text {
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 11px;
+  letter-spacing: 2px; color: rgba(165,55,62,0.50);
+}
+.bottom-divider { width: 1px; height: 11px; background: rgba(165,55,62,0.22); }
+
+.category-trigger {
+  position: absolute;
+  top: max(56px, calc(env(safe-area-inset-top,0px) + 44px));
+  left: 50%; transform: translateX(-50%);
+  z-index: 100; padding: 6px 26px 6px 14px; border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.88);
+  background: rgba(255,255,255,0.30);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 12px;
+  letter-spacing: 2px; color: rgba(165,55,62,0.80);
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 10px rgba(200,90,10,0.10);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23b45008' stroke-width='1.4' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+.category-menu {
+  position: absolute;
+  top: calc(max(56px, calc(env(safe-area-inset-top,0px) + 44px)) + 36px);
+  left: 50%; z-index: 101; min-width: 130px; border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.88);
+  background: linear-gradient(158deg, rgba(255,245,242,0.96) 0%, rgba(255,210,195,0.92) 100%);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 30px rgba(200,90,10,0.16), inset 0 1px 0 rgba(255,255,255,0.7);
+  padding: 6px 0; opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform: translateX(-50%) translateY(-6px);
+}
+.category-menu.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+.category-item {
+  padding: 10px 28px; font-family: 'ZCOOL XiaoWei', serif;
+  font-size: 13px; letter-spacing: 3px; color: rgba(165,55,62,0.85);
+  text-align: center; cursor: pointer; transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.category-item:hover    { background: rgba(255,255,255,0.45); }
+.category-item.selected { background: rgba(255,255,255,0.35); color: rgba(165,55,62,1); }
+
+#loadingOverlay {
+  position: absolute; inset: 0; z-index: 60;
+  background: linear-gradient(160deg, #FFF4EE 0%, #FFD8C4 42%, #FFBEA8 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'ZCOOL XiaoWei', serif; font-size: 13px;
+  letter-spacing: 3px; color: rgba(165,55,62,0.65);
+  transition: opacity 0.4s ease;
+}
+#loadingOverlay.hidden { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="app-title">
+    <h1>自我允许释放</h1>
+    <p>觉察 · 允许 · 释放</p>
+  </div>
+  <div class="category-trigger" id="categoryTrigger">随机</div>
+  <div class="category-menu" id="categoryMenu"></div>
+  <div id="questionEl"></div>
+
+  <svg class="svg-canvas" id="sv" viewBox="0 0 360 640">
+    <defs>
+      <filter id="f1" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="10"/></filter>
+      <filter id="f2" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="20"/></filter>
+      <filter id="f3" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="36"/></filter>
+      <radialGradient id="hgOuter" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#FF8090" stop-opacity="0.48"/>
+        <stop offset="100%" stop-color="#FF8090" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="hgMid" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#FF8090" stop-opacity="0.55"/>
+        <stop offset="60%"  stop-color="#FFA8B0" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="#FF8090" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- body silhouette: white glow -->
+    <path class="hg1" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="rgba(255,255,255,0.18)" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f3)"/>
+    <path class="hg2" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="rgba(255,255,255,0.38)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f2)"/>
+    <path class="hg3" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="rgba(255,255,255,0.62)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f1)"/>
+    <path class="hcore" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
+      stroke="rgba(255,255,255,0.80)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+    <!-- heart glow -->
+    <g id="heartLayer">
+      <circle id="heartRing2" cx="183" cy="420" r="88" fill="url(#hgOuter)"/>
+      <circle id="heartRing1" cx="183" cy="420" r="55" fill="url(#hgMid)"/>
+    </g>
+  </svg>
+
+  <button class="act-btn" id="btnCan">允许</button>
+  <button class="act-btn" id="btnCannot">不允许</button>
+
+  <div id="bottomBar">
+    <span class="bottom-text" id="counterText">今日 0</span>
+    <span class="bottom-divider"></span>
+    <span class="bottom-text" id="totalText">累计 0</span>
+  </div>
+</div>
+<div id="loadingOverlay">加载中…</div>
+
+<script>
+const STORAGE_KEY = 'sa_progress_v1';
+let DATA = null, CURRENT_QUEUE = [], QUEUE_INDEX = 0, CURRENT_Q = null, LOCKED = false;
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return def();
+    const p = JSON.parse(raw);
+    if (p.todayDate !== new Date().toDateString()) { p.todayCount = 0; p.todayDate = new Date().toDateString(); }
+    return p;
+  } catch(e) { return def(); }
+}
+function def() { return { total:0, todayCount:0, todayDate:new Date().toDateString(), byCategory:{}, byDesire:{} }; }
+function saveProgress(p) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch(e){} }
+function incrementProgress(q) {
+  const p = loadProgress(); p.total++; p.todayCount++; p.todayDate = new Date().toDateString();
+  p.byCategory[q.category] = (p.byCategory[q.category]||0)+1;
+  p.byDesire[q.desire]     = (p.byDesire[q.desire]||0)+1;
+  saveProgress(p); updateCounter();
+}
+
+async function loadData() {
+  try {
+    const res = await fetch('allowance.json');
+    if (!res.ok) throw new Error();
+    DATA = await res.json();
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    initCategorySelector(); startSession('all');
+  } catch(e) {
+    document.getElementById('loadingOverlay').innerHTML =
+      '题库加载失败<br><small style="font-size:11px;">请检查 acceptance.json 是否就位</small>';
+  }
+}
+
+function initCategorySelector() {
+  const trigger = document.getElementById('categoryTrigger');
+  const menu    = document.getElementById('categoryMenu');
+  const items   = [{ id:'all', label:'随机' }, ...Object.keys(DATA.categories).map(id => ({ id, label: DATA.categories[id].name }))];
+  let cur = 'all';
+  function build() {
+    menu.innerHTML = '';
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'category-item' + (item.id === cur ? ' selected' : '');
+      el.textContent = item.label;
+      el.onclick = e => { e.stopPropagation(); cur = item.id; trigger.textContent = item.label; menu.classList.remove('open'); build(); startSession(item.id); };
+      menu.appendChild(el);
+    });
+  }
+  build();
+  trigger.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('open'); });
+  document.addEventListener('click', () => menu.classList.remove('open'));
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function startSession(cat) {
+  let pool = cat === 'all' ? DATA.questions.slice() : DATA.questions.filter(q => q.category === cat);
+  CURRENT_QUEUE = shuffle(pool); QUEUE_INDEX = 0;
+  hideEl('questionEl'); hideBtn('btnCan'); hideBtn('btnCannot');
+  updateCounter(); showNextQuestion();
+}
+function showNextQuestion() {
+  if (QUEUE_INDEX >= CURRENT_QUEUE.length) { CURRENT_QUEUE = shuffle(CURRENT_QUEUE); QUEUE_INDEX = 0; }
+  CURRENT_Q = CURRENT_QUEUE[QUEUE_INDEX]; LOCKED = false;
+  document.getElementById('questionEl').textContent = CURRENT_Q.question;
+  setTimeout(() => { showEl('questionEl'); setTimeout(() => { showBtn('btnCan'); showBtn('btnCannot'); }, 400); }, 200);
+}
+function onAnswer() {
+  if (LOCKED) return; LOCKED = true;
+  hideBtn('btnCan'); hideBtn('btnCannot'); hideEl('questionEl');
+  playReleaseSound(); boomHeart(); triggerRipple(); incrementProgress(CURRENT_Q);
+  setTimeout(() => { QUEUE_INDEX++; showNextQuestion(); }, 1800);
+}
+function boomHeart() {
+  const l = document.getElementById('heartLayer');
+  l.classList.remove('boom'); void l.offsetWidth; l.classList.add('boom');
+}
+function getHeartPos() {
+  const r = document.getElementById('card').getBoundingClientRect();
+  return { x: r.left + r.width * 0.508, y: r.top + r.height * (420/640) };
+}
+function triggerRipple() {
+  const card = document.getElementById('card'), p = getHeartPos();
+  for (let i = 0; i < 3; i++) setTimeout(() => {
+    const r = document.createElement('div');
+    r.className = 'ripple-el';
+    r.style.cssText = `left:${p.x}px;top:${p.y}px;width:150px;height:150px`;
+    card.appendChild(r); setTimeout(() => r.remove(), 1700);
+  }, i * 230);
+}
+function showEl(id)  { document.getElementById(id).classList.add('visible'); }
+function hideEl(id)  { document.getElementById(id).classList.remove('visible'); }
+function showBtn(id) { document.getElementById(id).classList.add('visible'); }
+function hideBtn(id) { document.getElementById(id).classList.remove('visible'); }
+function updateCounter() {
+  const p = loadProgress();
+  document.getElementById('counterText').textContent = '今日 ' + p.todayCount;
+  document.getElementById('totalText').textContent   = '累计 ' + p.total;
+}
+document.getElementById('btnCan').addEventListener('click', onAnswer);
+document.getElementById('btnCannot').addEventListener('click', onAnswer);
+loadData();
+
+// ═══════════════════════════════════════════════════════════
+//  SOUND
+// ═══════════════════════════════════════════════════════════
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playReleaseSound() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+
+  // 1. 低频心口共鸣 boom — 更轻柔
+  const boom = ctx.createOscillator();
+  const boomGain = ctx.createGain();
+  boom.type = 'sine';
+  boom.frequency.setValueAtTime(72, now);
+  boom.frequency.exponentialRampToValueAtTime(36, now + 0.8);
+  boomGain.gain.setValueAtTime(0, now);
+  boomGain.gain.linearRampToValueAtTime(0.18, now + 0.06);
+  boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+  boom.connect(boomGain);
+  boomGain.connect(ctx.destination);
+  boom.start(now);
+  boom.stop(now + 0.9);
+
+  // 2. 能量流动：极轻的气息
+  const bufferSize = ctx.sampleRate * 1.4;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(300, now + 0.15);
+  filter.frequency.exponentialRampToValueAtTime(1200, now + 1.2);
+  filter.Q.value = 2.0;
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0, now + 0.15);
+  noiseGain.gain.linearRampToValueAtTime(0.04, now + 0.4);
+  noiseGain.gain.linearRampToValueAtTime(0.02, now + 1.0);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+  noise.connect(filter);
+  filter.connect(noiseGain);
+  noiseGain.connect(ctx.destination);
+  noise.start(now + 0.15);
+  noise.stop(now + 1.4);
+
+  // 3. 消散余韵：极淡的泛音
+  [660, 990, 1320].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const t = now + 0.6 + i * 0.15;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.025 - i * 0.006, t + 0.1);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 1.2);
+  });
+}
+</script>
+<button class="back-to-assistant" onclick="window.parent.postMessage('closeAllowance','*')">返回</button>
+<script src="music-btn.js"></script>
+</body>
+</html>

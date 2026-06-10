@@ -79,14 +79,32 @@ body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',ser
   overflow-y: auto;
 }
 #panel-blockpoint.open { display: flex; }
+
+/* iframe 面板 — 限制性信念 & 自我允许 */
+#panel-beliefs, #panel-allowance {
+  position: fixed; inset: 0; z-index: 30;
+  display: none; flex-direction: column;
+}
+#panel-beliefs.open, #panel-allowance.open { display: flex; }
+.panel-iframe { width: 100%; height: 100%; border: none; flex: 1; }
+
 .panel-back {
-  max-width: 480px; margin: 0 auto 12px; width: 100%;
-  display: flex; align-items: center; gap: 6px;
-  color: rgba(3,80,140,0.7); font-size: 0.82rem;
+  position: fixed;
+  top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px));
+  left: 16px; z-index: 40;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(3,80,140,0.85); font-size: 0.82rem;
   font-family: 'Noto Sans SC', sans-serif;
   cursor: pointer; letter-spacing: 0.04em;
+  box-shadow: 0 2px 12px rgba(0,60,120,0.12);
+  user-select: none;
 }
-.panel-back:hover { color: rgba(3,80,140,1); }
+.panel-back:hover { background: rgba(255,255,255,0.68); }
 .panel-inner {
   max-width: 480px; margin: 0 auto; width: 100%;
   background: rgba(255,255,255,0.88);
@@ -305,10 +323,12 @@ draw();
 
 <!-- 卡点释放展开面板 -->
 <div id="panel-blockpoint">
-  <div class="panel-back" onclick="closeBlockPoint()">‹ 返回</div>
+  <div class="panel-back" onclick="closeBlockPoint()">返回</div>
+  <div style="max-width:480px;margin:0 auto 10px;width:100%;text-align:center;">
+    <span style="font-size:1.05rem;letter-spacing:0.18em;color:rgba(3,80,140,0.85);font-family:'Noto Serif SC',serif;">🫧 卡点释放助手</span>
+  </div>
   <div class="panel-inner">
-    <div class="panel-title">🔍 卡点释放</div>
-    <p class="asst-subtitle">写下你的感受，Freed 帮你看见背后的欲望模式。</p>
+    <p class="asst-subtitle">写下你对一件事的感受、担忧或执着，释放助手会帮你看见背后的欲望模式。</p>
     <textarea class="asst-textarea" id="asstInput" placeholder="例：我每天都在想她什么时候才能回我消息，吃不下饭睡不着觉……"></textarea>
     <button class="asst-submit" id="asstSubmit" onclick="runAssistant()">✨ 分析</button>
     <div class="asst-loading" id="asstLoading">
@@ -319,7 +339,16 @@ draw();
   </div>
 </div>
 
-<script src="paywall.js"></script>
+<!-- 限制性信念释放面板 -->
+<div id="panel-beliefs">
+  <iframe class="panel-iframe" id="iframe-beliefs" src="" allowfullscreen></iframe>
+</div>
+
+<!-- 自我允许释放面板 -->
+<div id="panel-allowance">
+  <iframe class="panel-iframe" id="iframe-allowance" src="" allowfullscreen></iframe>
+</div>
+
 <script>
 const DESIRE_INFO = {
   control:{label:'想要控制',cls:'bc'},
@@ -365,26 +394,46 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // ── 功能入口 ──
 function openBlockPoint() {
-  requireLoginAndPremium(function() {
-    document.getElementById('asst-layer').style.display = 'none';
-    document.getElementById('panel-blockpoint').classList.add('open');
-  });
+  document.getElementById('asst-layer').style.display = 'none';
+  document.getElementById('panel-blockpoint').classList.add('open');
+  var orb = document.getElementById('nav-orb-btn');
+  if (orb) orb.style.display = 'none';
 }
 function closeBlockPoint() {
   document.getElementById('panel-blockpoint').classList.remove('open');
   document.getElementById('asst-layer').style.display = 'block';
+  var orb = document.getElementById('nav-orb-btn');
+  if (orb) orb.style.display = '';
   document.getElementById('asstResult').classList.remove('show');
   document.getElementById('asstInput').value = '';
 }
 function openBeliefs() {
-  requireLoginAndPremium(function() {
-    showToast('🚧 即将上线，敬请期待');
-  });
+  document.getElementById('asst-layer').style.display = 'none';
+  var iframe = document.getElementById('iframe-beliefs');
+  if (!iframe.src || iframe.src === window.location.href) iframe.src = 'beliefs.html';
+  document.getElementById('panel-beliefs').classList.add('open');
+  var orb = document.getElementById('nav-orb-btn');
+  if (orb) orb.style.display = 'none';
+}
+function closeBeliefs() {
+  document.getElementById('panel-beliefs').classList.remove('open');
+  document.getElementById('asst-layer').style.display = 'block';
+  var orb = document.getElementById('nav-orb-btn');
+  if (orb) orb.style.display = '';
 }
 function openAllowance() {
-  requireLoginAndPremium(function() {
-    showToast('🚧 即将上线，敬请期待');
-  });
+  document.getElementById('asst-layer').style.display = 'none';
+  var iframe = document.getElementById('iframe-allowance');
+  if (!iframe.src || iframe.src === window.location.href) iframe.src = 'allowance.html';
+  document.getElementById('panel-allowance').classList.add('open');
+  var orb = document.getElementById('nav-orb-btn');
+  if (orb) orb.style.display = 'none';
+}
+function closeAllowance() {
+  document.getElementById('panel-allowance').classList.remove('open');
+  document.getElementById('asst-layer').style.display = 'block';
+  var orb = document.getElementById('nav-orb-btn');
+  if (orb) orb.style.display = '';
 }
 
 // ── Toast ──
@@ -502,5 +551,11 @@ async function runAssistant() {
 }
 </script>
 <script src="nav-orb.js"></script>
+<script>
+window.addEventListener('message', function(e) {
+  if (e.data === 'closeBeliefs') closeBeliefs();
+  if (e.data === 'closeAllowance') closeAllowance();
+});
+</script>
 </body>
 </html>
