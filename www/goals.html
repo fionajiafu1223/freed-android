@@ -512,8 +512,10 @@ async function addGoal() {
   if (existingGoals.length >= 3 && typeof FreedPaywall !== 'undefined') {
     var isPremium = await FreedPaywall.checkPremium();
     if (!isPremium) {
-      input.value = text;
-      FreedPaywall.showPaywall(function() { addGoal(); });
+      input.value = text; // 保留用户输入
+      FreedPaywall.showPaywall(function() {
+        addGoal(); // 付费成功后自动提交
+      });
       return;
     }
   }
@@ -624,6 +626,64 @@ async function dropGoal(i) {
   }
   // 渲染（登录用户用云端，未登录用本地）
   renderGoals();
+})();
+</script>
+
+<!-- ════════════════════════════════════════
+     登录引导弹窗（未登录时进入目标表会弹一次）
+     ════════════════════════════════════════ -->
+</div>
+
+<!-- 登录/注册弹窗 -->
+</div>
+
+<script>
+(function() {
+  // ===== Supabase 客户端 =====
+  const SUPA_URL_AUTH = 'https://ryoaxziysgdkjcjiuqti.supabase.co';
+  const SUPA_KEY_AUTH = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5b2F4eml5c2dka2pjaml1cXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDg2MDAsImV4cCI6MjA4OTA4NDYwMH0.ORG_8Ue8LjYfReMvKo1iQOFNGN7fcTz1_fMs8Gq1Kds';
+
+  // 兼容老 storageKey
+  const DEFAULT_STORAGE_KEY = 'sb-ryoaxziysgdkjcjiuqti-auth-token';
+  try {
+    const oldVal = localStorage.getItem('freed-auth');
+    const newVal = localStorage.getItem(DEFAULT_STORAGE_KEY);
+    if (oldVal && !newVal) {
+      localStorage.setItem(DEFAULT_STORAGE_KEY, oldVal);
+    }
+  } catch(_) {}
+
+  if (!window.supabase) return;
+
+  const supa = window.supabase.createClient(SUPA_URL_AUTH, SUPA_KEY_AUTH, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      storageKey: 'sb-ryoaxziysgdkjcjiuqti-auth-token',
+    }
+  });
+
+  // 直接从 localStorage 读 token 解析（绕过 SDK 加载时序问题）
+  function readUserFromLocalStorage() {
+    try {
+      const raw = localStorage.getItem('sb-ryoaxziysgdkjcjiuqti-auth-token');
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      const token = obj && obj.access_token;
+      if (!token) return null;
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (!payload || !payload.sub) return null;
+      if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+      return { id: payload.sub, email: payload.email || '' };
+    } catch(_) { return null; }
+  }
+
+  // 启动
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {});
+  }
 })();
 </script>
 

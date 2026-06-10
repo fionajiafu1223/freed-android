@@ -354,6 +354,7 @@ draw();
 
 </div>
 
+</div>
 
 <script>
 const currentLang = 'zh';
@@ -647,6 +648,21 @@ function daysSince(ts) {
 // ════════════════════════════════════════
 
 // 控制整个卡片的显示
+function setStatsCardForLoggedOut() {
+  const card = document.getElementById('statsCard');
+  // 未登录：卡片标题改成引导，body 显示登录按钮
+  card.innerHTML =
+    '<div class="stats-header" style="cursor:default;">' +
+      '<span class="stats-title">🌊 登录后查看你的释放足迹</span>' +
+    '</div>' +
+    '<div class="stats-body" style="margin-top:10px;max-height:none;opacity:1;">' +
+      '<div class="login-hint" style="margin-top:0;">' +
+        '<div class="login-hint-text">登录后可以跨设备同步你的收获，并看到自己的释放数据 ✨</div>' +
+        '<button class="login-hint-btn" onclick="openAuthG()">登 录</button>' +
+      '</div>' +
+    '</div>';
+  card.classList.remove('collapsed');
+}
 
 function setStatsCardForLoggedIn() {
   const card = document.getElementById('statsCard');
@@ -668,7 +684,13 @@ function setStatsCardForLoggedIn() {
 }
 
 function renderStatsFromCache() {
-  // 把卡片切换成标准结构（如果之前是引导态）
+  // 未登录：直接展示引导卡片，不计算任何数据
+  if (!currentUser) {
+    setStatsCardForLoggedOut();
+    return;
+  }
+
+  // 登录：把卡片切换成标准结构（如果之前是引导态）
   const card = document.getElementById('statsCard');
   const isLoggedOutLayout = !card.querySelector('#statsBody');
   if (isLoggedOutLayout) {
@@ -790,17 +812,20 @@ async function migrateLocalToCloud() {
 // 监听登录态变化（其他页面登录/登出时自动响应）
 supaAuth.auth.onAuthStateChange(async (event, session) => {
   await refreshUser();
+  // 根据登录态切换显示
+  applyLoginGate();
+  // 未登录时停在登录提示，不加载数据
+  if (!currentUser) {
+    return;
+  }
   // 重置缓存并重新加载
   cachedMyItems = null;
   loadMyData();
 });
 
 // ════════════════════════════════════════
-
-// ════════════════════════════════════════
 // 启动
 // ════════════════════════════════════════
-
 (async function init() {
   await refreshUser();
   loadMyData();

@@ -349,6 +349,7 @@ draw();
   <iframe class="panel-iframe" id="iframe-allowance" src="" allowfullscreen></iframe>
 </div>
 
+<script src="paywall.js"></script>
 <script>
 const DESIRE_INFO = {
   control:{label:'想要控制',cls:'bc'},
@@ -394,10 +395,12 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // ── 功能入口 ──
 function openBlockPoint() {
-  document.getElementById('asst-layer').style.display = 'none';
-  document.getElementById('panel-blockpoint').classList.add('open');
-  var orb = document.getElementById('nav-orb-btn');
-  if (orb) orb.style.display = 'none';
+  requirePremium(function() {
+    document.getElementById('asst-layer').style.display = 'none';
+    document.getElementById('panel-blockpoint').classList.add('open');
+    var orb = document.getElementById('nav-orb-btn');
+    if (orb) orb.style.display = 'none';
+  });
 }
 function closeBlockPoint() {
   document.getElementById('panel-blockpoint').classList.remove('open');
@@ -408,12 +411,14 @@ function closeBlockPoint() {
   document.getElementById('asstInput').value = '';
 }
 function openBeliefs() {
-  document.getElementById('asst-layer').style.display = 'none';
-  var iframe = document.getElementById('iframe-beliefs');
-  if (!iframe.src || iframe.src === window.location.href) iframe.src = 'beliefs.html';
-  document.getElementById('panel-beliefs').classList.add('open');
-  var orb = document.getElementById('nav-orb-btn');
-  if (orb) orb.style.display = 'none';
+  requirePremium(function() {
+    document.getElementById('asst-layer').style.display = 'none';
+    var iframe = document.getElementById('iframe-beliefs');
+    if (!iframe.src || iframe.src === window.location.href) iframe.src = 'beliefs.html';
+    document.getElementById('panel-beliefs').classList.add('open');
+    var orb = document.getElementById('nav-orb-btn');
+    if (orb) orb.style.display = 'none';
+  });
 }
 function closeBeliefs() {
   document.getElementById('panel-beliefs').classList.remove('open');
@@ -422,12 +427,14 @@ function closeBeliefs() {
   if (orb) orb.style.display = '';
 }
 function openAllowance() {
-  document.getElementById('asst-layer').style.display = 'none';
-  var iframe = document.getElementById('iframe-allowance');
-  if (!iframe.src || iframe.src === window.location.href) iframe.src = 'allowance.html';
-  document.getElementById('panel-allowance').classList.add('open');
-  var orb = document.getElementById('nav-orb-btn');
-  if (orb) orb.style.display = 'none';
+  requirePremium(function() {
+    document.getElementById('asst-layer').style.display = 'none';
+    var iframe = document.getElementById('iframe-allowance');
+    if (!iframe.src || iframe.src === window.location.href) iframe.src = 'allowance.html';
+    document.getElementById('panel-allowance').classList.add('open');
+    var orb = document.getElementById('nav-orb-btn');
+    if (orb) orb.style.display = 'none';
+  });
 }
 function closeAllowance() {
   document.getElementById('panel-allowance').classList.remove('open');
