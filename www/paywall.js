@@ -96,7 +96,7 @@
       @keyframes pwFadeIn { from{opacity:0} to{opacity:1} }
       #pw-sheet {
         width: 100%; max-width: 420px;
-        background: rgba(8,28,70,0.88);
+        background: rgba(30,90,160,0.92);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         border-radius: 24px;
@@ -104,8 +104,8 @@
         max-height: 88vh; overflow-y: auto;
         animation: pwPopIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
         font-family: 'Noto Serif SC', serif;
-        border: 1px solid rgba(120,180,255,0.18);
-        box-shadow: 0 8px 48px rgba(0,20,60,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
+        border: 1px solid rgba(120,180,255,0.25);
+        box-shadow: 0 8px 48px rgba(0,20,60,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
         position: relative;
       }
       @keyframes pwPopIn { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
@@ -132,12 +132,12 @@
       .pw-feat-col { border-radius: 14px; padding: 11px 10px; }
       .pw-feat-col.free {
         flex: 0 0 32%;
-        background: rgba(255,255,255,0.88);
+        background: #ffffff;
         border: 1px solid rgba(160,200,235,0.45);
       }
       .pw-feat-col.paid {
         flex: 1;
-        background: rgba(255,255,255,0.88);
+        background: #ffffff;
         border: 1px solid rgba(74,159,212,0.30);
       }
       .pw-feat-title {
@@ -167,17 +167,23 @@
 
       /* ── 套餐 ── */
       .pw-plans { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+      .pw-plans { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
       .pw-plan {
         border-radius: 12px; padding: 10px 14px;
-        border: 1px solid rgba(160,200,235,0.50);
-        background: rgba(255,255,255,0.92);
+        border: 2px solid rgba(160,200,235,0.40);
+        background: #ffffff;
         cursor: pointer; transition: all 0.18s;
         display: flex; align-items: center; justify-content: space-between;
         position: relative;
       }
-      .pw-plan:hover { background: #fff; border-color: rgba(74,159,212,0.5); }
-      .pw-plan.selected { border-color: #4a9fd4; background: #fff; box-shadow: 0 2px 12px rgba(74,159,212,0.22); }
-      .pw-plan.highlight { background: rgba(255,255,255,0.92); }
+      .pw-plan:hover { border-color: rgba(74,159,212,0.6); }
+      .pw-plan.selected { border-color: #4a9fd4; background: #fff; box-shadow: 0 2px 16px rgba(74,159,212,0.35); }
+      .pw-plan.selected::after {
+        content: '✓';
+        position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+        color: #4a9fd4; font-size: 1rem; font-weight: 700;
+      }
+      .pw-plan.highlight { background: #ffffff; }
       .pw-plan.highlight.selected { border-color: #4a9fd4; background: #fff; }
 
 
