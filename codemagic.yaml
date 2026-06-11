@@ -24,38 +24,13 @@ workflows:
           npm install @capacitor/core@7 @capacitor/ios@7 @capacitor/cli@7 --legacy-peer-deps
           npm install @revenuecat/purchases-capacitor --legacy-peer-deps
 
-      - name: 准备 Podfile 修弹脚本
-        script: |
-          cat > /tmp/patch_podfile.py << 'INNEREOF'
-          import sys
-          podfile_path = sys.argv[1]
-          with open(podfile_path, 'r') as f:
-              content = f.read()
-          if 'post_install' not in content:
-              hook = (
-                  'post_install do |installer|\n'
-                  '  installer.pods_project.targets.each do |target|\n'
-                  '    target.build_configurations.each do |config|\n'
-                  '      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "16.0"\n'
-                  '    end\n'
-                  '  end\n'
-                  'end\n'
-              )
-              with open(podfile_path, 'a') as f:
-                  f.write('\n' + hook)
-              print('post_install hook added')
-          else:
-              print('post_install already exists')
-          INNEREOF
-
       - name: 同步 Capacitor 到 iOS
         script: |
           npx cap add ios || true
-          npx cap sync ios --no-deps
+          npx cap sync ios
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
             sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" "$PODFILE"
-            python3 /tmp/patch_podfile.py "$PODFILE"
             echo "===== Podfile 末尾 ====="
             tail -15 "$PODFILE"
           fi
