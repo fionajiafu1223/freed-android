@@ -27,13 +27,16 @@ workflows:
       - name: 同步 Capacitor 到 iOS
         script: |
           npx cap add ios || true
-          npx cap sync ios
+          # 先修改 Podfile 部署目标，再 sync（sync 内部会跑 pod install）
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
             sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" "$PODFILE"
-            echo "===== Podfile 末尾 ====="
-            tail -15 "$PODFILE"
+            echo "===== Podfile platform 行 ====="
+            head -3 "$PODFILE"
           fi
+          npx cap sync ios
+          echo "===== Podfile 末尾 ====="
+          tail -10 "$PODFILE"
 
       - name: 注入 RevenueCat 初始化代码
         script: |
