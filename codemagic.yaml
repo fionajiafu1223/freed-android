@@ -43,17 +43,14 @@ workflows:
       - name: 注入 RevenueCat 初始化代码
         script: |
           APPDELEGATE="ios/App/App/AppDelegate.swift"
-          echo "===== 注入前 AppDelegate ====="
-          cat "$APPDELEGATE"
           if ! grep -q "Purchases.configure" "$APPDELEGATE"; then
             sed -i '' 's/import UIKit/import UIKit\nimport RevenueCat/' "$APPDELEGATE"
-            sed -i '' 's/return super.application(app, open: url, options: options)/Purchases.configure(withAPIKey: "appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO")\n        return super.application(app, open: url, options: options)/' "$APPDELEGATE"
+            sed -i '' 's/\/\/ Override point for customization after application launch\./\/\/ Override point for customization after application launch.\n        Purchases.configure(withAPIKey: "appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO")/' "$APPDELEGATE"
             echo "===== 注入完成 ====="
           else
-            echo "===== 已有 Purchases.configure，跳过注入 ====="
+            echo "===== 已有 Purchases.configure，跳过 ====="
           fi
-          echo "===== 注入后 AppDelegate ====="
-          cat "$APPDELEGATE"
+          grep -A2 "Purchases.configure" "$APPDELEGATE" || echo "注入未找到，请检查"
 
       - name: 生成 App 图标
         script: |
