@@ -729,6 +729,7 @@ function completeRelease() {
   });
 
   triggerRipple();
+  playBubbleRise();
   incrementProgress(CURRENT_Q);
 
   setTimeout(() => {
@@ -794,6 +795,56 @@ document.getElementById('btnCan').addEventListener('click', onCanRelease);
 document.getElementById('btnCannot').addEventListener('click', onCannotRelease);
 
 loadBeliefs();
+</script>
+
+<script>
+// ── 泡泡飘出水面音效 ──
+let _audioCtx = null;
+function _getCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+function playBubbleRise() {
+  const ctx = _getCtx();
+  const now = ctx.currentTime;
+
+  // 1. 气泡上升 — 频率从低到高的短促音
+  [0, 0.12, 0.26].forEach((delay, i) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320 + i * 80, now + delay);
+    osc.frequency.exponentialRampToValueAtTime(800 + i * 120, now + delay + 0.18);
+    g.gain.setValueAtTime(0, now + delay);
+    g.gain.linearRampToValueAtTime(0.12, now + delay + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.22);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(now + delay);
+    osc.stop(now + delay + 0.22);
+  });
+
+  // 2. 水面破裂 — 轻微白噪音
+  const bufSize = Math.floor(ctx.sampleRate * 0.15);
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+  const noise = ctx.createBufferSource();
+  noise.buffer = buf;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'highpass';
+  filter.frequency.value = 2000;
+  const ng = ctx.createGain();
+  ng.gain.setValueAtTime(0, now + 0.28);
+  ng.gain.linearRampToValueAtTime(0.06, now + 0.32);
+  ng.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+  noise.connect(filter);
+  filter.connect(ng);
+  ng.connect(ctx.destination);
+  noise.start(now + 0.28);
+  noise.stop(now + 0.45);
+}
 </script>
 <button class="back-to-assistant" onclick="window.parent.postMessage('closeBeliefs','*')">返回</button>
 <script src="music-btn.js"></script>
