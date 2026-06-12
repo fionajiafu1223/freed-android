@@ -329,14 +329,20 @@
       await loadRCSDK();
       const Purchases = getRC();
       if (!Purchases) throw new Error('RevenueCat SDK 未加载');
+      setMsg('正在获取套餐...', '');
       const userId = getUserId();
-      if (userId) { try { await Purchases.logIn({ appUserID: userId }); } catch(_) {} }
-      const { offerings } = await Purchases.getOfferings();
-      const current = offerings.current;
+      if (userId) { try { await Purchases.logIn({ appUserID: userId }); } catch(e) { console.log('logIn err:', e); } }
+      const offeringsResult = await Purchases.getOfferings();
+      console.log('offerings:', JSON.stringify(offeringsResult));
+      const current = offeringsResult.offerings ? offeringsResult.offerings.current : offeringsResult.current;
       if (!current) throw new Error('无法获取订阅套餐');
+      console.log('packages:', JSON.stringify(current.availablePackages));
       const pkg = current.availablePackages.find(p => p.identifier === _selectedPlan.rcPackage);
-      if (!pkg) throw new Error('找不到对应套餐，请稍后再试');
-      const { customerInfo } = await Purchases.purchasePackage({ packageToPurchase: pkg });
+      if (!pkg) throw new Error('找不到套餐: ' + _selectedPlan.rcPackage + ' 可用: ' + current.availablePackages.map(p=>p.identifier).join(','));
+      setMsg('正在处理购买...', '');
+      const purchaseResult = await Purchases.purchasePackage({ packageToPurchase: pkg });
+      console.log('purchaseResult:', JSON.stringify(purchaseResult));
+      const customerInfo = purchaseResult.customerInfo || purchaseResult;
       if (customerInfo) {
         _premiumCache = null;
         await checkPremium(true);
@@ -347,8 +353,9 @@
         }, 1200);
       }
     } catch(err) {
+      console.log('purchase error:', err, JSON.stringify(err));
       if (err && err.userCancelled) { setMsg('已取消', ''); }
-      else { setMsg('❌ ' + (err && err.message ? err.message : String(err)).slice(0, 60), 'error'); }
+      else { setMsg('❌ ' + (err && err.message ? err.message : JSON.stringify(err)).slice(0, 80), 'error'); }
     } finally { setBtnLoading(false); }
   }
 
