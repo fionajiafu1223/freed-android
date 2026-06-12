@@ -377,15 +377,17 @@
   function loadRCSDK() {
     if (_rcLoaded) return Promise.resolve();
     return new Promise((resolve, reject) => {
-      // Capacitor 插件通过 Capacitor.Plugins 访问
       let attempts = 0;
       const check = setInterval(() => {
         attempts++;
         const P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
         if (P) {
           clearInterval(check);
-          _rcLoaded = true;
-          resolve();
+          // 等待 500ms 让原生层完成 configure
+          setTimeout(() => {
+            _rcLoaded = true;
+            resolve();
+          }, 500);
         } else if (attempts > 30) {
           clearInterval(check);
           reject(new Error('RevenueCat SDK 加载失败'));
