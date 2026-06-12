@@ -336,7 +336,7 @@
       if (!current) throw new Error('无法获取订阅套餐');
       const pkg = current.availablePackages.find(p => p.identifier === _selectedPlan.rcPackage);
       if (!pkg) throw new Error('找不到对应套餐，请稍后再试');
-      const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
+      const { customerInfo } = await Purchases.purchasePackage({ packageToPurchase: pkg });
       if (customerInfo) {
         _premiumCache = null;
         await checkPremium(true);
