@@ -329,14 +329,11 @@
       await loadRCSDK();
       const Purchases = getRC();
       if (!Purchases) throw new Error('RevenueCat SDK 未加载');
-      const userId = getUserId();
-      if (userId) { try { await Purchases.logIn({ appUserID: userId }); } catch(e) {} }
       const offeringsResult = await Purchases.getOfferings();
       const current = offeringsResult.offerings ? offeringsResult.offerings.current : offeringsResult.current;
       if (!current) throw new Error('无法获取订阅套餐');
       const pkg = current.availablePackages.find(p => p.identifier === _selectedPlan.rcPackage);
       if (!pkg) throw new Error('找不到套餐: ' + _selectedPlan.rcPackage);
-      // 用 JSON 序列化去掉 Capacitor Proxy 包装，避免原生层崩溃
       const rawPkg = JSON.parse(JSON.stringify(pkg));
       const purchaseResult = await Purchases.purchasePackage({ aPackage: rawPkg });
       const customerInfo = purchaseResult.customerInfo || purchaseResult;
@@ -363,8 +360,6 @@
       await loadRCSDK();
       const Purchases = getRC();
       if (!Purchases) throw new Error('RevenueCat SDK 未加载');
-      const userId = getUserId();
-      if (userId) { try { await Purchases.logIn({ appUserID: userId }); } catch(_) {} }
       const { customerInfo } = await Purchases.restorePurchases();
       const entitlement = customerInfo.entitlements?.active?.['premium'];
       if (entitlement) {
