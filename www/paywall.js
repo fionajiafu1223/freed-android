@@ -11,9 +11,9 @@
   const WORKER_URL = 'https://api.freedreleasing.com';
 
   const PLANS = [
-    { id:'monthly',   rcPackage:'$rc_monthly',     label:'月度会员', sublabel:'Monthly',   price:'¥8',  period:'/ 月', badge:null,        highlight:false },
-    { id:'yearly',    rcPackage:'$rc_annual',       label:'年度会员', sublabel:'Annual',    price:'¥68', period:'/ 年', badge:'最划算 省29%', highlight:true  },
-    { id:'quarterly', rcPackage:'$rc_three_month',  label:'季度会员', sublabel:'Quarterly', price:'¥18', period:'/ 季', badge:'省25%',      highlight:false },
+    { id:'monthly',   rcPackage:'$rc_monthly',     label:'月度会员', sublabel:'Monthly',   price:'…',  period:'/ 月', badge:null,        highlight:false },
+    { id:'yearly',    rcPackage:'$rc_annual',       label:'年度会员', sublabel:'Annual',    price:'…', period:'/ 年', badge:'最划算 省29%', highlight:true  },
+    { id:'quarterly', rcPackage:'$rc_three_month',  label:'季度会员', sublabel:'Quarterly', price:'…', period:'/ 季', badge:'省25%',      highlight:false },
   ];
 
   const FEATURES_FREE = ['情绪释放', '欲望释放', '目标表（最多3个）'];
@@ -302,6 +302,8 @@
     });
     document.getElementById('pw-buy-btn').addEventListener('click', handlePurchase);
     document.getElementById('pw-restore-btn').addEventListener('click', handleRestore);
+    // 动态从 RevenueCat 获取真实价格
+    loadDynamicPrices();
   }
 
   function closePaywall() {
@@ -321,6 +323,33 @@
     if (!btn) return;
     btn.disabled = loading;
     btn.textContent = loading ? '处理中...' : '立即订阅';
+  }
+
+  async function loadDynamicPrices() {
+    try {
+      await loadRCSDK();
+      const Purchases = getRC();
+      if (!Purchases) return;
+      try { await Purchases.configure({ apiKey: 'appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO' }); } catch(e) {}
+      await new Promise(r => setTimeout(r, 300));
+      const offeringsResult = await Purchases.getOfferings();
+      const current = offeringsResult.offerings ? offeringsResult.offerings.current : offeringsResult.current;
+      if (!current) return;
+      current.availablePackages.forEach(pkg => {
+        const plan = PLANS.find(p => p.rcPackage === pkg.identifier);
+        if (!plan) return;
+        const priceStr = pkg.product.priceString || pkg.product.price;
+        if (!priceStr) return;
+        // 更新价格显示
+        const planEl = document.querySelector(`.pw-plan[data-plan="${plan.id}"]`);
+        if (planEl) {
+          const priceEl = planEl.querySelector('.pw-plan-price');
+          if (priceEl) priceEl.textContent = priceStr;
+        }
+      });
+    } catch(e) {
+      // 静默失败，保留硬编码价格作为备用
+    }
   }
 
   async function handlePurchase() {
