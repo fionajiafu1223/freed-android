@@ -329,6 +329,9 @@
       await loadRCSDK();
       const Purchases = getRC();
       if (!Purchases) throw new Error('RevenueCat SDK 未加载');
+      // 从 JS 层再 configure 一次，确保初始化完成
+      try { await Purchases.configure({ apiKey: 'appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO' }); } catch(e) {}
+      await new Promise(r => setTimeout(r, 300));
       const offeringsResult = await Purchases.getOfferings();
       const current = offeringsResult.offerings ? offeringsResult.offerings.current : offeringsResult.current;
       if (!current) throw new Error('无法获取订阅套餐');
