@@ -327,18 +327,17 @@
     setBtnLoading(true); setMsg('');
     try {
       await loadRCSDK();
-      const Purchases = window.Purchases;
+      const Purchases = getRC();
       if (!Purchases) throw new Error('RevenueCat SDK 未加载');
-      Purchases.configure({ apiKey: RC_API_KEY });
       const userId = getUserId();
-      if (userId) { try { await Purchases.logIn(userId); } catch(_) {} }
-      const offerings = await Purchases.getOfferings();
+      if (userId) { try { await Purchases.logIn({ appUserID: userId }); } catch(_) {} }
+      const { offerings } = await Purchases.getOfferings();
       const current = offerings.current;
       if (!current) throw new Error('无法获取订阅套餐');
       const pkg = current.availablePackages.find(p => p.identifier === _selectedPlan.rcPackage);
       if (!pkg) throw new Error('找不到对应套餐，请稍后再试');
-      const result = await Purchases.purchasePackage(pkg);
-      if (result.customerInfo) {
+      const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
+      if (customerInfo) {
         _premiumCache = null;
         await checkPremium(true);
         setMsg('✓ 订阅成功，感谢支持！', 'success');
@@ -359,11 +358,11 @@
     setMsg('');
     try {
       await loadRCSDK();
-      const Purchases = window.Purchases;
-      Purchases.configure({ apiKey: RC_API_KEY });
+      const Purchases = getRC();
+      if (!Purchases) throw new Error('RevenueCat SDK 未加载');
       const userId = getUserId();
-      if (userId) { try { await Purchases.logIn(userId); } catch(_) {} }
-      const customerInfo = await Purchases.restorePurchases();
+      if (userId) { try { await Purchases.logIn({ appUserID: userId }); } catch(_) {} }
+      const { customerInfo } = await Purchases.restorePurchases();
       const entitlement = customerInfo.entitlements?.active?.['premium'];
       if (entitlement) {
         _premiumCache = null;
@@ -378,15 +377,27 @@
 
   let _rcLoaded = false;
   function loadRCSDK() {
-    if (_rcLoaded && window.Purchases) return Promise.resolve();
+    if (_rcLoaded) return Promise.resolve();
     return new Promise((resolve, reject) => {
-      if (window.Purchases) { _rcLoaded = true; resolve(); return; }
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/@revenuecat/purchases-js@latest/dist/index.js';
-      script.onload = () => { _rcLoaded = true; resolve(); };
-      script.onerror = () => reject(new Error('RevenueCat SDK 加载失败'));
-      document.head.appendChild(script);
+      // Capacitor 插件通过 Capacitor.Plugins 访问
+      let attempts = 0;
+      const check = setInterval(() => {
+        attempts++;
+        const P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
+        if (P) {
+          clearInterval(check);
+          _rcLoaded = true;
+          resolve();
+        } else if (attempts > 30) {
+          clearInterval(check);
+          reject(new Error('RevenueCat SDK 加载失败'));
+        }
+      }, 100);
     });
+  }
+
+  function getRC() {
+    return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
   }
 
   function getUserId() {
