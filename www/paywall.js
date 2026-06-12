@@ -378,19 +378,24 @@
     if (_rcLoaded) return Promise.resolve();
     return new Promise((resolve, reject) => {
       let attempts = 0;
-      const check = setInterval(() => {
+      const check = setInterval(async () => {
         attempts++;
         const P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
         if (P) {
+          try {
+            // 用 isConfigured 确认 SDK 已初始化完成
+            const result = await P.isConfigured();
+            if (result && result.isConfigured) {
+              clearInterval(check);
+              _rcLoaded = true;
+              resolve();
+              return;
+            }
+          } catch(e) {}
+        }
+        if (attempts > 50) {
           clearInterval(check);
-          // 等待 500ms 让原生层完成 configure
-          setTimeout(() => {
-            _rcLoaded = true;
-            resolve();
-          }, 500);
-        } else if (attempts > 30) {
-          clearInterval(check);
-          reject(new Error('RevenueCat SDK 加载失败'));
+          reject(new Error('RevenueCat SDK 未能初始化'));
         }
       }, 100);
     });
