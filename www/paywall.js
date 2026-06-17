@@ -325,7 +325,7 @@
       await loadRCSDK();
       const Purchases = getRC();
       if (!Purchases) return;
-      try { await Purchases.configure({ apiKey: 'appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO' }); } catch(e) {}
+      try { await Purchases.configure({ apiKey: 'appl_jDKwBqbSvxESQNnUMHUmaykjCNr' }); } catch(e) {}
       await new Promise(r => setTimeout(r, 300));
       const offeringsResult = await Purchases.getOfferings();
       const current = offeringsResult.offerings ? offeringsResult.offerings.current : offeringsResult.current;
@@ -412,7 +412,7 @@
     if (!P) throw new Error('RevenueCat 插件未找到');
     // 直接从 JS 层 configure，确保初始化完成
     try {
-      await P.configure({ apiKey: 'appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO' });
+      await P.configure({ apiKey: 'appl_jDKwBqbSvxESQNnUMHUmaykjCNr' });
     } catch(e) {
       // 已经 configured 会报错，忽略
     }
