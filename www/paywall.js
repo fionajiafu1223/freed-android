@@ -353,9 +353,6 @@
       await loadRCSDK();
       const Purchases = getRC();
       if (!Purchases) throw new Error('RevenueCat SDK 未加载');
-      // 从 JS 层再 configure 一次，确保初始化完成
-      try { await Purchases.configure({ apiKey: 'appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO' }); } catch(e) {}
-      await new Promise(r => setTimeout(r, 300));
       const offeringsResult = await Purchases.getOfferings();
       const current = offeringsResult.offerings ? offeringsResult.offerings.current : offeringsResult.current;
       if (!current) throw new Error('无法获取订阅套餐');
@@ -401,31 +398,26 @@
   }
 
   let _rcLoaded = false;
-  function loadRCSDK() {
-    if (_rcLoaded) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-      const check = setInterval(async () => {
-        attempts++;
-        const P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
-        if (P) {
-          try {
-            // 用 isConfigured 确认 SDK 已初始化完成
-            const result = await P.isConfigured();
-            if (result && result.isConfigured) {
-              clearInterval(check);
-              _rcLoaded = true;
-              resolve();
-              return;
-            }
-          } catch(e) {}
-        }
-        if (attempts > 50) {
-          clearInterval(check);
-          reject(new Error('RevenueCat SDK 未能初始化'));
-        }
-      }, 100);
-    });
+  async function loadRCSDK() {
+    if (_rcLoaded) return;
+    // 等待 Capacitor.Plugins.Purchases 出现
+    let attempts = 0;
+    while (attempts < 50) {
+      const P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
+      if (P) break;
+      await new Promise(r => setTimeout(r, 100));
+      attempts++;
+    }
+    const P = getRC();
+    if (!P) throw new Error('RevenueCat 插件未找到');
+    // 直接从 JS 层 configure，确保初始化完成
+    try {
+      await P.configure({ apiKey: 'appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO' });
+    } catch(e) {
+      // 已经 configured 会报错，忽略
+    }
+    await new Promise(r => setTimeout(r, 200));
+    _rcLoaded = true;
   }
 
   function getRC() {

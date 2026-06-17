@@ -23,7 +23,7 @@
   .fr-music-btn.playing .fr-music-icon { display: inline-block; animation: frMusicRotate 4s linear infinite; }
   @keyframes frMusicRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .fr-music-panel {
-    position: fixed; top: 64px; right: 12px; z-index: 9250;
+    position: fixed; top: 72px; right: 12px; z-index: 9250;
     width: min(390px, 90vw);
     background: rgba(22,48,100,0.93); backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -653,7 +653,15 @@
   }
   window.frPlayRecording = function() {
     if (!frRecordObjectUrl) return;
-    // Recreate audio element each time for cleanest playback (iOS Safari friendly)
+    var btn = document.querySelector('.fr-record-play-btn');
+    // 如果正在播放，点击停止
+    if (frRecordPreviewEl && !frRecordPreviewEl.paused) {
+      frRecordPreviewEl.pause();
+      frRecordPreviewEl.currentTime = 0;
+      if (btn) btn.textContent = '▶ 试听';
+      return;
+    }
+    // 开始播放
     if (frRecordPreviewEl) {
       try { frRecordPreviewEl.pause(); } catch(_) {}
       frRecordPreviewEl.src = '';
@@ -662,12 +670,23 @@
     frRecordPreviewEl.src = frRecordObjectUrl;
     frRecordPreviewEl.preload = 'auto';
     frRecordPreviewEl.load();
+    frRecordPreviewEl.onended = function() {
+      if (btn) btn.textContent = '▶ 试听';
+    };
     frRecordPreviewEl.play().catch(function(err) {
       frShowToast('❌ 播放失败：' + (err.message || '该格式不支持'));
     });
+    if (btn) btn.textContent = '⏹ 停止';
   };
   window.frSaveRecording = function() {
     if (!frRecordObjectUrl) return;
+    // 停止试听播放
+    if (frRecordPreviewEl) {
+      try { frRecordPreviewEl.pause(); frRecordPreviewEl.src = ''; } catch(_) {}
+      frRecordPreviewEl = null;
+    }
+    var btn = document.querySelector('.fr-record-play-btn');
+    if (btn) btn.textContent = '▶ 试听';
     var id = 'rec-'+Date.now();
     var dur = String(Math.floor(frRecordTimerSec/60)).padStart(2,'0')+':'+String(frRecordTimerSec%60).padStart(2,'0');
     var name = '🎙️ 我的录音 ' + dur;
@@ -683,6 +702,13 @@
     frShowToast('🎙️ 混音已保存并开始播放');
   };
   window.frDiscardRecording = function() {
+    // 停止试听播放
+    if (frRecordPreviewEl) {
+      try { frRecordPreviewEl.pause(); frRecordPreviewEl.src = ''; } catch(_) {}
+      frRecordPreviewEl = null;
+    }
+    var btn = document.querySelector('.fr-record-play-btn');
+    if (btn) btn.textContent = '▶ 试听';
     if (frRecordObjectUrl) { URL.revokeObjectURL(frRecordObjectUrl); frRecordObjectUrl = null; }
     frRecordBlob = null; frRecordChunks = [];
     document.getElementById('frRecordBtn').classList.remove('has-recording');
