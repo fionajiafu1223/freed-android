@@ -177,14 +177,9 @@
         position: relative;
       }
       .pw-plan:hover { border-color: rgba(74,159,212,0.6); }
-      .pw-plan.selected { border-color: #4a9fd4; background: #fff; box-shadow: 0 2px 16px rgba(74,159,212,0.35); }
-      .pw-plan.selected::after {
-        content: '✓';
-        position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-        color: #4a9fd4; font-size: 1rem; font-weight: 700;
-      }
+      .pw-plan.selected { border: 2px solid #4a9fd4 !important; background: #b8dff5 !important; }
       .pw-plan.highlight { background: #ffffff; }
-      .pw-plan.highlight.selected { border-color: #4a9fd4; background: #fff; }
+      .pw-plan.highlight.selected { border: 2px solid #4a9fd4 !important; background: #b8dff5 !important; }
 
 
       .pw-plan-badge {
@@ -208,7 +203,7 @@
         color: #fff; font-family: 'Noto Serif SC', serif;
         font-size: 0.95rem; letter-spacing: 0.1em; cursor: pointer;
         transition: opacity 0.2s, transform 0.15s; margin-bottom: 10px;
-        box-shadow: 0 6px 20px rgba(42,160,140,0.40), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.25);
+        box-shadow: 0 4px 14px rgba(42,160,140,0.25), 0 2px 6px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.25);
         position: relative; overflow: hidden;
       }
       .pw-btn::after {

@@ -1668,7 +1668,9 @@ function vh()     { return window.innerHeight; }
 // All physics constants are defined per 60fps frame.
 // Delta-time scaling normalises them to actual elapsed time,
 // so behaviour is identical on 60 / 90 / 120 / 144 Hz screens.
-const BUOYANCY    = 0.006;   // per 60fps frame
+const isAndroid   = /Android/i.test(navigator.userAgent);
+const BUOYANCY    = isAndroid ? 0.003 : 0.006;   // per 60fps frame
+const MAX_SPD     = isAndroid ? 0.35  : 0.8;
 const DAMPING     = 0.92;    // per 60fps frame (converted to per-dt below)
 const REPULSION   = 120;     // per 60fps frame
 const WALL_REP    = 80;      // per 60fps frame
@@ -1676,7 +1678,7 @@ const WALL_MARGIN = 6;
 const TARGET_FPS  = 60;
 const TARGET_DT   = 1000 / TARGET_FPS;  // 16.667 ms
 // Max speed in px per 60fps-equivalent frame
-const MAX_SPD     = 0.8;
+
 
 let   frameCount  = 0;
 let   lastPhysicsTime = null;
