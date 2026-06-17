@@ -23,7 +23,7 @@
   .fr-music-btn.playing .fr-music-icon { display: inline-block; animation: frMusicRotate 4s linear infinite; }
   @keyframes frMusicRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .fr-music-panel {
-    position: fixed; top: 72px; right: 12px; z-index: 9250;
+    position: fixed; top: max(72px, calc(env(safe-area-inset-top, 0px) + 58px)); right: 12px; z-index: 9250;
     width: min(390px, 90vw);
     background: rgba(22,48,100,0.93); backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
