@@ -96,7 +96,7 @@
       @keyframes pwFadeIn { from{opacity:0} to{opacity:1} }
       #pw-sheet {
         width: 100%; max-width: 420px;
-        background: #2a9fd8;
+        background: rgba(8,28,70,0.92);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         border-radius: 24px;
@@ -343,7 +343,7 @@
         }
       });
     } catch(e) {
-      // 静默失败，保留硬编码价格作为备用
+      setMsg('❌ 价格加载失败: ' + (e && e.message ? e.message : JSON.stringify(e)), 'error');
     }
   }
 
@@ -372,7 +372,7 @@
       }
     } catch(err) {
       if (err && err.userCancelled) { setMsg('已取消', ''); }
-      else { setMsg('❌ ' + (err && err.message ? err.message : JSON.stringify(err)).slice(0, 80), 'error'); }
+      else { setMsg('❌ ' + (err && err.message ? err.message : JSON.stringify(err)), 'error'); }
     } finally { setBtnLoading(false); }
   }
 
