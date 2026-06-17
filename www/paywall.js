@@ -96,7 +96,7 @@
       @keyframes pwFadeIn { from{opacity:0} to{opacity:1} }
       #pw-sheet {
         width: 100%; max-width: 420px;
-        background: rgba(15,90,100,0.92);
+        background: #2a9fd8;
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         border-radius: 24px;
@@ -112,18 +112,18 @@
       #pw-close {
         position: absolute; top: 14px; right: 14px;
         width: 26px; height: 26px; border-radius: 50%;
-        background: rgba(255,255,255,0.10); border: none;
-        color: rgba(255,255,255,0.55); font-size: 0.85rem;
+        background: rgba(255,255,255,0.30); border: none;
+        color: rgba(10,50,90,0.75); font-size: 0.85rem;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
         transition: background 0.15s;
       }
-      #pw-close:hover { background: rgba(255,255,255,0.18); }
+      #pw-close:hover { background: rgba(255,255,255,0.50); }
       #pw-sheet h2 {
         text-align: center; font-size: 1.05rem; letter-spacing: 0.14em;
-        color: rgba(220,240,255,0.95); margin-bottom: 3px;
+        color: #0a3260; margin-bottom: 3px;
       }
       #pw-sheet .pw-sub {
-        text-align: center; font-size: 0.74rem; color: rgba(160,200,240,0.60);
+        text-align: center; font-size: 0.74rem; color: rgba(10,50,90,0.55);
         font-family: 'Noto Sans SC', sans-serif; margin-bottom: 14px; letter-spacing: 0.04em;
       }
 
@@ -215,12 +215,12 @@
       .pw-btn:active { transform: translateY(1px); box-shadow: 0 3px 10px rgba(42,160,140,0.35); }
       .pw-btn:disabled { opacity: 0.40; cursor: not-allowed; transform: none; }
       .pw-restore {
-        text-align: center; font-size: 0.70rem; color: rgba(160,200,240,0.50);
+        text-align: center; font-size: 0.70rem; color: rgba(10,50,90,0.55);
         cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
         letter-spacing: 0.04em; background: none; border: none; width: 100%;
       }
-      .pw-restore:hover { color: rgba(160,200,240,0.85); }
-      .pw-msg { text-align: center; font-size: 0.74rem; margin-top: 8px; font-family: 'Noto Sans SC', sans-serif; min-height: 18px; color: rgba(140,190,240,0.60); }
+      .pw-restore:hover { color: rgba(10,50,90,0.85); }
+      .pw-msg { text-align: center; font-size: 0.74rem; margin-top: 8px; font-family: 'Noto Sans SC', sans-serif; min-height: 18px; color: rgba(10,50,90,0.55); }
       .pw-msg.error { color: rgba(255,120,120,0.85); }
       .pw-msg.success { color: rgba(100,220,180,0.90); }
     `;
