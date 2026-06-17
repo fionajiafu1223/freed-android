@@ -96,7 +96,7 @@
       @keyframes pwFadeIn { from{opacity:0} to{opacity:1} }
       #pw-sheet {
         width: 100%; max-width: 420px;
-        background: rgba(30,90,160,0.92);
+        background: rgba(15,90,100,0.92);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         border-radius: 24px;
