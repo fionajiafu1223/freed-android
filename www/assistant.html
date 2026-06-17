@@ -526,13 +526,22 @@ async function runAssistant() {
     let rawPoints = json.points||json.results||json.analysis||json.data||[];
     if (!Array.isArray(rawPoints)) rawPoints = [];
     asstPoints = rawPoints.map(p => {
-      let desire = String(p.desire||p.type||p.category||'').toLowerCase();
+      let desire = String(p.desire||p.type||p.category||'').toLowerCase().trim();
       if (desire.includes('control')||desire.includes('控制')) desire='control';
       else if (desire.includes('approval')||desire.includes('认同')||desire.includes('被爱')) desire='approval';
       else if (desire.includes('safety')||desire.includes('安全')) desire='safety';
+      else if (desire === 'control' || desire === 'approval' || desire === 'safety') {}
       return { desire, quote:p.quote||p.text||p.phrase||'', reason:p.reason||p.explanation||p.analysis||'' };
     }).filter(p => DESIRE_INFO[p.desire]);
-    if (!asstPoints.length) throw new Error('返回格式异常，请重试。');
+    if (!asstPoints.length) {
+      // 如果 filter 掉了所有点，直接用原始数据但强制映射 desire
+      asstPoints = rawPoints.map(p => {
+        let desire = String(p.desire||'').toLowerCase().trim();
+        if (!DESIRE_INFO[desire]) desire = 'safety'; // 默认 safety
+        return { desire, quote:p.quote||p.text||'', reason:p.reason||p.explanation||'' };
+      }).filter(p => p.quote);
+    }
+    if (!asstPoints.length) throw new Error('AI 返回格式异常，请重试。');
     resultEl.innerHTML = '<div class="asst-desire-badges" id="asstBadges"></div>'
       + '<div class="asst-analysis" id="asstAnalysis"></div>'
       + '<button class="asst-go-btn" onclick="startReleaseQueue()">🫧 去释放这些想要</button>';
