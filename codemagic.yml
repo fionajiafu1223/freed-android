@@ -1,0 +1,174 @@
+workflows:
+  ios-workflow:
+    name: Freed 释放 iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Codemagic Admin
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.freedreleasing.app
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        APP_STORE_APPLE_ID: 6768422531
+        APP_VERSION: "1.1"
+      node: 20.11.0
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: 安装 npm 依赖
+        script: |
+          npm install
+          npm install @capacitor/core@7 @capacitor/ios@7 @capacitor/cli@7 --legacy-peer-deps
+          npm install @revenuecat/purchases-capacitor --legacy-peer-deps
+
+      - name: 准备 Podfile 修弹脚本
+        script: |
+          cat > /tmp/patch_podfile.py << 'INNEREOF'
+          import sys
+          podfile_path = sys.argv[1]
+          with open(podfile_path, 'r') as f:
+              content = f.read()
+          if 'post_install' not in content:
+              hook = (
+                  'post_install do |installer|\n'
+                  '  installer.pods_project.targets.each do |target|\n'
+                  '    target.build_configurations.each do |config|\n'
+                  '      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "16.0"\n'
+                  '    end\n'
+                  '  end\n'
+                  'end\n'
+              )
+              with open(podfile_path, 'a') as f:
+                  f.write('\n' + hook)
+              print('post_install hook added')
+          else:
+              print('post_install already exists')
+          INNEREOF
+
+      - name: 同步 Capacitor 到 iOS
+        script: |
+          npx cap add ios || true
+          npx cap sync ios --no-deps
+          PODFILE="ios/App/Podfile"
+          if [ -f "$PODFILE" ]; then
+            sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" "$PODFILE"
+            python3 /tmp/patch_podfile.py "$PODFILE"
+            echo "===== Podfile 末尾 ====="
+            tail -15 "$PODFILE"
+          fi
+
+      - name: 注入 RevenueCat 初始化代码
+        script: |
+          APPDELEGATE="ios/App/App/AppDelegate.swift"
+          if ! grep -q "Purchases.configure" "$APPDELEGATE"; then
+            sed -i '' 's/import UIKit/import UIKit\nimport RevenueCat/' "$APPDELEGATE"
+            sed -i '' 's/return super.application(app, open: url, options: options)/Purchases.configure(withAPIKey: "appl_tPsHsCYxJnoCwiZTTVaexMsaHHoO")\n        return super.application(app, open: url, options: options)/' "$APPDELEGATE"
+          fi
+
+      - name: 注入麦克风权限到 Info.plist
+        script: |
+          INFOPLIST="ios/App/App/Info.plist"
+          if ! grep -q "NSMicrophoneUsageDescription" "$INFOPLIST"; then
+            sed -i '' 's|</dict>|<key>NSMicrophoneUsageDescription</key><string>录制你的声音与背景音乐混合，保存专属释放音频</string></dict>|' "$INFOPLIST"
+            echo "===== 麦克风权限已注入 ====="
+          else
+            echo "===== 麦克风权限已存在 ====="
+          fi
+          grep -A1 "NSMicrophoneUsageDescription" "$INFOPLIST"
+
+      - name: 生成 App 图标
+        script: |
+          npm install -g @capacitor/assets
+          npx capacitor-assets generate --ios
+
+      - name: 安装 CocoaPods
+        script: |
+          cd ios/App
+          echo "===== Podfile 前 5 行 ====="
+          head -5 Podfile
+          pod install
+
+      - name: 设置代码签名
+        script: |
+          keychain initialize
+          keychain add-certificates
+          xcode-project use-profiles
+
+      - name: 自增构建号 & 设置版本号
+        script: |
+          cd $CM_BUILD_DIR/ios/App
+          # 设置 Marketing Version (CFBundleShortVersionString)，必须高于已审核版本
+          agvtool new-marketing-version "$APP_VERSION"
+          echo "Marketing Version 设置为: $APP_VERSION"
+          # 自增 Build Number
+          AS_BUILD=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          TF_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          LATEST=$(( AS_BUILD > TF_BUILD ? AS_BUILD : TF_BUILD ))
+          NEW_BUILD=$(( LATEST + 1 ))
+          echo "App Store 最新: $AS_BUILD"
+          echo "TestFlight 最新: $TF_BUILD"
+          echo "本次构建号: $NEW_BUILD"
+          agvtool new-version -all $NEW_BUILD
+
+      - name: 构建 ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
+  android-workflow:
+    name: Freed 释放 Android Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      android_signing:
+        - freed-android
+      vars:
+        PACKAGE_NAME: "com.freedreleasing.app"
+      node: 20.11.0
+    scripts:
+      - name: 安装 npm 依赖
+        script: |
+          npm install
+          npm install @capacitor/android@6 --legacy-peer-deps
+
+      - name: 同步 Capacitor 到 Android
+        script: |
+          rm -rf android
+          npx cap add android
+          npx cap sync android
+          echo "===== 修改 SDK 版本到 35 ====="
+          perl -pi -e 's/compileSdkVersion\s*=\s*\d+/compileSdkVersion = 35/g' android/variables.gradle
+          perl -pi -e 's/targetSdkVersion\s*=\s*\d+/targetSdkVersion = 35/g' android/variables.gradle
+          echo "===== 当前 variables.gradle ====="
+          cat android/variables.gradle
+          echo "===== 修改 build.gradle versionCode ====="
+          perl -pi -e 's/versionCode \d+/versionCode 1/g' android/app/build.gradle
+          echo "===== 当前 versionCode 行 ====="
+          grep versionCode android/app/build.gradle
+
+      - name: 构建 AAB
+        script: |
+          cd android
+          VERSION_CODE=$(( ${BUILD_NUMBER:-1} + 9 ))
+          echo "本次 Android versionCode: $VERSION_CODE"
+          ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file=$CM_KEYSTORE_PATH \
+            -Pandroid.injected.signing.store.password=$CM_KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$CM_KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$CM_KEY_PASSWORD \
+            -Pandroid.injected.version.code=$VERSION_CODE
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
