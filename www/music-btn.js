@@ -227,6 +227,32 @@
   var frMusicPanelOpen = false;
   var frCurrentImportId = null;
   var frImportedTracks = [];
+
+  // ── 持久化：从 localStorage 恢复录音 ──
+  function frSaveTracksToStorage() {
+    try {
+      var toSave = frImportedTracks.filter(function(t) { return t.base64; })
+        .map(function(t) { return { id: t.id, name: t.name, base64: t.base64, mime: t.mime }; });
+      localStorage.setItem("freed_recorded_tracks", JSON.stringify(toSave));
+    } catch(e) {}
+  }
+  function frLoadTracksFromStorage() {
+    try {
+      var saved = JSON.parse(localStorage.getItem("freed_recorded_tracks") || "[]");
+      saved.forEach(function(t) {
+        try {
+          var byteString = atob(t.base64.split(",")[1]);
+          var ab = new ArrayBuffer(byteString.length);
+          var ia = new Uint8Array(ab);
+          for (var i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+          var blob = new Blob([ab], { type: t.mime || "audio/webm" });
+          var url = URL.createObjectURL(blob);
+          frImportedTracks.push({ id: t.id, name: t.name, src: url, base64: t.base64, mime: t.mime });
+        } catch(e) {}
+      });
+    } catch(e) {}
+  }
+  frLoadTracksFromStorage();
   var frImportAudioEl = null;
   var frRecordingActive = false;
   var frRecordBlob = null;
@@ -483,6 +509,7 @@
       document.getElementById('frMpanel-' + s).classList.toggle('active', s === src);
     });
     if (src === 'record') frInitRecordWaveform();
+    if (src === 'import') frRenderImportedList();
   };
 
   // ── LOCAL IMPORT ──
@@ -541,6 +568,7 @@
     var track = frImportedTracks[idx];
     if (track.objectUrl) URL.revokeObjectURL(track.objectUrl);
     frImportedTracks.splice(idx, 1);
+    frSaveTracksToStorage();
     frRenderImportedList();
   };
 
@@ -690,10 +718,24 @@
     var id = 'rec-'+Date.now();
     var dur = String(Math.floor(frRecordTimerSec/60)).padStart(2,'0')+':'+String(frRecordTimerSec%60).padStart(2,'0');
     var name = '🎙️ 我的录音 ' + dur;
-    frImportedTracks.push({id:id, name:name, src:frRecordObjectUrl});
-    frSwitchMusicSource('import');
-    frRenderImportedList();
-    frSelectImportTrack(id);
+    var mime = frRecordBlob ? frRecordBlob.type : 'audio/webm';
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var base64 = e.target.result;
+      frImportedTracks.push({id:id, name:name, src:frRecordObjectUrl, base64:base64, mime:mime});
+      frSaveTracksToStorage();
+      frSwitchMusicSource('import');
+      frRenderImportedList();
+      frSelectImportTrack(id);
+    };
+    if (frRecordBlob) {
+      reader.readAsDataURL(frRecordBlob);
+    } else {
+      frImportedTracks.push({id:id, name:name, src:frRecordObjectUrl});
+      frSwitchMusicSource('import');
+      frRenderImportedList();
+      frSelectImportTrack(id);
+    }
     document.getElementById('frRecordBtn').classList.remove('has-recording');
     document.getElementById('frRecordActions').style.display = 'none';
     document.getElementById('frRecordStatus').textContent = '已保存，正在播放混音';

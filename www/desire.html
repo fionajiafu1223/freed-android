@@ -3190,6 +3190,7 @@ function switchMusicSource(src) {
   });
   // Init waveform bars on first visit
   if (src === 'record') initRecordWaveform();
+  if (src === 'import') renderImportedList();
 }
 
 // ═══════════════════════════════════════════════════
@@ -3198,6 +3199,32 @@ function switchMusicSource(src) {
 // importedTracks: [{id, name, src, objectUrl?}]
 const importedTracks = [];
 let importAudioEl    = null; // single <audio> element for imported/recorded playback
+
+// ── 持久化：localStorage ──
+function saveTracksToStorage() {
+  try {
+    const toSave = importedTracks.filter(t => t.base64)
+      .map(t => ({ id: t.id, name: t.name, base64: t.base64, mime: t.mime }));
+    localStorage.setItem('freed_desire_recorded_tracks', JSON.stringify(toSave));
+  } catch(e) {}
+}
+function loadTracksFromStorage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('freed_desire_recorded_tracks') || '[]');
+    saved.forEach(t => {
+      try {
+        const byteString = atob(t.base64.split(',')[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+        const blob = new Blob([ab], { type: t.mime || 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+        importedTracks.push({ id: t.id, name: t.name, src: url, base64: t.base64, mime: t.mime });
+      } catch(e) {}
+    });
+  } catch(e) {}
+}
+loadTracksFromStorage();
 let currentImportId  = null;
 
 function ensureImportAudio() {
@@ -3307,6 +3334,7 @@ function deleteImportTrack(e, id) {
   const track = importedTracks[idx];
   if (track.objectUrl) URL.revokeObjectURL(track.objectUrl);
   importedTracks.splice(idx, 1);
+  saveTracksToStorage();
   renderImportedList();
 }
 
@@ -3561,12 +3589,27 @@ function saveRecording() {
     ? document.querySelector(`.record-bg-item[data-track="${recordBgTrack}"] .record-bg-name`)?.textContent
     : '';
   const name = bgName ? `🎙️ 录音+${bgName} ${dur}` : `🎙️ 我的录音 ${dur}`;
-  // 保存 URL 到 track，不 revoke
-  importedTracks.push({ id, name, src: recordObjectUrl });
-  recordObjectUrl = null; // 清除引用但不 revoke，让 track.src 继续可用
-  switchMusicSource('import');
-  renderImportedList();
-  selectImportTrack(id);
+  // 保存 URL 到 track，转 base64 持久化
+  const mime = recordBlob ? recordBlob.type : 'audio/webm';
+  const srcUrl = recordObjectUrl;
+  recordObjectUrl = null;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64 = e.target.result;
+    importedTracks.push({ id, name, src: srcUrl, base64, mime });
+    saveTracksToStorage();
+    switchMusicSource('import');
+    renderImportedList();
+    selectImportTrack(id);
+  };
+  if (recordBlob) {
+    reader.readAsDataURL(recordBlob);
+  } else {
+    importedTracks.push({ id, name, src: srcUrl });
+    switchMusicSource('import');
+    renderImportedList();
+    selectImportTrack(id);
+  }
   document.getElementById('recordBtn').classList.remove('has-recording');
   document.getElementById('recordActions').style.display = 'none';
   document.getElementById('recordStatus').textContent = '已保存，正在播放混音';
