@@ -1668,12 +1668,17 @@ function vh()     { return window.innerHeight; }
 // All physics constants are defined per 60fps frame.
 // Delta-time scaling normalises them to actual elapsed time,
 // so behaviour is identical on 60 / 90 / 120 / 144 Hz screens.
-const isAndroid   = /Android/i.test(navigator.userAgent);
-const BUOYANCY    = isAndroid ? 0.003 : 0.006;   // per 60fps frame
-const MAX_SPD     = isAndroid ? 0.35  : 0.8;
+// 以 iPad Pro 13" (1376pt 宽) 为基准，所有平台/设备按屏幕宽度统一缩放，
+// 让视觉速度感与基准设备（iPad Pro 13"）保持一致。
+// 只缩放整体漂浮速度相关参数；碰撞修正力（REPULSION/WALL_REP）保持不变，
+// 避免缩放后与固定的碰撞距离阈值产生数值震荡（气泡颤抖）。
+const REFERENCE_WIDTH = 1376;
+const screenScale = Math.min(1, vw() / REFERENCE_WIDTH);
+const BUOYANCY    = 0.006 * screenScale;
+const MAX_SPD     = 0.8 * screenScale;
 const DAMPING     = 0.92;    // per 60fps frame (converted to per-dt below)
-const REPULSION   = 120;     // per 60fps frame
-const WALL_REP    = 80;      // per 60fps frame
+const REPULSION   = 120;
+const WALL_REP    = 80;
 const WALL_MARGIN = 6;
 const TARGET_FPS  = 60;
 const TARGET_DT   = 1000 / TARGET_FPS;  // 16.667 ms
@@ -3165,9 +3170,17 @@ function toggleMusicPanel() {
 }
 
 document.addEventListener('click', e => {
-  if (musicPanelOpen && !e.target.closest('#musicPanel') && !e.target.closest('#musicBtn')) {
+  if (!musicPanelOpen) return;
+  const panel = document.getElementById('musicPanel');
+  const btn = document.getElementById('musicBtn');
+  const panelRect = panel.getBoundingClientRect();
+  const btnRect = btn.getBoundingClientRect();
+  const x = e.clientX, y = e.clientY;
+  const insidePanel = x >= panelRect.left && x <= panelRect.right && y >= panelRect.top && y <= panelRect.bottom;
+  const insideBtn = x >= btnRect.left && x <= btnRect.right && y >= btnRect.top && y <= btnRect.bottom;
+  if (!insidePanel && !insideBtn) {
     musicPanelOpen = false;
-    document.getElementById('musicPanel').classList.remove('open');
+    panel.classList.remove('open');
   }
 });
 
@@ -3285,7 +3298,7 @@ function renderImportedList() {
       <button class="music-play-btn ${currentImportId===track.id && musicPlaying ? 'playing' : ''}" 
               style="flex-shrink:0;width:28px;height:28px;font-size:0.75rem;" 
               onclick="selectImportTrack('${track.id}', event)">
-        ${currentImportId===track.id && musicPlaying ? '⏸' : '▶'}
+        ${currentImportId===track.id && musicPlaying ? '⏹' : '▶'}
       </button>
       <span class="music-imported-name" title="${escapeHtml(track.name)}">${escapeHtml(track.name)}</span>
       <button class="music-imported-del" onclick="deleteImportTrack(event,'${track.id}')">✕</button>

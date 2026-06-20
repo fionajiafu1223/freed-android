@@ -497,9 +497,17 @@
   };
 
   document.addEventListener('click', function(e) {
-    if (frMusicPanelOpen && !e.target.closest('#frMusicPanel') && !e.target.closest('#frMusicBtn')) {
+    if (!frMusicPanelOpen) return;
+    var panel = document.getElementById('frMusicPanel');
+    var btn = document.getElementById('frMusicBtn');
+    var panelRect = panel.getBoundingClientRect();
+    var btnRect = btn.getBoundingClientRect();
+    var x = e.clientX, y = e.clientY;
+    var insidePanel = x >= panelRect.left && x <= panelRect.right && y >= panelRect.top && y <= panelRect.bottom;
+    var insideBtn = x >= btnRect.left && x <= btnRect.right && y >= btnRect.top && y <= btnRect.bottom;
+    if (!insidePanel && !insideBtn) {
       frMusicPanelOpen = false;
-      document.getElementById('frMusicPanel').classList.remove('open');
+      panel.classList.remove('open');
     }
   });
 
@@ -532,12 +540,17 @@
     if (!frImportAudioEl) { frImportAudioEl = new Audio(); frImportAudioEl.loop = true; }
     return frImportAudioEl;
   }
+  function frEscapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
   function frRenderImportedList() {
     var list = document.getElementById('frImportedList');
     if (!frImportedTracks.length) { list.innerHTML = '<div class="fr-music-import-empty">还没有导入的音乐</div>'; return; }
     list.innerHTML = frImportedTracks.map(function(track) {
       return '<div class="fr-music-imported-item ' + (frCurrentImportId===track.id?'active':'') + '" onclick="frSelectImportTrack(\'' + track.id + '\')">'
-        + '<span style="font-size:1.1rem;flex-shrink:0;">' + (frCurrentImportId===track.id?'▶':'🎵') + '</span>'
+        + '<span style="font-size:1.1rem;flex-shrink:0;">' + (frCurrentImportId===track.id?'⏹':'▶') + '</span>'
         + '<span class="fr-music-imported-name" title="' + frEscapeHtml(track.name) + '">' + frEscapeHtml(track.name) + '</span>'
         + '<button class="fr-music-imported-del" onclick="frDeleteImportTrack(event,\'' + track.id + '\')">✕</button>'
         + '</div>';
