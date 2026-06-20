@@ -120,10 +120,10 @@
       #pw-close:hover { background: rgba(255,255,255,0.50); }
       #pw-sheet h2 {
         text-align: center; font-size: 1.05rem; letter-spacing: 0.14em;
-        color: #0a3260; margin-bottom: 3px;
+        color: rgba(235,245,255,0.97); margin-bottom: 3px;
       }
       #pw-sheet .pw-sub {
-        text-align: center; font-size: 0.74rem; color: rgba(10,50,90,0.55);
+        text-align: center; font-size: 0.74rem; color: rgba(220,235,250,0.75);
         font-family: 'Noto Sans SC', sans-serif; margin-bottom: 14px; letter-spacing: 0.04em;
       }
 
@@ -215,12 +215,12 @@
       .pw-btn:active { transform: translateY(1px); box-shadow: 0 3px 10px rgba(42,160,140,0.35); }
       .pw-btn:disabled { opacity: 0.40; cursor: not-allowed; transform: none; }
       .pw-restore {
-        text-align: center; font-size: 0.70rem; color: rgba(10,50,90,0.55);
+        text-align: center; font-size: 0.70rem; color: rgba(220,235,250,0.70);
         cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
         letter-spacing: 0.04em; background: none; border: none; width: 100%;
       }
-      .pw-restore:hover { color: rgba(10,50,90,0.85); }
-      .pw-msg { text-align: center; font-size: 0.74rem; margin-top: 8px; font-family: 'Noto Sans SC', sans-serif; min-height: 18px; color: rgba(10,50,90,0.55); }
+      .pw-restore:hover { color: rgba(235,245,255,0.95); }
+      .pw-msg { text-align: center; font-size: 0.74rem; margin-top: 8px; font-family: 'Noto Sans SC', sans-serif; min-height: 18px; color: rgba(220,235,250,0.70); }
       .pw-msg.error { color: rgba(255,120,120,0.85); }
       .pw-msg.success { color: rgba(100,220,180,0.90); }
     `;
