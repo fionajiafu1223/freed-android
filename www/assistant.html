@@ -505,7 +505,7 @@ async function runAssistant() {
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
           body: JSON.stringify({
-            model: 'deepseek-chat', max_tokens: 4000,
+            model: 'deepseek-chat', max_tokens: 8000,
             response_format: { type: 'json_object' },
             messages: [
               { role: 'system', content: getSystemPrompt() },
