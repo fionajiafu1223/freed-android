@@ -478,7 +478,7 @@ function getSystemPrompt() {
     + '- safety（想要安全）：渴望稳定、保障、确定；害怕失去、改变、受伤\n\n'
     + '你的核心任务：尽可能多地挖掘用户察觉不到的深层欲望。\n\n'
     + '分析层次：表层欲望、次层欲望、隐藏欲望、矛盾欲望、行为背后的欲望。\n\n'
-    + '输出原则：至少 5-8 个洞察点，每条 quote 不超过 20 字，每条 reason 50-80 字。\n\n'
+    + '输出原则：洞察点数量根据用户输入内容的丰富程度灵活判断——内容简单就给少量精准的洞察，不要为了凑数量而重复或牵强解读；内容丰富、涉及多个层面，就尽量覆盖每一个值得被看见的点，确保用户写下的每一种情绪和担忧都被照应到。每条 quote 不超过 20 字，每条 reason 50-80 字。\n\n'
     + '严格用以下JSON格式回复，不要任何其他内容：\n'
     + '{"points":[{"quote":"短句不超过20字","desire":"control或approval或safety","reason":"深度洞察50-80字"}]}';
 }
@@ -499,7 +499,7 @@ async function runAssistant() {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
         res = await fetch('https://api.freedreleasing.com/api', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
