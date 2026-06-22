@@ -833,6 +833,43 @@
   }
   .modal-close:hover { color: #0e2840; transform: scale(1.2); }
 
+  /* 录音命名弹窗 */
+  .rename-modal-box {
+    background: linear-gradient(145deg, rgba(240,250,255,0.98), rgba(220,238,255,0.96));
+    border-radius: 20px; padding: 20px 18px;
+    width: min(360px, 92vw);
+    box-shadow: 0 16px 56px rgba(0,40,100,0.24);
+    font-family: 'Noto Serif SC', serif; position: relative;
+    transform: translateY(16px) scale(0.95);
+    transition: transform 0.25s ease;
+  }
+  .modal-overlay.open .rename-modal-box { transform: translateY(0) scale(1); }
+  .rename-modal-title {
+    font-size: 0.95rem; font-weight: 600; color: #0e3050;
+    letter-spacing: 0.08em; text-align: center; margin-bottom: 14px;
+  }
+  .rename-modal-input {
+    width: 100%; padding: 11px 14px; border-radius: 12px;
+    border: 1.5px solid rgba(74,159,212,0.35); background: #fff;
+    font-family: 'Noto Sans SC', sans-serif; font-size: 0.88rem;
+    color: #1a3a5a; box-sizing: border-box; margin-bottom: 14px;
+    outline: none; transition: border-color 0.15s;
+  }
+  .rename-modal-input:focus { border-color: #4a9fd4; }
+  .rename-modal-actions { display: flex; gap: 10px; }
+  .rename-modal-btn {
+    flex: 1; padding: 10px; border-radius: 12px; border: none;
+    font-family: 'Noto Serif SC', serif; font-size: 0.85rem;
+    cursor: pointer; transition: opacity 0.18s, transform 0.12s;
+  }
+  .rename-modal-btn:hover { opacity: 0.85; transform: scale(1.02); }
+  .rename-modal-btn.confirm {
+    background: linear-gradient(135deg, #4a9fd4, #3ab8a0); color: #fff;
+  }
+  .rename-modal-btn.cancel {
+    background: rgba(160,190,220,0.18); color: #5a7aa0;
+  }
+
   /* Tabbed header inside modal */
   .modal-tabs {
     display: flex; gap: 0;
@@ -1224,6 +1261,17 @@
         <button class="record-action-btn record-discard-btn" onclick="discardRecording()">✕ 丢弃</button>
       </div>
       <div class="record-hint">录制时麦克风声音与背景音将混合为一个文件</div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="renameOverlay" onclick="if(event.target===this) cancelRenameRecording()">
+    <div class="rename-modal-box">
+      <div class="rename-modal-title">🎙️ 给这段录音命名</div>
+      <input type="text" class="rename-modal-input" id="renameInput" maxlength="30" placeholder="例如：关于父母的释放">
+      <div class="rename-modal-actions">
+        <button class="rename-modal-btn cancel" onclick="cancelRenameRecording()">取消</button>
+        <button class="rename-modal-btn confirm" onclick="confirmRenameRecording()">保存</button>
+      </div>
     </div>
   </div>
 
@@ -3596,12 +3644,27 @@ function saveRecording() {
   }
   const btn = document.querySelector('.record-play-btn');
   if (btn) btn.textContent = '▶ 试听';
-  const id  = 'rec-' + Date.now();
+  // 生成默认建议名，预填到输入框，用户可直接用或修改
   const dur = String(Math.floor(recordTimerSec/60)).padStart(2,'0') + ':' + String(recordTimerSec%60).padStart(2,'0');
   const bgName = recordBgTrack
     ? document.querySelector(`.record-bg-item[data-track="${recordBgTrack}"] .record-bg-name`)?.textContent
     : '';
-  const name = bgName ? `🎙️ 录音+${bgName} ${dur}` : `🎙️ 我的录音 ${dur}`;
+  const defaultName = bgName ? `🎙️ 录音+${bgName} ${dur}` : `🎙️ 我的录音 ${dur}`;
+  const input = document.getElementById('renameInput');
+  input.value = defaultName;
+  document.getElementById('renameOverlay').classList.add('open');
+  setTimeout(() => { input.focus(); input.select(); }, 100);
+}
+
+function cancelRenameRecording() {
+  document.getElementById('renameOverlay').classList.remove('open');
+}
+
+function confirmRenameRecording() {
+  const input = document.getElementById('renameInput');
+  const name = input.value.trim() || input.placeholder;
+  document.getElementById('renameOverlay').classList.remove('open');
+  const id  = 'rec-' + Date.now();
   // 保存 URL 到 track，转 base64 持久化
   const mime = recordBlob ? recordBlob.type : 'audio/webm';
   const srcUrl = recordObjectUrl;

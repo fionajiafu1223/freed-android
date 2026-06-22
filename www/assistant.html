@@ -506,6 +506,7 @@ async function runAssistant() {
           signal: controller.signal,
           body: JSON.stringify({
             model: 'deepseek-chat', max_tokens: 4000,
+            response_format: { type: 'json_object' },
             messages: [
               { role: 'system', content: getSystemPrompt() },
               { role: 'user',   content: text },
@@ -551,7 +552,7 @@ async function runAssistant() {
         return { desire, quote:p.quote||p.text||'', reason:p.reason||p.explanation||'' };
       }).filter(p => p.quote);
     }
-    if (!asstPoints.length) throw new Error('AI 返回格式异常，请重试。');
+    if (!asstPoints.length) throw new Error('AI 返回格式异常，请重试。原始内容：' + raw.slice(0, 200));
     resultEl.innerHTML = '<div class="asst-desire-badges" id="asstBadges"></div>'
       + '<div class="asst-analysis" id="asstAnalysis"></div>'
       + '<button class="asst-go-btn" onclick="startReleaseQueue()">🫧 去释放这些想要</button>';

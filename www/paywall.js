@@ -214,6 +214,11 @@
       .pw-btn:hover { opacity: 0.90; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(42,160,140,0.48), 0 3px 8px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25); }
       .pw-btn:active { transform: translateY(1px); box-shadow: 0 3px 10px rgba(42,160,140,0.35); }
       .pw-btn:disabled { opacity: 0.40; cursor: not-allowed; transform: none; }
+      .pw-trial-note {
+        text-align: center; font-size: 0.66rem; color: rgba(220,235,250,0.65);
+        font-family: 'Noto Sans SC', sans-serif; letter-spacing: 0.02em;
+        margin-bottom: 8px; line-height: 1.5;
+      }
       .pw-restore {
         text-align: center; font-size: 0.70rem; color: rgba(220,235,250,0.70);
         cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
@@ -280,6 +285,7 @@
               </div>
             </div>`).join('')}
         </div>
+        <div class="pw-trial-note">7天免费试用，到期后自动续费，可随时取消</div>
         <button class="pw-btn" id="pw-buy-btn">立即订阅</button>
         <button class="pw-restore" id="pw-restore-btn">恢复购买记录</button>
         <div class="pw-msg" id="pw-msg"></div>

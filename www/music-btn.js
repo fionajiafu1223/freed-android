@@ -94,6 +94,45 @@
   .fr-record-save-btn { background: linear-gradient(135deg, rgba(60,180,120,0.8), rgba(20,120,70,0.8)); color: rgba(220,255,235,0.95); }
   .fr-record-discard-btn { background: rgba(255,255,255,0.06); color: rgba(180,200,230,0.6); border: 1px solid rgba(255,255,255,0.1); }
   .fr-record-hint { font-size: 0.66rem; color: rgba(100,150,200,0.5); font-family: 'Noto Sans SC', sans-serif; text-align: center; line-height: 1.6; }
+  .fr-rename-overlay {
+    position: fixed; inset: 0; z-index: 9500;
+    background: rgba(5,20,50,0.45); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  .fr-rename-overlay.open { opacity: 1; pointer-events: auto; }
+  .fr-rename-box {
+    background: linear-gradient(145deg, rgba(28,52,100,0.97), rgba(18,38,80,0.97));
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 20px; padding: 20px 18px;
+    width: min(340px, 88vw);
+    box-shadow: 0 16px 56px rgba(0,20,60,0.4);
+    font-family: 'Noto Serif SC', serif;
+    transform: translateY(16px) scale(0.95);
+    transition: transform 0.25s ease;
+  }
+  .fr-rename-overlay.open .fr-rename-box { transform: translateY(0) scale(1); }
+  .fr-rename-title {
+    font-size: 0.92rem; color: rgba(230,242,255,0.95);
+    letter-spacing: 0.06em; text-align: center; margin-bottom: 14px;
+  }
+  .fr-rename-input {
+    width: 100%; padding: 11px 14px; border-radius: 12px; box-sizing: border-box;
+    border: 1.5px solid rgba(100,180,255,0.3); background: rgba(255,255,255,0.08);
+    font-family: 'Noto Sans SC', sans-serif; font-size: 0.86rem;
+    color: rgba(230,242,255,0.95); margin-bottom: 14px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .fr-rename-input:focus { border-color: rgba(120,200,255,0.7); }
+  .fr-rename-actions { display: flex; gap: 10px; }
+  .fr-rename-btn {
+    flex: 1; padding: 10px; border-radius: 12px; border: none;
+    font-family: 'Noto Serif SC', serif; font-size: 0.84rem;
+    cursor: pointer; transition: opacity 0.18s, transform 0.12s;
+  }
+  .fr-rename-btn:hover { opacity: 0.85; transform: scale(1.02); }
+  .fr-rename-btn.confirm { background: linear-gradient(135deg, rgba(60,180,120,0.85), rgba(20,120,70,0.85)); color: #fff; }
+  .fr-rename-btn.cancel { background: rgba(255,255,255,0.08); color: rgba(190,215,245,0.75); }
   .fr-record-bg-section { width: 100%; margin-bottom: 6px; }
   .fr-record-bg-label { font-size: 0.68rem; color: rgba(140,180,220,0.7); font-family: 'Noto Sans SC', sans-serif; letter-spacing: 0.06em; margin-bottom: 8px; }
   .fr-record-bg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
@@ -196,6 +235,16 @@
         <span class="fr-music-vol-icon">🔉</span>
         <input type="range" class="fr-music-volume" id="frMusicVolume" min="0" max="100" value="50" oninput="frSetMusicVolume(this.value)">
         <span class="fr-music-vol-icon">🔊</span>
+      </div>
+    </div>
+    <div class="fr-rename-overlay" id="frRenameOverlay" onclick="if(event.target===this) frCancelRenameRecording()">
+      <div class="fr-rename-box">
+        <div class="fr-rename-title">🎙️ 给这段录音命名</div>
+        <input type="text" class="fr-rename-input" id="frRenameInput" maxlength="30" placeholder="例如：关于父母的释放">
+        <div class="fr-rename-actions">
+          <button class="fr-rename-btn cancel" onclick="frCancelRenameRecording()">取消</button>
+          <button class="fr-rename-btn confirm" onclick="frConfirmRenameRecording()">保存</button>
+        </div>
       </div>
     </div>
 `;
@@ -728,9 +777,21 @@
     }
     var btn = document.querySelector('.fr-record-play-btn');
     if (btn) btn.textContent = '▶ 试听';
-    var id = 'rec-'+Date.now();
     var dur = String(Math.floor(frRecordTimerSec/60)).padStart(2,'0')+':'+String(frRecordTimerSec%60).padStart(2,'0');
-    var name = '🎙️ 我的录音 ' + dur;
+    var defaultName = '🎙️ 我的录音 ' + dur;
+    var input = document.getElementById('frRenameInput');
+    input.value = defaultName;
+    document.getElementById('frRenameOverlay').classList.add('open');
+    setTimeout(function() { input.focus(); input.select(); }, 100);
+  };
+  window.frCancelRenameRecording = function() {
+    document.getElementById('frRenameOverlay').classList.remove('open');
+  };
+  window.frConfirmRenameRecording = function() {
+    var input = document.getElementById('frRenameInput');
+    var name = input.value.trim() || input.placeholder;
+    document.getElementById('frRenameOverlay').classList.remove('open');
+    var id = 'rec-'+Date.now();
     var mime = frRecordBlob ? frRecordBlob.type : 'audio/webm';
     var reader = new FileReader();
     reader.onload = function(e) {
