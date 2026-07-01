@@ -1338,6 +1338,49 @@ const _origDraw = draw;
 })();
 </script>
 
+<script src="quotes.js"></script>
+<script>
+// ── 每日语录推送通知 ──
+(async function initDailyNotification() {
+  try {
+    if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return;
+
+    const { LocalNotifications } = window.CapacitorLocalNotifications;
+
+    const perm = await LocalNotifications.requestPermissions();
+    if (perm.display !== 'granted') return;
+
+    await LocalNotifications.cancel({ notifications: [{ id: 1001 }] });
+
+    const dayIndex = Math.floor(Date.now() / 86400000) % LESTER_QUOTES.length;
+    const quote = LESTER_QUOTES[dayIndex];
+
+    const now = new Date();
+    const trigger = new Date();
+    trigger.setHours(9, 0, 0, 0);
+    if (trigger <= now) trigger.setDate(trigger.getDate() + 1);
+
+    await LocalNotifications.schedule({
+      notifications: [{
+        id: 1001,
+        title: '释放 · 今日语录',
+        body: quote,
+        schedule: {
+          at: trigger,
+          repeats: false
+        },
+        sound: null,
+        smallIcon: 'ic_stat_icon_config_sample',
+        iconColor: '#6BB5E8'
+      }]
+    });
+
+  } catch (e) {
+    console.log('通知初始化失败:', e);
+  }
+})();
+</script>
+
 <script src="paywall.js"></script>
 </body>
 </html>
