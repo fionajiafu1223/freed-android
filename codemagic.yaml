@@ -52,7 +52,7 @@ workflows:
       - name: 同步 Capacitor 到 iOS
         script: |
           npx cap add ios || true
-          npx cap sync ios --no-deps
+          npx cap sync ios npx cap sync ios
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
             sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" "$PODFILE"
