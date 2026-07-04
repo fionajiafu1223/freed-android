@@ -84,7 +84,7 @@ workflows:
         script: |
           INFOPLIST="ios/App/App/Info.plist"
           if ! grep -q "NSUserNotificationsUsageDescription" "$INFOPLIST"; then
-            sed -i '' 's|</dict>|<key>NSUserNotificationsUsageDescription</key><string>每天为您推送莱斯特语录，提醒您练习释放法。</string></dict>|' "$INFOPLIST"
+            sed -i '' 's|</dict>|<key>NSUserNotificationsUsageDescription</key><string>每天分享一则莱斯特语录，陪伴你坚持释放。</string></dict>|' "$INFOPLIST"
             echo "===== 通知权限已注入 ====="
           else
             echo "===== 通知权限已存在 ====="
