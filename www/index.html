@@ -1357,8 +1357,7 @@ const _origDraw = draw;
 
     const now = new Date();
     const trigger = new Date();
-    trigger.setHours(9, 0, 0, 0);
-    if (trigger <= now) trigger.setDate(trigger.getDate() + 1);
+    trigger.setMinutes(trigger.getMinutes() + 1);
 
     await LocalNotifications.schedule({
       notifications: [{
