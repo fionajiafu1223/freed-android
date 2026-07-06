@@ -28,12 +28,13 @@ workflows:
       - name: 同步 Capacitor 到 iOS
         script: |
           npx cap add ios || true
-          npx cap sync ios --no-deps
+          npx cap sync ios || true
           PODFILE="ios/App/Podfile"
           if [ -f "$PODFILE" ]; then
             sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" "$PODFILE"
+            sed -i '' "s/assertDeploymentTarget(installer)/installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings[\"IPHONEOS_DEPLOYMENT_TARGET\"] = \"16.0\"\n    end\n  end/" "$PODFILE"
             echo "===== Podfile 末尾 ====="
-            tail -10 "$PODFILE"
+            tail -15 "$PODFILE"
           fi
 
       - name: 注入 RevenueCat 初始化代码
@@ -72,12 +73,7 @@ workflows:
       - name: 安装 CocoaPods
         script: |
           cd ios/App
-          echo "===== Podfile 前 5 行 ====="
-          head -5 Podfile
-          # 强制替换 post_install，把 assertDeploymentTarget 换成我们自己的 16.0 设置
-          perl -0777 -i -pe 's/post_install do.*?^end\n//ms' Podfile
-          printf '\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "16.0"\n    end\n  end\nend\n' >> Podfile
-          echo "===== Podfile 末尾 ====="
+          echo "===== Podfile 末尾（pod install 前）====="
           tail -15 Podfile
           pod install
 
