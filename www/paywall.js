@@ -353,6 +353,23 @@
     }
   }
 
+  // 购买成功后，后端 is_premium 依赖 RevenueCat webhook 异步写入 Supabase，
+  // webhook 到达前查询会拿到过期的 false。所以本次解锁直接信任 RevenueCat
+  // 客户端返回的 entitlements，同时在后台轮询后端状态，用于同步本地缓存。
+  function hasActiveEntitlement(customerInfo) {
+    const active = customerInfo && customerInfo.entitlements && customerInfo.entitlements.active;
+    return !!(active && active['premium']);
+  }
+
+  async function pollBackendPremium(maxAttempts, intervalMs) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const isPremium = await checkPremium(true);
+      if (isPremium) return true;
+      await new Promise(r => setTimeout(r, intervalMs));
+    }
+    return false;
+  }
+
   async function handlePurchase() {
     setBtnLoading(true); setMsg('');
     try {
@@ -367,14 +384,31 @@
       const rawPkg = JSON.parse(JSON.stringify(pkg));
       const purchaseResult = await Purchases.purchasePackage({ aPackage: rawPkg });
       const customerInfo = purchaseResult.customerInfo || purchaseResult;
-      if (customerInfo) {
-        _premiumCache = null;
-        await checkPremium(true);
+      if (hasActiveEntitlement(customerInfo)) {
+        // 客户端已确认拿到 entitlement，立即解锁 UI，不等后端
+        _premiumCache = true;
+        _cacheTime = Date.now();
         setMsg('✓ 订阅成功，感谢支持！', 'success');
         setTimeout(() => {
           closePaywall();
           if (typeof _onGrantedCallback === 'function') _onGrantedCallback();
         }, 1200);
+        // 后台轮询后端状态，等 webhook 落地后与真实来源对齐；
+        // 轮询期间/失败都不影响当前已经解锁的体验
+        pollBackendPremium(5, 2000);
+      } else {
+        // 客户端没拿到 entitlement（理论上不该发生），退回后端查询兜底
+        _premiumCache = null;
+        const backendPremium = await pollBackendPremium(5, 2000);
+        if (backendPremium) {
+          setMsg('✓ 订阅成功，感谢支持！', 'success');
+          setTimeout(() => {
+            closePaywall();
+            if (typeof _onGrantedCallback === 'function') _onGrantedCallback();
+          }, 1200);
+        } else {
+          setMsg('购买已提交，正在确认权限，请稍后重新打开页面', '');
+        }
       }
     } catch(err) {
       if (err && err.userCancelled) { setMsg('已取消', ''); }
