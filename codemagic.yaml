@@ -146,6 +146,7 @@ workflows:
       vars:
         PACKAGE_NAME: "com.freedreleasing.app"
       node: 20.11.0
+      java: 21
     scripts:
       - name: 安装 npm 依赖
         script: |
