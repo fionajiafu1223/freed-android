@@ -966,6 +966,15 @@ const _origDraw = draw;
       tab === 'signup' ? 'new-password' : 'current-password');
   };
 
+  // —— 若 URL 带 ?login=1（例如从付费墙跳转来），自动弹出登录框 ——
+  (function checkAutoOpenLogin() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('login') === '1') {
+      switchAuthTab('login');
+      openAuth();
+    }
+  })();
+
   // —— 提交（注册或登录） ——
   window.doAuthSubmit = async function() {
     const email = $('auth-email').value.trim();
@@ -1015,7 +1024,16 @@ const _origDraw = draw;
         if (error) throw error;
 
         showMsg('登录成功 ✨', 'success');
-        setTimeout(() => { closeAuth(); refreshAuthUI(); }, 600);
+        setTimeout(() => {
+          closeAuth();
+          refreshAuthUI();
+          // 若是从付费墙跳转来登录的（URL 带 redirect 参数），登录成功后跳回原页面
+          const params = new URLSearchParams(window.location.search);
+          const redirectTo = params.get('redirect');
+          if (redirectTo) {
+            window.location.href = decodeURIComponent(redirectTo);
+          }
+        }, 600);
       }
     } catch (err) {
       // 友好错误信息
@@ -1381,6 +1399,6 @@ const _origDraw = draw;
 })();
 </script>
 
-<script src="paywall.js"></script>
+<script src="paywall-web.js"></script>
 </body>
 </html>
