@@ -1,0 +1,46 @@
+workflows:
+  android-workflow:
+    name: Freed 释放 Android Build
+    max_build_duration: 60
+    instance_type: linux
+    environment:
+      android_signing:
+        - freed-android
+      vars:
+        PACKAGE_NAME: "com.freedreleasing.app"
+      node: 20.11.0
+      java: 21
+    scripts:
+      - name: 安装 npm 依赖
+        script: |
+          npm install
+          npm install @capacitor/android@7 --legacy-peer-deps
+
+      - name: 同步 Capacitor 到 Android
+        script: |
+          rm -rf android
+          npx cap add android
+          npx cap sync android --no-deps
+          echo "===== 修改 SDK 版本到 35 ====="
+          perl -pi -e 's/compileSdkVersion\s*=\s*\d+/compileSdkVersion = 35/g' android/variables.gradle
+          perl -pi -e 's/targetSdkVersion\s*=\s*\d+/targetSdkVersion = 35/g' android/variables.gradle
+          echo "===== 当前 variables.gradle ====="
+          cat android/variables.gradle
+
+      - name: 构建 APK（直装用，不是 AAB）
+        script: |
+          cd android
+          VERSION_CODE=$(( ${BUILD_NUMBER:-1} + 9 ))
+          echo "本次 Android versionCode: $VERSION_CODE"
+          perl -pi -e "s/versionCode \d+/versionCode $VERSION_CODE/g" app/build.gradle
+          echo "===== build.gradle 实际 versionCode ====="
+          grep versionCode app/build.gradle
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$CM_KEYSTORE_PATH \
+            -Pandroid.injected.signing.store.password=$CM_KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$CM_KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$CM_KEY_PASSWORD
+          echo "===== 生成的 APK 文件 ====="
+          find . -name "*.apk"
+    artifacts:
+      - android/app/build/outputs/apk/release/*.apk
