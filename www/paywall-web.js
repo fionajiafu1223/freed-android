@@ -1,16 +1,17 @@
-// paywall-web.js — Android 版付费墙弹窗模块（Stripe 版）
+// paywall-web.js — Android 版付费墙弹窗模块（Stripe 版，含多地区定价）
 // 引入方式：<script src="paywall-web.js"></script>
 // 使用方式：requirePremium(callbackFn) — 若已付费直接执行回调，否则弹出付费墙
 //           checkPremium() — 返回 Promise<boolean>
 // 说明：UI 和 checkPremium() 逻辑与 iOS 端 paywall.js 保持一致，
 //      购买流程从 RevenueCat 原生插件改为 Stripe Checkout（网页跳转）
-// 版本：2026-07-26（安卓适配版：登录跳转目标改为 index.html，因安卓 App 内无 web.html）
+// 版本：2026-08-04（多地区定价版：打开付费墙时先向 Worker 请求访问者所在地区对应价格）
 
 (function() {
   'use strict';
 
   const WORKER_URL = 'https://api.freedreleasing.com';
 
+  // 默认价格（人民币），在拿到 /pricing 接口结果之前先用这个兜底显示
   const PLANS = [
     { id:'monthly',   label:'月度会员', sublabel:'Monthly',   price:'¥8',  period:'/ 月', badge:null,        highlight:false },
     { id:'yearly',    label:'年度会员', sublabel:'Annual',    price:'¥68', period:'/ 年', badge:'最划算 省29%', highlight:true  },
@@ -33,6 +34,27 @@
   const CACHE_TTL = 5 * 60 * 1000;
   let _selectedPlan = PLANS[0];
   let _onGrantedCallback = null;
+  let _pricingFetched = false;
+
+  // ─── 根据访问者所在地区，向 Worker 请求对应货币价格，更新 PLANS 里显示的数字 ───
+  async function fetchRegionalPricing() {
+    if (_pricingFetched) return; // 每次打开 App 只需要请求一次
+    try {
+      const res = await fetch(`${WORKER_URL}/pricing`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const symbol = data.symbol || '¥';
+      const monthlyPlan = PLANS.find(p => p.id === 'monthly');
+      const quarterlyPlan = PLANS.find(p => p.id === 'quarterly');
+      const yearlyPlan = PLANS.find(p => p.id === 'yearly');
+      if (monthlyPlan && data.monthly != null) monthlyPlan.price = symbol + data.monthly;
+      if (quarterlyPlan && data.quarterly != null) quarterlyPlan.price = symbol + data.quarterly;
+      if (yearlyPlan && data.yearly != null) yearlyPlan.price = symbol + data.yearly;
+      _pricingFetched = true;
+    } catch (_) {
+      // 请求失败就保留默认的人民币价格显示，不影响弹窗正常打开
+    }
+  }
 
   // ─── 与 App 端完全一致：从 localStorage 读 Supabase token ───
   function getToken() {
@@ -246,9 +268,10 @@
     document.head.appendChild(style);
   }
 
-  function showPaywall(onGranted) {
+  async function showPaywall(onGranted) {
     injectStyles();
     _onGrantedCallback = onGranted;
+    await fetchRegionalPricing(); // 先拿到访问者所在地区的价格，再渲染弹窗内容
     _selectedPlan = PLANS[0];
 
     const overlay = document.createElement('div');
@@ -347,7 +370,7 @@
     try {
       const token = getToken();
       if (!token) {
-        // 未登录，跳回网页版主页登录（与 App 端 requireLogin 逻辑一致）
+        // 未登录，跳回 App 主页登录（与 App 端 requireLogin 逻辑一致）
         const redirect = encodeURIComponent(window.location.href);
         window.location.href = 'index.html?login=1&redirect=' + redirect;
         return;
@@ -407,7 +430,7 @@
     }
   }
 
-  // ─── 登录检查：未登录跳回网页版主页弹登录框 ───────────────────
+  // ─── 登录检查：未登录跳回 App 主页弹登录框 ───────────────────
   async function requireLogin() {
     const token = getToken();
     if (token) return true;
@@ -424,8 +447,6 @@
   }
 
   // ─── 扣款失败提示横幅 ───────────────────────────────
-  // 在需要的页面调用 showPaymentIssueBannerIfNeeded()，会自动查一次状态，
-  // 如果存在扣款问题就在页面顶部插入一条可点击的提示条
   function injectBannerStyles() {
     if (document.getElementById('pw-banner-styles')) return;
     const style = document.createElement('style');
