@@ -2,9 +2,7 @@
 // 引入方式：<script src="paywall-web.js"></script>
 // 使用方式：requirePremium(callbackFn) — 若已付费直接执行回调，否则弹出付费墙
 //           checkPremium() — 返回 Promise<boolean>
-// 说明：UI 和 checkPremium() 逻辑与 iOS 端 paywall.js 保持一致，
-//      购买流程从 RevenueCat 原生插件改为 Stripe Checkout（网页跳转）
-// 版本：2026-08-04（多地区定价版：打开付费墙时先向 Worker 请求访问者所在地区对应价格）
+// 版本：2026-08-06（多地区定价 + 大陆用户文案区分 + 管理订阅入口）
 
 (function() {
   'use strict';
@@ -17,6 +15,35 @@
     { id:'yearly',    label:'年度会员', sublabel:'Annual',    price:'¥68', period:'/ 年', badge:'最划算 省29%', highlight:true  },
     { id:'quarterly', label:'季度会员', sublabel:'Quarterly', price:'¥18', period:'/ 季', badge:'省25%',      highlight:false },
   ];
+
+  let _pricingFetched = false;
+  let _userCountry = null;
+
+  // ─── 根据访问者所在地区，向 Worker 请求对应货币价格，更新 PLANS 里显示的数字 ───
+  async function fetchRegionalPricing() {
+    if (_pricingFetched) return; // 一个页面只需要请求一次
+    try {
+      const res = await fetch(`${WORKER_URL}/pricing`);
+      if (!res.ok) return;
+      const data = await res.json();
+      _userCountry = data.country || null;
+      const symbol = data.symbol || '¥';
+      const monthlyPlan = PLANS.find(p => p.id === 'monthly');
+      const quarterlyPlan = PLANS.find(p => p.id === 'quarterly');
+      const yearlyPlan = PLANS.find(p => p.id === 'yearly');
+      if (monthlyPlan && data.monthly != null) monthlyPlan.price = symbol + formatAmount(data.monthly);
+      if (quarterlyPlan && data.quarterly != null) quarterlyPlan.price = symbol + formatAmount(data.quarterly);
+      if (yearlyPlan && data.yearly != null) yearlyPlan.price = symbol + formatAmount(data.yearly);
+      _pricingFetched = true;
+    } catch (_) {
+      // 请求失败就保留默认的人民币价格显示，不影响弹窗正常打开
+    }
+  }
+
+  // 格式化金额：整数不带小数点，非整数保留原样（比如 14.9、19.99）
+  function formatAmount(n) {
+    return Number.isInteger(n) ? String(n) : String(n);
+  }
 
   const FEATURES_FREE = ['情绪释放', '欲望释放', '目标表（最多3个）'];
   const FEATURES_PAID_LEFT = [
@@ -34,27 +61,6 @@
   const CACHE_TTL = 5 * 60 * 1000;
   let _selectedPlan = PLANS[0];
   let _onGrantedCallback = null;
-  let _pricingFetched = false;
-
-  // ─── 根据访问者所在地区，向 Worker 请求对应货币价格，更新 PLANS 里显示的数字 ───
-  async function fetchRegionalPricing() {
-    if (_pricingFetched) return; // 每次打开 App 只需要请求一次
-    try {
-      const res = await fetch(`${WORKER_URL}/pricing`);
-      if (!res.ok) return;
-      const data = await res.json();
-      const symbol = data.symbol || '¥';
-      const monthlyPlan = PLANS.find(p => p.id === 'monthly');
-      const quarterlyPlan = PLANS.find(p => p.id === 'quarterly');
-      const yearlyPlan = PLANS.find(p => p.id === 'yearly');
-      if (monthlyPlan && data.monthly != null) monthlyPlan.price = symbol + data.monthly;
-      if (quarterlyPlan && data.quarterly != null) quarterlyPlan.price = symbol + data.quarterly;
-      if (yearlyPlan && data.yearly != null) yearlyPlan.price = symbol + data.yearly;
-      _pricingFetched = true;
-    } catch (_) {
-      // 请求失败就保留默认的人民币价格显示，不影响弹窗正常打开
-    }
-  }
 
   // ─── 与 App 端完全一致：从 localStorage 读 Supabase token ───
   function getToken() {
@@ -106,7 +112,7 @@
     const token = getToken();
     if (!token) {
       const redirect = encodeURIComponent(window.location.href);
-      window.location.href = 'index.html?login=1&redirect=' + redirect;
+      window.location.href = 'web.html?login=1&redirect=' + redirect;
       return;
     }
     try {
@@ -322,7 +328,7 @@
               </div>
             </div>`).join('')}
         </div>
-        <div class="pw-trial-note">7天免费试用，到期后自动续费，<span id="pw-manage-link" style="text-decoration:underline;cursor:pointer;">可随时取消</span></div>
+        <div class="pw-trial-note">${_userCountry === 'CN' ? '信用卡支付享7天免费试用；支付宝/微信支付即时生效，到期后需重新购买' : '7天免费试用，到期后自动续费，<span id="pw-manage-link" style="text-decoration:underline;cursor:pointer;">可随时取消</span>'}</div>
         <button class="pw-btn" id="pw-buy-btn">立即订阅</button>
         <div class="pw-msg" id="pw-msg"></div>
       </div>
@@ -370,9 +376,9 @@
     try {
       const token = getToken();
       if (!token) {
-        // 未登录，跳回 App 主页登录（与 App 端 requireLogin 逻辑一致）
+        // 未登录，跳回网页版主页登录（与 App 端 requireLogin 逻辑一致）
         const redirect = encodeURIComponent(window.location.href);
-        window.location.href = 'index.html?login=1&redirect=' + redirect;
+        window.location.href = 'web.html?login=1&redirect=' + redirect;
         return;
       }
 
@@ -430,12 +436,12 @@
     }
   }
 
-  // ─── 登录检查：未登录跳回 App 主页弹登录框 ───────────────────
+  // ─── 登录检查：未登录跳回网页版主页弹登录框 ───────────────────
   async function requireLogin() {
     const token = getToken();
     if (token) return true;
     const redirect = encodeURIComponent(window.location.href);
-    window.location.href = 'index.html?login=1&redirect=' + redirect;
+    window.location.href = 'web.html?login=1&redirect=' + redirect;
     return false;
   }
 
@@ -447,6 +453,8 @@
   }
 
   // ─── 扣款失败提示横幅 ───────────────────────────────
+  // 在需要的页面调用 showPaymentIssueBannerIfNeeded()，会自动查一次状态，
+  // 如果存在扣款问题就在页面顶部插入一条可点击的提示条
   function injectBannerStyles() {
     if (document.getElementById('pw-banner-styles')) return;
     const style = document.createElement('style');
