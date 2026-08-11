@@ -14,7 +14,7 @@ workflows:
       - name: 安装 npm 依赖
         script: |
           npm install
-          npm install @capacitor/android@7 --legacy-peer-deps
+          npm install @capacitor/android@6 --legacy-peer-deps
 
       - name: 同步 Capacitor 到 Android
         script: |
