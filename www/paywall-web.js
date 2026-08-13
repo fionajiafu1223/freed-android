@@ -1,8 +1,8 @@
-// paywall-web.js — Android 版付费墙弹窗模块（Stripe 版，含多地区定价）
+// paywall-web.js — Android / 网页版付费墙弹窗模块（Stripe 版，含多地区定价）
 // 引入方式：<script src="paywall-web.js"></script>
 // 使用方式：requirePremium(callbackFn) — 若已付费直接执行回调，否则弹出付费墙
 //           checkPremium() — 返回 Promise<boolean>
-// 版本：2026-08-06（多地区定价 + 大陆用户文案区分 + 管理订阅入口）
+// 版本：2026-08-13（新增：付款报错时自动上报真实错误信息到后台，方便远程排查）
 
 (function() {
   'use strict';
@@ -43,6 +43,36 @@
   // 格式化金额：整数不带小数点，非整数保留原样（比如 14.9、19.99）
   function formatAmount(n) {
     return Number.isInteger(n) ? String(n) : String(n);
+  }
+
+  // ─── 新增：诊断上报 ───────────────────────────────────
+  // 用一个不带自定义 header 的 GET 请求把真实报错发到后台。
+  // 不带 Authorization/Content-Type 等自定义 header 的 GET 属于"简单请求"，
+  // 不会触发 CORS 预检，即使 POST 被设备/浏览器拦截，这条通常还是能发出去。
+  // 记录会存进 Supabase 的 subscription_events 表（event_type = 'CLIENT_FETCH_ERROR'）。
+  function reportClientError(err, stage) {
+    try {
+      const msg = encodeURIComponent((err && err.message) ? err.message : String(err));
+      const ua = encodeURIComponent((typeof navigator !== 'undefined' && navigator.userAgent) || '');
+      const s = encodeURIComponent(stage || '');
+      const beaconUrl = `${WORKER_URL}/log-error?msg=${msg}&ua=${ua}&stage=${s}`;
+      fetch(beaconUrl, { method: 'GET' }).catch(function() {});
+    } catch (_) {
+      // 上报本身失败也不影响原有的报错提示，静默忽略
+    }
+  }
+
+  // ─── 新增：步骤打点 ─────────────────────────────────────
+  // 跟 reportClientError 不同，这个不需要异常，用来在"点击后没反应、也不报错"
+  // 这种静默卡住的情况下，记录流程走到了哪一步，方便定位卡在哪里。
+  function reportClientStep(step, extra) {
+    try {
+      const ua = encodeURIComponent((typeof navigator !== 'undefined' && navigator.userAgent) || '');
+      const s = encodeURIComponent(step || '');
+      const m = encodeURIComponent(extra || '');
+      const beaconUrl = `${WORKER_URL}/log-error?msg=${m}&ua=${ua}&stage=STEP_${s}`;
+      fetch(beaconUrl, { method: 'GET' }).catch(function() {});
+    } catch (_) {}
   }
 
   const FEATURES_FREE = ['情绪释放', '欲望释放', '目标表（最多3个）'];
@@ -99,7 +129,11 @@
       _paymentIssueCache = data.payment_issue === true;
       _cacheTime = now;
       return _premiumCache;
-    } catch(_) { _premiumCache = false; _paymentIssueCache = false; _cacheTime = now; return false; }
+    } catch(err) {
+      _premiumCache = false; _paymentIssueCache = false; _cacheTime = now;
+      reportClientError(err, 'subscription-status');
+      return false;
+    }
   }
 
   // 是否存在扣款问题（需先调用过 checkPremium，缓存共享）
@@ -127,6 +161,7 @@
       }
       window.location.href = data.url;
     } catch (err) {
+      reportClientError(err, 'create-portal-session');
       alert('打开订阅管理失败：' + (err && err.message ? err.message : '请稍后再试'));
     }
   }
@@ -372,15 +407,18 @@
 
   // ─── 核心变化：购买改为调用 Worker 创建 Stripe Checkout Session，再跳转 ───
   async function handlePurchase() {
+    reportClientStep('button-clicked', _selectedPlan.id);
     setBtnLoading(true); setMsg('');
     try {
       const token = getToken();
       if (!token) {
+        reportClientStep('no-token-redirect-to-login');
         // 未登录，跳回网页版主页登录（与 App 端 requireLogin 逻辑一致）
         const redirect = encodeURIComponent(window.location.href);
         window.location.href = 'web.html?login=1&redirect=' + redirect;
         return;
       }
+      reportClientStep('got-token-sending-fetch');
 
       const res = await fetch(`${WORKER_URL}/stripe/create-checkout-session`, {
         method: 'POST',
@@ -390,13 +428,20 @@
         },
         body: JSON.stringify({ plan: _selectedPlan.id }),
       });
+      reportClientStep('fetch-resolved', 'status:' + res.status);
       const data = await res.json();
       if (!res.ok || !data.url) {
+        reportClientStep('no-url-in-response', JSON.stringify(data).slice(0, 150));
         throw new Error(data.error || '创建订单失败');
       }
+      reportClientStep('got-checkout-url-navigating', data.url.slice(0, 80));
       // 跳转到 Stripe 官方付款页面（离开本站，付款完成后会跳回来）
       window.location.href = data.url;
+      // 保险起见，跳转后再打一次点：如果这条也上报了，说明 location.href 没有真正离开当前页面
+      setTimeout(function() { reportClientStep('still-here-after-navigate-attempt'); }, 1500);
     } catch (err) {
+      // 把真实报错悄悄上报到后台，方便远程排查（不影响原有的提示逻辑）
+      reportClientError(err, 'create-checkout-session');
       setMsg('❌ ' + (err && err.message ? err.message : '发生未知错误'), 'error');
       setBtnLoading(false);
     }
