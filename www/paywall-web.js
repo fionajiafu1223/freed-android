@@ -426,7 +426,7 @@
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ plan: _selectedPlan.id }),
+        body: JSON.stringify({ plan: _selectedPlan.id, useDeepLink: isNativeAndroid() }),
       });
       reportClientStep('fetch-resolved', 'status:' + res.status);
       const data = await res.json();
@@ -543,11 +543,58 @@
   window.openManageSubscription = openManageSubscription;
 
   // 页面加载时，如果 URL 带 Stripe 回跳参数，自动弹出付费墙显示结果
+  // （网页版 / iOS 走这条老路径，继续依赖 URL 参数）
   document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('stripe_success') === '1' || params.get('stripe_cancel') === '1') {
       showPaywall(null);
     }
   });
+
+  // ─── 是否是 Android 原生 App 环境（Capacitor）───────────────────
+  function isNativeAndroid() {
+    try {
+      return !!(window.Capacitor && window.Capacitor.isNativePlatform &&
+        window.Capacitor.isNativePlatform() && window.Capacitor.getPlatform &&
+        window.Capacitor.getPlatform() === 'android');
+    } catch (_) { return false; }
+  }
+
+  // ─── Android 原生 App：监听支付宝/微信付款完成后的 Deep Link 回跳 ───
+  // 不再依赖"跳回某个网页 URL 带参数"这种方式（会受 WebView 缓存、
+  // 页面路径等因素影响），改为系统级 deep link 直接唤起 App 代码，
+  // 主动发起一次全新的 /subscription/status 请求确认最新状态。
+  // 对应 Worker 端 success_url 需要在 useDeepLink=true 时返回
+  // freed://payment-success（而不是 https://localhost/...）。
+  function initNativeDeepLinkListener() {
+    try {
+      if (!isNativeAndroid()) return;
+      const App = window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+      if (!App) {
+        reportClientStep('deep-link-listener-no-app-plugin');
+        return;
+      }
+      App.addListener('appUrlOpen', function(data) {
+        try {
+          const url = (data && data.url) ? data.url : '';
+          reportClientStep('deep-link-opened', url.slice(0, 100));
+          if (url.indexOf('payment-success') !== -1) {
+            showPaywall(_onGrantedCallback);
+            setMsg('✓ 支付成功，正在确认订阅状态...', 'success');
+            pollPremiumStatus();
+          } else if (url.indexOf('payment-cancel') !== -1) {
+            showPaywall(_onGrantedCallback);
+            setMsg('已取消支付', '');
+          }
+        } catch (err) {
+          reportClientError(err, 'appUrlOpen-handler');
+        }
+      });
+      reportClientStep('deep-link-listener-ready');
+    } catch (err) {
+      reportClientError(err, 'init-deep-link-listener');
+    }
+  }
+  initNativeDeepLinkListener();
 
 })();
