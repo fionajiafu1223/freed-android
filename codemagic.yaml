@@ -27,6 +27,15 @@ workflows:
           echo "===== 当前 variables.gradle ====="
           cat android/variables.gradle
 
+      - name: 注入支付回跳 Deep Link 配置
+        script: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          echo "===== 修改前 AndroidManifest.xml ====="
+          cat "$MANIFEST"
+          perl -0777 -pi -e 's/(<\/activity>)/    <intent-filter>\n        <action android:name="android.intent.action.VIEW" \/>\n        <category android:name="android.intent.category.DEFAULT" \/>\n        <category android:name="android.intent.category.BROWSABLE" \/>\n        <data android:scheme="freed" android:host="payment-success" \/>\n    <\/intent-filter>\n$1/' "$MANIFEST"
+          echo "===== 修改后 AndroidManifest.xml ====="
+          cat "$MANIFEST"
+
       - name: 构建 APK（直装用，不是 AAB）
         script: |
           cd android
