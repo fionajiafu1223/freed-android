@@ -1742,9 +1742,9 @@ function physicsTick(now) {
   const rawDt = now - lastPhysicsTime;
   lastPhysicsTime = now;
   // Clamp: ignore frames longer than 100 ms (tab was hidden, etc.)
-  const dt = Math.min(rawDt, 100);
-  // Scale factor relative to a 60fps frame
-  const t  = dt / TARGET_DT;
+  const dt = Math.min(rawDt, 50);
+  // Scale factor relative to a 60fps frame, capped at 1 to prevent runaway on slow frames
+  const t  = Math.min(dt / TARGET_DT, 1);
 
   const wy = waterY();
   const W  = vw();
@@ -1828,6 +1828,9 @@ function physicsTick(now) {
   }
   physicsRaf = requestAnimationFrame(physicsTick);
 }
+
+// 页面隐藏时重置时间戳，避免切回来时 dt 爆炸导致气泡快速跳动
+document.addEventListener('visibilitychange', () => { if (document.hidden) lastPhysicsTime = null; });
 
 // Place bubble avoiding overlap
 function placeInitial(sz, allBubbles) {
