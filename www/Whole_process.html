@@ -512,26 +512,9 @@ function releaseAnim(b, onDone) {
   btnD.classList.remove('visible');
 
   const el = b.el;
-  const cx = b.x.toFixed(1), cy = b.y.toFixed(1);
-  const endY = (b.y - 700).toFixed(1);
-
-  const animT = document.createElementNS(NS,'animateTransform');
-  animT.setAttribute('attributeName','transform');
-  animT.setAttribute('type','translate');
-  animT.setAttribute('from',`${cx} ${cy}`);
-  animT.setAttribute('to',`${cx} ${endY}`);
-  animT.setAttribute('dur','0.9s');
-  animT.setAttribute('fill','freeze');
-
-  const animO = document.createElementNS(NS,'animate');
-  animO.setAttribute('attributeName','opacity');
-  animO.setAttribute('from','1');
-  animO.setAttribute('to','0');
-  animO.setAttribute('dur','0.9s');
-  animO.setAttribute('fill','freeze');
-
-  el.appendChild(animT); el.appendChild(animO);
-  animT.beginElement(); animO.beginElement();
+  el.style.transition = 'opacity 0.9s ease, transform 0.9s cubic-bezier(0.3,0.8,0.5,1)';
+  el.style.opacity = '0';
+  el.style.transform = `translate(${b.x.toFixed(1)}px, ${(b.y - 700).toFixed(1)}px)`;
 
   setTimeout(() => {
     b.state = 'gone';
@@ -546,20 +529,14 @@ function fadeBubbles(list, toOpacity, onAllDone) {
   let done = 0;
   list.forEach(b => {
     if (b.state === 'gone') { done++; if (done === list.length && onAllDone) onAllDone(); return; }
-    let op = parseFloat(b.el.style.opacity) || 1;
-    const step = toOpacity > op ? 0.12 : -0.12;
-    const iv = setInterval(() => {
-      op = toOpacity > (parseFloat(b.el.style.opacity)||1)
-        ? Math.min(toOpacity, op + Math.abs(step))
-        : Math.max(toOpacity, op - Math.abs(step));
-      b.el.style.opacity = op.toFixed(2);
-      if (Math.abs(op - toOpacity) < 0.01) {
-        clearInterval(iv);
-        b.el.style.opacity = toOpacity.toFixed(2);
-        done++;
-        if (done === list.length && onAllDone) onAllDone();
-      }
-    }, 25);
+    b.el.style.transition = 'opacity 0.4s ease';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      b.el.style.opacity = toOpacity.toFixed(2);
+    }));
+    setTimeout(() => {
+      done++;
+      if (done === list.length && onAllDone) onAllDone();
+    }, 450);
   });
 }
 
@@ -596,12 +573,8 @@ function triggerDesirePhase() {
     setTimeout(() => {
       const nb = spawnDesire(di, d.bodyPos);
       nb.el.style.opacity = '0';
-      let op = 0;
-      const iv = setInterval(() => {
-        op = Math.min(1, op + 0.08);
-        nb.el.style.opacity = op.toFixed(2);
-        if (op >= 1) clearInterval(iv);
-      }, 30);
+      nb.el.style.transition = 'opacity 0.5s ease';
+      requestAnimationFrame(() => requestAnimationFrame(() => { nb.el.style.opacity = '1'; }));
     }, di * 320);
   });
 }
@@ -694,18 +667,9 @@ function doReleaseMerged() {
   const cx = TARGET_X, cy = TARGET_Y;
   const endY = cy - 700;
 
-  const animT = document.createElementNS(NS,'animateTransform');
-  animT.setAttribute('attributeName','transform'); animT.setAttribute('type','translate');
-  animT.setAttribute('from',`${cx} ${cy}`); animT.setAttribute('to',`${cx} ${endY}`);
-  animT.setAttribute('dur','0.9s'); animT.setAttribute('fill','freeze');
-
-  const animO = document.createElementNS(NS,'animate');
-  animO.setAttribute('attributeName','opacity');
-  animO.setAttribute('from','1'); animO.setAttribute('to','0');
-  animO.setAttribute('dur','0.9s'); animO.setAttribute('fill','freeze');
-
-  el.appendChild(animT); el.appendChild(animO);
-  animT.beginElement(); animO.beginElement();
+  el.style.transition = 'opacity 0.9s ease, transform 0.9s cubic-bezier(0.3,0.8,0.5,1)';
+  el.style.opacity = '0';
+  el.style.transform = `translate(${cx}px, ${endY}px)`;
 
   setTimeout(() => {
     el.remove();
@@ -774,7 +738,7 @@ function init() {
 /* ── Animation loop ──────────────────────────────────────────────────── */
 let last = null;
 function loop(ts) {
-  const dt = last ? Math.min((ts-last)/1000, 0.05) : 0.016; last = ts;
+  const dt = last ? Math.min((ts-last)/1000, 0.016) : 0.016; last = ts;
 
   /* emotion bubbles */
   bubbles.forEach(b => {
@@ -841,6 +805,8 @@ init();
   qEl.classList.add('visible');
 })();
 requestAnimationFrame(loop);
+
+document.addEventListener('visibilitychange', () => { if (document.hidden) last = null; });
 
 /* ── Emotion table panel ── */
 (function buildEcTable() {
