@@ -552,7 +552,15 @@ const WALL_MARGIN = 8;
 const DOM_EVERY   = 4;
 let   frameCount  = 0;
 
-function physicsTick() {
+let _lastPhysicsTs = null;
+const _TARGET_DT = 1000 / 60;
+
+function physicsTick(now) {
+  if (_lastPhysicsTs === null) _lastPhysicsTs = now;
+  const _rawDt = now - _lastPhysicsTs;
+  _lastPhysicsTs = now;
+  const _t = Math.min(_rawDt / _TARGET_DT, 1);
+
   const wy = waterY(), W = vw(), H = vh(), hw = halfW();
   frameCount++;
   const doDOM = (frameCount % DOM_EVERY === 0);
@@ -570,7 +578,7 @@ function physicsTick() {
 
     // Buoyancy
     const depth = (b.py - wy) / (H - wy);
-    b.vy -= BUOYANCY * (0.3 + depth * 1.4);
+    b.vy -= BUOYANCY * (0.3 + depth * 1.4) * _t;
 
     // Repulsion
     const cx = (b.px/CELL)|0, cy = (b.py/CELL)|0;
@@ -585,7 +593,7 @@ function physicsTick() {
           const md = r + o.sz/2;
           if (d2 < md*md && d2 > 0.001) {
             const d = Math.sqrt(d2);
-            const f = REPULSION*(md-d)/(md*d);
+            const f = REPULSION*(md-d)/(md*d) * _t;
             b.vx += dx*f; b.vy += dy*f;
           }
         }
@@ -598,16 +606,18 @@ function physicsTick() {
     const xMax = isL ? hw - r - 6      : W - r - WALL_MARGIN;
     const top  = wy + r, bot = H - r - WALL_MARGIN;
 
-    if (b.px < xMin + 40) b.vx += WALL_REP / Math.max(1, b.px - xMin);
-    if (b.px > xMax - 40) b.vx -= WALL_REP / Math.max(1, xMax - b.px);
-    if (b.py < top  + 50) b.vy += WALL_REP*3 / Math.max(1, b.py - top);
-    if (b.py > bot  - 40) b.vy -= WALL_REP / Math.max(1, bot - b.py);
+    if (b.px < xMin + 40) b.vx += WALL_REP / Math.max(1, b.px - xMin) * _t;
+    if (b.px > xMax - 40) b.vx -= WALL_REP / Math.max(1, xMax - b.px) * _t;
+    if (b.py < top  + 50) b.vy += WALL_REP*3 / Math.max(1, b.py - top) * _t;
+    if (b.py > bot  - 40) b.vy -= WALL_REP / Math.max(1, bot - b.py) * _t;
 
-    b.vx *= DAMPING; b.vy *= DAMPING;
+    const _dampT = Math.pow(DAMPING, _t);
+    b.vx *= _dampT; b.vy *= _dampT;
     const s2 = b.vx*b.vx + b.vy*b.vy;
-    if (s2 > 0.36) { const s = 0.6/Math.sqrt(s2); b.vx*=s; b.vy*=s; }
+    const _maxSpd = 0.6 * _t;
+    if (s2 > _maxSpd*_maxSpd) { const s = _maxSpd/Math.sqrt(s2); b.vx*=s; b.vy*=s; }
 
-    b.px += b.vx; b.py += b.vy;
+    b.px += b.vx * _t; b.py += b.vy * _t;
     b.px = Math.max(xMin, Math.min(xMax, b.px));
     b.py = Math.max(top,  Math.min(bot,  b.py));
     if (b.py <= top) { b.py = top; b.vy = 0; }
@@ -619,6 +629,9 @@ function physicsTick() {
   }
   requestAnimationFrame(physicsTick);
 }
+
+// 页面隐藏时重置时间戳，避免切回来时气泡快速跳动
+document.addEventListener('visibilitychange', () => { if (document.hidden) _lastPhysicsTs = null; });
 
 function placeOnSide(sz, side) {
   const wy = waterY(), W = vw(), H = vh(), hw = halfW();
