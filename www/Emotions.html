@@ -26,7 +26,6 @@ body::before {
   background: linear-gradient(170deg, #cff4ff 0%, #bae6fd 45%, #90d8f5 100%);
 }
 
-/* App title — no pointer events */
 .app-title {
   position: absolute; top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px)); left: 0; right: 0;
   text-align: center; z-index: 10; pointer-events: none;
@@ -37,15 +36,13 @@ body::before {
 }
 .app-title p { font-size: 8px; letter-spacing: 2.5px; color: rgba(3,105,161,0.32); margin-top: 3px; }
 
-/* SVG fills card — pointer-events: none on SVG itself, only bubbles get events */
 .svg-canvas {
   position: absolute; inset: 0; width: 100%; height: 100%;
   overflow: visible;
   z-index: 5;
-  pointer-events: none;  /* SVG bg transparent to clicks */
+  pointer-events: none;
 }
 
-/* Question text */
 #questionEl {
   position: absolute; left: 0; right: 0;
   text-align: center;
@@ -59,7 +56,6 @@ body::before {
 #questionEl.visible { opacity: 1; }
 #questionEl em { font-style: normal; color: rgba(3,105,161,0.95); font-size: 15px; }
 
-/* Intro text shown on page load */
 #introEl {
   position: absolute; left: 0; right: 0;
   text-align: center;
@@ -73,7 +69,6 @@ body::before {
 #introEl span { font-size: 11px; color: rgba(3,105,161,0.45); letter-spacing: 1.5px; }
 #introEl.hidden { opacity: 0; }
 
-/* Buttons — pointer-events: none when hidden, auto when visible */
 .act-btn {
   position: absolute;
   z-index: 30;
@@ -84,7 +79,6 @@ body::before {
   letter-spacing: 2px; color: rgba(3,105,161,0.85);
   cursor: pointer; white-space: nowrap;
   transform: translateY(-50%);
-  /* KEY FIX: hidden buttons do NOT intercept clicks */
   opacity: 0;
   pointer-events: none;
   transition: opacity 1.5s ease;
@@ -95,14 +89,12 @@ body::before {
 }
 .act-btn:hover { background: rgba(255,255,255,0.68); }
 
-/* Caption */
 .caption {
   position: absolute; bottom: 16px; left: 0; right: 0;
   text-align: center; z-index: 10; pointer-events: none;
 }
 .caption p { font-size: 7.5px; letter-spacing: 2.5px; color: rgba(3,105,161,0.32); font-family: 'ZCOOL XiaoWei', serif; }
 
-/* Body glow animations */
 @keyframes hg1{0%,100%{opacity:0.08}50%{opacity:0.28}}
 @keyframes hg2{0%,100%{opacity:0.18}50%{opacity:0.6}}
 @keyframes hg3{0%,100%{opacity:0.45}50%{opacity:1}}
@@ -112,7 +104,6 @@ body::before {
 .hg3{animation:hg3 4s ease-in-out infinite 1s;}
 .hcore{animation:hcore 4s ease-in-out infinite;}
 
-/* ── 情绪表按钮 ── */
 #ecBtn {
   position: fixed; top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px)); right: calc(env(safe-area-inset-right, 0px) + 56px); z-index: 100;
   padding: 6px 14px; border-radius: 99px;
@@ -125,7 +116,6 @@ body::before {
 }
 #ecBtn:hover { background: rgba(255,255,255,0.68); }
 
-/* ── 情绪表面板 ── */
 #ecPanel {
   position: fixed; inset: 0; z-index: 200;
   background: rgba(186,230,253,0.25); backdrop-filter: blur(6px);
@@ -215,7 +205,6 @@ body::before {
       <filter id="fg" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="14"/></filter>
     </defs>
 
-    <!-- body silhouette: head top y≈143, head center y≈185, neck y≈305, bottom y≈580 -->
     <path class="hg1" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
       stroke="#fff" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#f3)"/>
     <path class="hg2" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
@@ -225,7 +214,6 @@ body::before {
     <path class="hcore" d="M330 580 C330 490 320 410 312 372 C303 333 272 323 247 318 C222 313 210 303 210 276 C210 261 210 248 219 239 C241 213 232 143 183 143 C134 143 125 213 147 239 C156 248 156 261 156 276 C156 303 144 313 119 318 C94 323 63 333 54 372 C45 411 36 490 36 580"
       stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 
-    <!-- bubbles group — pointer-events: all so bubbles ARE clickable -->
     <g id="bg" style="pointer-events: all;"></g>
   </svg>
 
@@ -270,7 +258,6 @@ const qEl  = document.getElementById('questionEl');
 const btnA = document.getElementById('btnA');
 const btnD = document.getElementById('btnD');
 
-// Store original grid positions for respawn
 const GRID_POSITIONS = [
   { x: 128, y: 382 }, { x: 238, y: 382 },
   { x: 183, y: 420 },
@@ -279,13 +266,11 @@ const GRID_POSITIONS = [
   { x: 128, y: 534 }, { x: 238, y: 534 },
   { x: 183, y: 565 },
 ];
-// Map emotionIdx → grid position index (set during init)
 const eiToGridIdx = {};
 
-const TARGET_X = 183, TARGET_Y = 185; // head center in viewBox
+const TARGET_X = 183, TARGET_Y = 185;
 let gc = 0, bubbles = [], sel = null;
 
-// viewBox → card px
 function toPx(sx, sy) {
   return { x: (sx/360)*card.offsetWidth, y: (sy/640)*card.offsetHeight };
 }
@@ -295,15 +280,12 @@ function positionUI() {
   const Rpx = (R/360)*card.offsetWidth;
   const headTopPx = (143/640)*card.offsetHeight;
 
-  // question above head top — intro uses same position
   const cardH = card.offsetHeight;
-  // position text so its bottom edge sits ~20px above head top
   qEl.style.top = '';
   qEl.style.bottom = (cardH - headTopPx + 20) + 'px';
   introEl.style.top = '';
   introEl.style.bottom = (cardH - headTopPx + 20) + 'px';
 
-  // buttons left/right of bubble — 不允许 left, 允许 right
   const gap = Rpx + 38;
   btnD.style.top   = by + 'px';
   btnD.style.right = (card.offsetWidth - bx + gap) + 'px';
@@ -313,7 +295,6 @@ function positionUI() {
   btnA.style.right = 'auto';
 }
 
-// body x range for bubble centers (already inset by R+margin)
 function bodyXRange(y) {
   const M = R + 2;
   let x0, x1;
@@ -323,27 +304,6 @@ function bodyXRange(y) {
   else if (y < 500) { const t=(y-440)/60; x0=113-t*8;  x1=253+t*8;  }
   else              { const t=Math.min((y-500)/80,1); x0=105+t*36; x1=261-t*36; }
   return [x0 + M, x1 - M];
-}
-
-// Hex stagger: 2 outer cols + 1 center col, alternating rows
-// Outer cols x=128, x=238 (spacing=110px > 60 ✓)
-// Center col x=183
-// Row spacing=76px (same col) > 60 ✓
-// Diagonal (outer↔center): sqrt(55²+38²)=65px > 60 ✓
-function generatePositions() {
-  const grid = [
-    { x: 128, y: 382 }, { x: 238, y: 382 },  // row 1 outer
-    { x: 183, y: 420 },                         // row 1.5 center
-    { x: 128, y: 458 }, { x: 238, y: 458 },  // row 2 outer
-    { x: 183, y: 496 },                         // row 2.5 center
-    { x: 128, y: 534 }, { x: 238, y: 534 },  // row 3 outer
-    { x: 183, y: 565 },                         // row 3.5 center
-  ];
-  for (let i = grid.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [grid[i], grid[j]] = [grid[j], grid[i]];
-  }
-  return grid;
 }
 
 function mkGrad(s) {
@@ -410,13 +370,11 @@ function spawn(ei, si, pos) {
 }
 
 function init() {
-  // Shuffle GRID_POSITIONS indices
   const indices = [0,1,2,3,4,5,6,7,8];
   for (let i = indices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [indices[i], indices[j]] = [indices[j], indices[i]];
   }
-  // Assign each emotion a fixed grid slot
   EM.forEach((_, ei) => {
     const gridIdx = indices[ei];
     eiToGridIdx[ei] = gridIdx;
@@ -443,36 +401,16 @@ function doRelease(b) {
   btnD.classList.remove('visible');
 
   const el = b.el;
-  const cx = b.x.toFixed(1);
-  const cy = b.y.toFixed(1);
-  const endY = (b.y - 700).toFixed(1);
 
-  // SMIL animate — browser handles it natively, smooth and fast
-  const animT = document.createElementNS(NS, 'animateTransform');
-  animT.setAttribute('attributeName', 'transform');
-  animT.setAttribute('type', 'translate');
-  animT.setAttribute('from', `${cx} ${cy}`);
-  animT.setAttribute('to', `${cx} ${endY}`);
-  animT.setAttribute('dur', '1.5s');
-  animT.setAttribute('fill', 'freeze');
-
-  const animO = document.createElementNS(NS, 'animate');
-  animO.setAttribute('attributeName', 'opacity');
-  animO.setAttribute('from', '1');
-  animO.setAttribute('to', '0');
-  animO.setAttribute('dur', '1.5s');
-  animO.setAttribute('fill', 'freeze');
-
-  el.appendChild(animT);
-  el.appendChild(animO);
-  animT.beginElement();
-  animO.beginElement();
+  // 用 CSS transition 替代 SMIL，安卓 WebView 兼容更好
+  el.style.transition = 'opacity 1.5s ease, transform 1.5s cubic-bezier(0.3,0.8,0.5,1)';
+  el.style.opacity = '0';
+  el.style.transform = `translate(${b.x.toFixed(1)}px, ${(b.y - 700).toFixed(1)}px)`;
 
   setTimeout(() => {
     b.state = 'gone';
     el.remove();
     respawn(b.ei, b.si);
-    // Show the loop prompt
     introEl.innerHTML = `再次感受，现在是什么情绪？`;
     introEl.classList.remove('hidden');
   }, 1550);
@@ -481,32 +419,37 @@ function doRelease(b) {
 btnA.addEventListener('click', ()=>{ if(sel) doRelease(sel); });
 btnD.addEventListener('click', ()=>{ if(sel) doRelease(sel); });
 
-function randRespawnPos() {
-  const others=bubbles.filter(b=>b.state!=='gone').map(b=>({bx:b.bx,by:b.by}));
-  const minD2 = (DIAM + 8) ** 2;
-  for(let i=0;i<600;i++){
-    const y=328+Math.random()*238;
-    const [x0,x1]=bodyXRange(y);
-    if(x1-x0<4) continue;
-    const x=x0+Math.random()*(x1-x0);
-    if(others.every(o=>(o.bx-x)**2+(o.by-y)**2>minD2)) return{x,y};
-  }
-  return{x:183,y:440};
+function respawn(ei, si) {
+  bubbles = bubbles.filter(b => !(b.ei === ei && b.si === si));
+  const gridIdx = eiToGridIdx[ei];
+  const pos = GRID_POSITIONS[gridIdx];
+  const nb = spawn(ei, 0, pos);
+  // 用 CSS transition 淡入，不用 setInterval
+  nb.el.style.opacity = '0';
+  nb.el.style.transition = 'opacity 0.6s ease';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      nb.el.style.opacity = '1';
+    });
+  });
 }
 
-let last=null;
+// dt 上限锁死为单帧 16ms，避免安卓帧率波动导致动画过快
+const TARGET_DT = 1000 / 60;
+let last = null;
 function loop(ts){
-  const dt=last?Math.min((ts-last)/1000,0.05):0.016; last=ts;
+  const dt = last ? Math.min((ts - last) / TARGET_DT, 1) : 1;
+  last = ts;
 
   bubbles.forEach(b=>{
     if(b.state==='gone' || b.state==='releasing') return;
 
     if(b.state==='idle'){
-      b.ph+=dt*b.fs;
-      b.x=b.bx+Math.cos(b.ph*0.65)*1.5;
-      b.y=b.by+Math.sin(b.ph)*b.fa;
-      b.gph+=dt*b.gs;
-      b.gl.style.opacity=((Math.sin(b.gph)*0.5+0.5)*0.85).toFixed(3);
+      b.ph  += (dt / TARGET_DT) * (1000 / TARGET_DT) * b.fs * 0.016;
+      b.x    = b.bx + Math.cos(b.ph * 0.65) * 1.5;
+      b.y    = b.by + Math.sin(b.ph) * b.fa;
+      b.gph += (dt / TARGET_DT) * (1000 / TARGET_DT) * b.gs * 0.016;
+      b.gl.style.opacity = ((Math.sin(b.gph)*0.5+0.5)*0.85).toFixed(3);
 
     } else if(b.state==='selected'){
       if (!b._flyStarted) {
@@ -514,16 +457,14 @@ function loop(ts){
         b._flyStartX = b.x;
         b._flyStartY = b.y;
         b._flyT = 0;
-        b._flyDur = 0.15; // seconds
+        b._flyDur = 0.15;
       }
-      b._flyT = Math.min(b._flyT + dt / b._flyDur, 1);
-      // linear
+      b._flyT = Math.min(b._flyT + dt / (b._flyDur * TARGET_DT), 1);
       b.x = b._flyStartX + (TARGET_X - b._flyStartX) * b._flyT;
       b.y = b._flyStartY + (TARGET_Y - b._flyStartY) * b._flyT;
       b.gl.style.opacity = '0.65';
 
     } else if(b.state==='releasing'){
-      // handled by CSS transition in doRelease()
       return;
     }
 
@@ -532,29 +473,13 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
-function respawn(ei, si) {
-  bubbles = bubbles.filter(b => !(b.ei === ei && b.si === si));
-  // Always respawn at the same grid position this emotion was assigned
-  const gridIdx = eiToGridIdx[ei];
-  const pos = GRID_POSITIONS[gridIdx];
-  const nb = spawn(ei, 0, pos);
-  nb.y = pos.y + 40; nb.el.style.opacity = '0'; nb.op = 0;
-  let op = 0;
-  const iv = setInterval(() => {
-    op = Math.min(1, op + 0.12);
-    nb.el.style.opacity = op.toFixed(2);
-    if (op >= 1) clearInterval(iv);
-  }, 30);
-}
+// 页面隐藏时重置 last，避免切回来时 dt 爆炸
+document.addEventListener('visibilitychange', () => { if (document.hidden) last = null; });
 
 init();
 requestAnimationFrame(loop);
 </script>
 
-<script src="nav-orb.js"></script>
-<script src="music-btn.js"></script>
-</body>
-</html>
 <script>
 /* ── 情绪表 ── */
 (function() {
@@ -606,3 +531,8 @@ requestAnimationFrame(loop);
   panel.addEventListener('click', e => { if (e.target === panel) panel.classList.remove('open'); });
 })();
 </script>
+
+<script src="nav-orb.js"></script>
+<script src="music-btn.js"></script>
+</body>
+</html>
