@@ -13,17 +13,7 @@
     min-height: 100vh;
     display: flex; flex-direction: column; align-items: center;
     overflow-x: hidden; position: relative;
-    /* Sky above water */
-    background: linear-gradient(180deg,
-      #c8eeff 0%,
-      #b0e0fa 35%,
-      #90cff0 55%,
-      /* water surface */
-      #1a6ea8 56%,
-      #145e94 70%,
-      #0e4878 85%,
-      #093260 100%
-    );
+    background: linear-gradient(180deg, #b8daf5 0%, #6aaee0 38%, #2e82cc 52%, #0f4a8a 100%);
   }
 
   /* ── SKY AREA (above water) ── */
@@ -82,12 +72,13 @@
   .header h1 {
     font-family: 'Noto Serif SC', serif;
     font-size: 1.36rem; font-weight: 300;
-    color: #0e3050; letter-spacing: 0.18em;
-    text-shadow: 0 1px 4px rgba(255,255,255,0.5);
+    color: #fff; letter-spacing: 0.18em;
+    text-shadow: 0 1px 10px rgba(0,60,120,0.5), 0 0 2px rgba(255,255,255,0.3);
   }
   .header p {
-    font-size: 0.71rem; color: #1a5080;
+    font-size: 0.71rem; color: rgba(230,245,255,0.95);
     margin-top: 3px; letter-spacing: 0.1em; font-weight: 300;
+    text-shadow: 0 1px 6px rgba(0,40,100,0.35);
   }
 
   /* ── ZONE LABELS ── */
@@ -138,31 +129,46 @@
     z-index: 8;
     pointer-events: auto;
     /* glass bubble underwater look */
-    background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.35), rgba(40,120,220,0.18));
-    border: 1.5px solid rgba(140,210,255,0.55);
+    background: radial-gradient(circle at 32% 28%, rgba(200,230,255,0.55), rgba(60,120,220,0.38));
+    border: 2px solid rgba(180,230,255,0.7);
     box-shadow:
-      0 2px 12px rgba(0,60,140,0.25),
-      inset 0 1px 0 rgba(255,255,255,0.5),
-      inset -1px -1px 4px rgba(0,80,180,0.2);
-    backdrop-filter: blur(2px);
-    text-shadow: 0 1px 4px rgba(0,40,100,0.4);
+      0 2px 12px rgba(0,60,160,0.28),
+      inset 0 1px 0 rgba(255,255,255,0.38);
+    backdrop-filter: blur(3px);
+    text-shadow: 0 1px 6px rgba(0,30,80,0.6);
   }
   .bubble.idle:hover { filter: brightness(1.18); transform: scale(1.06); }
   .bubble.idle:active { transform: scale(0.93); }
 
   /* Color tints per desire type */
   .bubble.idle.bc {
-    background: radial-gradient(circle at 32% 28%, rgba(255,200,210,0.4), rgba(200,60,90,0.22));
-    border-color: rgba(255,160,180,0.6);
+    background: radial-gradient(circle at 35% 30%, rgba(255,192,210,0.58), rgba(187,46,77,0.38));
+    border: 1.5px solid rgba(246,134,160,0.68);
+    color: rgba(255,240,245,0.92);
+    text-shadow: 0 1px 5px rgba(55,0,14,0.55);
   }
   .bubble.idle.ba {
-    background: radial-gradient(circle at 32% 28%, rgba(180,255,210,0.4), rgba(40,160,100,0.22));
-    border-color: rgba(120,230,170,0.6);
+    background: radial-gradient(circle at 35% 30%, rgba(153,251,200,0.58), rgba(20,122,65,0.38));
+    border: 1.5px solid rgba(87,198,134,0.68);
+    color: rgba(238,255,245,0.92);
+    text-shadow: 0 1px 5px rgba(0,35,12,0.55);
   }
   .bubble.idle.bs {
-    background: radial-gradient(circle at 32% 28%, rgba(190,210,255,0.4), rgba(60,100,230,0.22));
-    border-color: rgba(140,180,255,0.6);
+    background: radial-gradient(circle at 35% 30%, rgba(161,202,255,0.58), rgba(38,69,207,0.38));
+    border: 1.5px solid rgba(104,150,255,0.68);
+    color: rgba(238,244,255,0.92);
+    text-shadow: 0 1px 5px rgba(0,8,50,0.55);
   }
+
+  /* 光晕脉动动画 */
+  @keyframes auraPulse {
+    0%   { box-shadow: 0 0 10px 3px var(--aura), 0 0 28px 8px var(--aura-far), inset 0 1px 0 rgba(255,255,255,0.35); }
+    50%  { box-shadow: 0 0 20px 8px var(--aura), 0 0 48px 16px var(--aura-far), inset 0 1px 0 rgba(255,255,255,0.35); }
+    100% { box-shadow: 0 0 10px 3px var(--aura), 0 0 28px 8px var(--aura-far), inset 0 1px 0 rgba(255,255,255,0.35); }
+  }
+  .bubble.idle.bc { --aura: rgba(145,38,62,0.22); --aura-far: rgba(145,38,62,0.09); animation: auraPulse 3.2s ease-in-out infinite; }
+  .bubble.idle.ba { --aura: rgba(18,100,55,0.22); --aura-far: rgba(18,100,55,0.09); animation: auraPulse 3.6s ease-in-out infinite; }
+  .bubble.idle.bs { --aura: rgba(32,56,165,0.22); --aura-far: rgba(32,56,165,0.09); animation: auraPulse 4.0s ease-in-out infinite; }
 
   /* Physics engine handles idle bubble movement — no CSS animation needed */
   .bubble.idle { animation: none; }
@@ -175,42 +181,15 @@
   .bubble.at-surface {
     cursor: default; z-index: 15; pointer-events: none;
     /* above-water look: vibrant, glassy */
-    background: radial-gradient(circle at 34% 28%, rgba(255,255,255,0.9), rgba(180,230,255,0.6)) !important;
-    border: 2px solid rgba(255,255,255,0.85) !important;
-    box-shadow: 0 6px 28px rgba(0,100,200,0.28), inset 0 2px 0 rgba(255,255,255,0.7) !important;
+    border: none !important;
+    box-shadow: 0 6px 28px rgba(0,100,200,0.28), inset 0 2px 0 rgba(255,255,255,0.5) !important;
     color: #0e2840 !important;
     text-shadow: none !important;
     backdrop-filter: blur(6px);
   }
-  .bubble.at-surface.bc { background: radial-gradient(circle at 34% 28%, rgba(255,230,235,0.95), rgba(240,130,155,0.65)) !important; color: #3a0a18 !important; }
-  .bubble.at-surface.ba { background: radial-gradient(circle at 34% 28%, rgba(220,255,235,0.95), rgba(80,190,130,0.65)) !important; color: #063020 !important; }
-  .bubble.at-surface.bs { background: radial-gradient(circle at 34% 28%, rgba(225,235,255,0.95), rgba(100,140,240,0.65)) !important; color: #080e38 !important; }
-
-  /* Decision buttons flanking the surface bubble */
-  .surf-btn {
-    position: absolute; z-index: 16;
-    width: 62px; height: 62px; border-radius: 50%; border: none;
-    font-family: 'Noto Serif SC', serif; font-size: 0.74rem; font-weight: 600;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    text-align: center; line-height: 1.3;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.15s ease;
-  }
-  .surf-btn.show { opacity: 1; pointer-events: auto; }
-  .surf-btn:hover { transform: scale(1.12); }
-  .surf-btn:active { transform: scale(0.9); }
-  .surf-deny  {
-    background: radial-gradient(circle at 36% 30%, rgba(255,255,255,0.96), rgba(200,230,255,0.9));
-    color: #0e2840;
-    border: 1.5px solid rgba(100,160,220,0.5);
-    box-shadow: 0 3px 14px rgba(80,140,220,0.28);
-  }
-  .surf-allow {
-    background: radial-gradient(circle at 36% 30%, #fde87a, #e8a818);
-    color: #2a1200;
-    box-shadow: 0 3px 18px rgba(240,165,28,0.55);
-  }
+  .bubble.at-surface.bc { background: radial-gradient(circle at 34% 28%, rgba(255,210,220,0.88), rgba(210,80,110,0.65)) !important; color: #3a0a18 !important; }
+  .bubble.at-surface.ba { background: radial-gradient(circle at 34% 28%, rgba(200,255,225,0.88), rgba(50,170,105,0.65)) !important; color: #063020 !important; }
+  .bubble.at-surface.bs { background: radial-gradient(circle at 34% 28%, rgba(210,225,255,0.88), rgba(70,110,220,0.65)) !important; color: #080e38 !important; }
 
   /* Merged bubble — mixed color for 2 or 3 desires */
   .bubble.at-surface.bm {
@@ -377,12 +356,12 @@
      style="position:fixed;left:0;width:100%;pointer-events:none;z-index:10;">
   <defs>
     <linearGradient id="waveGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="rgba(30,130,200,0.9)"/>
-      <stop offset="100%" stop-color="rgba(20,94,148,0)"/>
+      <stop offset="0%" stop-color="rgba(10,80,160,0.9)"/>
+      <stop offset="8%" stop-color="rgba(8,60,120,0)"/>
     </linearGradient>
   </defs>
   <path id="wavePath" fill="url(#waveGrad)" opacity="0.95"/>
-  <path id="wavePath2" fill="rgba(60,160,230,0.3)" opacity="0.6"/>
+  <path id="wavePath2" fill="rgba(15,100,190,0.35)" opacity="0.7"/>
 </svg>
 
 <!-- Bubble scene layer -->
@@ -644,49 +623,50 @@ function _doMerge() {
   handleDecision(true);
 }
 
-function updateSharedButtons(cx, cy, sz) {
-  const denyEl  = document.getElementById('sharedDeny');
-  const allowEl = document.getElementById('sharedAllow');
-  const gap = 16;
-  denyEl.style.left  = `${cx - sz/2 - 62 - gap}px`;
-  denyEl.style.top   = `${cy - 30}px`;
-  allowEl.style.left = `${cx + sz/2 + gap}px`;
-  allowEl.style.top  = `${cy - 30}px`;
-  denyEl.classList.add('show');
-  allowEl.classList.add('show');
-}
-
 // ═══════════════════════════════════════════════════
 //  ANIMATED WAVE SURFACE
 // ═══════════════════════════════════════════════════
-let waveOffset = 0;
+let waveOffset  = 0;
+let waveOffset2 = 0;
+let waveOffset3 = 0;
 
 function drawWaves() {
   const w    = vw();
   const wy   = waterY();
   const amp  = 10;
-  const amp2 = 6;
-  waveOffset += 0.012;
+  waveOffset  += 0.012;
+  waveOffset2 += 0.0079;
+  waveOffset3 += 0.0103;
 
-  // Main wave
+  // Main wave — three independent, non-harmonic sine layers
+  // (different frequencies + independently-paced phases so the
+  // shape never settles into an obviously repeating pattern)
   let d = `M 0 ${wy + amp}`;
   for (let x = 0; x <= w; x += 6) {
-    const y = wy + Math.sin((x / w) * Math.PI * 4 + waveOffset) * amp
-                  + Math.sin((x / w) * Math.PI * 2.5 + waveOffset * 1.3) * (amp * 0.4);
+    const y = wy
+      + Math.sin((x / w) * Math.PI * 3.4 + waveOffset)  * amp * 0.60
+      + Math.sin((x / w) * Math.PI * 6.1 + waveOffset2) * amp * 0.28
+      + Math.sin((x / w) * Math.PI * 1.7 + waveOffset3) * amp * 0.35;
     d += ` L ${x} ${y}`;
   }
   d += ` L ${w} ${vh()} L 0 ${vh()} Z`;
   document.getElementById('wavePath').setAttribute('d', d);
 
-  // Secondary shimmer wave
+  // Secondary shimmer wave — thin highlight layer right at the surface,
+  // giving a sense of near/far depth against the main wave
+  const amp2 = 6;
   let d2 = `M 0 ${wy + amp2}`;
   for (let x = 0; x <= w; x += 8) {
     const y = wy + Math.sin((x / w) * Math.PI * 5 + waveOffset * 1.6 + 1) * amp2
                   + Math.cos((x / w) * Math.PI * 3 + waveOffset * 0.9) * (amp2 * 0.5);
     d2 += ` L ${x} ${y}`;
   }
-  d2 += ` L ${w} ${wy + 40} L 0 ${wy + 40} Z`;
+  d2 += ` L ${w} ${wy + 18} L 0 ${wy + 18} Z`;
   document.getElementById('wavePath2').setAttribute('d', d2);
+
+  const svg = document.getElementById('waterSvg');
+  svg.setAttribute('height', `${vh()}px`);
+  svg.style.top = '0px';
 
   requestAnimationFrame(drawWaves);
 }
