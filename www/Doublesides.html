@@ -22,29 +22,27 @@
   #bgLeft  {
     left:0;
     background:linear-gradient(180deg,
-      #cce9ff 0%, #aadcf8 30%, #88caee 51%,
-      #1a74b8 53%, #1360a0 68%, #0d4a82 83%, #082f60 100%);
+      #b8daf5 0%, #6aaee0 38%, #2e82cc 52%, #0f4a8a 100%);
   }
   #bgRight {
     right:0;
     background:linear-gradient(180deg,
-      #cce9ff 0%, #aadcf8 30%, #88caee 51%,
-      #1a5c8a 53%, #154e78 68%, #0f3c60 83%, #09284a 100%);
+      #b0cce6 0%, #68a0cc 38%, #2e78b8 52%, #134a82 100%);
   }
 
   /* Extra murk tint on right underwater — blue-tinted turbidity */
   #murkTint {
     position:fixed; top:52%; left:50%; width:50%; height:48%;
     background:
-      radial-gradient(ellipse 90% 70% at 60% 30%, rgba(10,40,80,0.30) 0%, transparent 70%),
-      linear-gradient(180deg, rgba(8,25,55,0.15) 0%, rgba(6,18,45,0.45) 100%);
+      radial-gradient(ellipse 90% 70% at 60% 30%, rgba(30,55,90,0.14) 0%, transparent 70%),
+      linear-gradient(180deg, rgba(25,48,80,0.07) 0%, rgba(15,32,58,0.18) 100%);
     z-index:1; pointer-events:none;
   }
 
   /* Suspended murk specks */
   .murk-speck {
     position:fixed; border-radius:50%;
-    background:rgba(50,90,160,0.16);
+    background:rgba(95,128,168,0.13);
     pointer-events:none; z-index:2;
     animation:murkBob ease-in-out infinite alternate;
   }
@@ -88,7 +86,7 @@
   }
   .cloud { position:absolute; border-radius:50px; animation:cloudDrift linear infinite; }
   .cloud.bright { background:rgba(255,255,255,0.52); filter:blur(9px); }
-  .cloud.grey   { background:rgba(255,255,255,0.38); filter:blur(13px); }
+  .cloud.grey   { background:rgba(205,210,222,0.42); filter:blur(13px); }
   @keyframes cloudDrift {
     0%   { transform:translateX(-140px); opacity:0; }
     9%   { opacity:1; }
@@ -106,7 +104,7 @@
   }
   .ray { position:absolute; bottom:0; width:58px; transform-origin:bottom center; animation:rayWave ease-in-out infinite alternate; }
   .ray.r-clear { background:linear-gradient(180deg,transparent,rgba(80,185,255,0.07)); }
-  .ray.r-murky { background:linear-gradient(180deg,transparent,rgba(20,70,140,0.06)); }
+  .ray.r-murky { background:linear-gradient(180deg,transparent,rgba(80,115,170,0.07)); }
   @keyframes rayWave {
     0%   { transform:skewX(-4deg) scaleX(1);    opacity:0.45; }
     100% { transform:skewX( 4deg) scaleX(1.15); opacity:0.90; }
@@ -120,12 +118,10 @@
   .header h1 {
     font-family:'Noto Serif SC',serif;
     font-size:1.32rem; font-weight:300; letter-spacing:0.20em;
-    background:linear-gradient(90deg,
-      #0c2d4a 0%,#0c2d4a 48%,
-      #0c2d4a 52%,#0c2d4a 100%);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    color:#fff;
+    text-shadow: 0 1px 10px rgba(0,30,70,0.55), 0 0 2px rgba(255,255,255,0.3);
   }
-  .header p { font-size:0.69rem; letter-spacing:0.12em; font-weight:300; color:rgba(140,192,220,0.80); margin-top:3px; }
+  .header p { font-size:0.69rem; letter-spacing:0.12em; font-weight:300; color:rgba(235,245,255,0.92); margin-top:3px; text-shadow: 0 1px 6px rgba(0,30,70,0.4); }
 
   /* ══ ZONE LABELS ══ */
   .zone-label { position:fixed; pointer-events:none; z-index:22; font-family:'Noto Serif SC',serif; font-size:0.80rem; font-weight:600; letter-spacing:0.09em; }
@@ -147,30 +143,50 @@
   /* LEFT idle (clear, bright) */
   .bubble.idle.L {
     cursor:pointer; z-index:8; pointer-events:auto; color:#fff;
-    background:radial-gradient(circle at 32% 28%, rgba(255,255,255,0.38),rgba(30,120,230,0.20));
-    border:1.5px solid rgba(140,215,255,0.62);
-    box-shadow:0 2px 13px rgba(0,70,160,0.22),inset 0 1px 0 rgba(255,255,255,0.52),inset -1px -1px 4px rgba(0,90,200,0.18);
-    backdrop-filter:blur(2px); text-shadow:0 1px 4px rgba(0,40,100,0.38);
+    background:radial-gradient(circle at 32% 28%, rgba(200,230,255,0.55),rgba(60,120,220,0.38));
+    border:2px solid rgba(180,230,255,0.7);
+    box-shadow:0 2px 12px rgba(0,60,160,0.28),inset 0 1px 0 rgba(255,255,255,0.38);
+    backdrop-filter:blur(3px); text-shadow:0 1px 6px rgba(0,30,80,0.6);
   }
-  .bubble.idle.L.bc { background:radial-gradient(circle at 32% 28%, rgba(255,205,215,0.42),rgba(200,55,85,0.24)); border-color:rgba(255,165,185,0.64); }
-  .bubble.idle.L.ba { background:radial-gradient(circle at 32% 28%, rgba(185,255,215,0.42),rgba(35,165,105,0.24)); border-color:rgba(120,235,175,0.64); }
-  .bubble.idle.L.bs { background:radial-gradient(circle at 32% 28%, rgba(195,215,255,0.42),rgba(55,100,235,0.24)); border-color:rgba(145,185,255,0.64); }
+  .bubble.idle.L.bc { background:radial-gradient(circle at 35% 30%, rgba(255,192,210,0.58),rgba(187,46,77,0.38)); border-color:rgba(246,134,160,0.68); }
+  .bubble.idle.L.ba { background:radial-gradient(circle at 35% 30%, rgba(153,251,200,0.58),rgba(20,122,65,0.38)); border-color:rgba(87,198,134,0.68); }
+  .bubble.idle.L.bs { background:radial-gradient(circle at 35% 30%, rgba(161,202,255,0.58),rgba(38,69,207,0.38)); border-color:rgba(104,150,255,0.68); }
   .bubble.idle.L:hover  { filter:brightness(1.18); transform:scale(1.07); }
   .bubble.idle.L:active { transform:scale(0.92); }
+
+  /* 左侧光晕脉动 */
+  @keyframes auraPulseL {
+    0%   { box-shadow: 0 0 10px 3px var(--aura), 0 0 28px 8px var(--aura-far), inset 0 1px 0 rgba(255,255,255,0.35); }
+    50%  { box-shadow: 0 0 20px 8px var(--aura), 0 0 48px 16px var(--aura-far), inset 0 1px 0 rgba(255,255,255,0.35); }
+    100% { box-shadow: 0 0 10px 3px var(--aura), 0 0 28px 8px var(--aura-far), inset 0 1px 0 rgba(255,255,255,0.35); }
+  }
+  .bubble.idle.L.bc { --aura: rgba(145,38,62,0.22); --aura-far: rgba(145,38,62,0.09); animation: auraPulseL 3.2s ease-in-out infinite; }
+  .bubble.idle.L.ba { --aura: rgba(18,100,55,0.22); --aura-far: rgba(18,100,55,0.09); animation: auraPulseL 3.6s ease-in-out infinite; }
+  .bubble.idle.L.bs { --aura: rgba(32,56,165,0.22); --aura-far: rgba(32,56,165,0.09); animation: auraPulseL 4.0s ease-in-out infinite; }
 
   /* RIGHT idle (murky, dark) */
   .bubble.idle.R {
     cursor:pointer; z-index:8; pointer-events:auto; color:#fff;
-    background:radial-gradient(circle at 32% 28%, rgba(110,135,175,0.42),rgba(30,50,100,0.48));
-    border:1.5px solid rgba(80,115,165,0.55);
-    box-shadow:0 2px 13px rgba(0,20,80,0.40),inset 0 1px 0 rgba(170,200,255,0.45),inset -1px -1px 4px rgba(10,40,150,0.28);
-    backdrop-filter:blur(3px); text-shadow:0 1px 5px rgba(0,15,70,0.55);
+    background:radial-gradient(circle at 32% 28%, rgba(120,130,185,0.42),rgba(35,40,95,0.48));
+    border:1.5px solid rgba(95,110,175,0.55);
+    box-shadow:0 2px 13px rgba(15,15,75,0.40),inset 0 1px 0 rgba(185,195,255,0.45),inset -1px -1px 4px rgba(25,30,140,0.28);
+    backdrop-filter:blur(3px); text-shadow:0 1px 5px rgba(10,8,65,0.55);
   }
-  .bubble.idle.R.bc { background:radial-gradient(circle at 32% 28%, rgba(175,120,150,0.42),rgba(95,45,80,0.48)); border-color:rgba(150,100,130,0.55); }
-  .bubble.idle.R.ba { background:radial-gradient(circle at 32% 28%, rgba(90,145,125,0.42),rgba(20,80,60,0.48)); border-color:rgba(70,125,105,0.55); }
-  .bubble.idle.R.bs { background:radial-gradient(circle at 32% 28%, rgba(100,120,185,0.42),rgba(30,50,130,0.48)); border-color:rgba(80,105,165,0.55); }
+  .bubble.idle.R.bc { background:radial-gradient(circle at 32% 28%, rgba(195,110,150,0.46),rgba(110,40,85,0.46)); border-color:rgba(180,100,140,0.58); }
+  .bubble.idle.R.ba { background:radial-gradient(circle at 32% 28%, rgba(105,160,150,0.46),rgba(25,90,80,0.46)); border-color:rgba(90,150,135,0.58); }
+  .bubble.idle.R.bs { background:radial-gradient(circle at 32% 28%, rgba(120,125,205,0.46),rgba(35,40,150,0.46)); border-color:rgba(100,110,195,0.58); }
   .bubble.idle.R:hover  { filter:brightness(1.14); transform:scale(1.07); }
   .bubble.idle.R:active { transform:scale(0.92); }
+
+  /* 右侧光晕脉动（冷紫调，帮助气泡从暗背景中跳出来） */
+  @keyframes auraPulseR {
+    0%   { box-shadow: 0 0 10px 3px var(--aura), 0 0 28px 8px var(--aura-far), inset 0 1px 0 rgba(220,220,255,0.30); }
+    50%  { box-shadow: 0 0 20px 8px var(--aura), 0 0 48px 16px var(--aura-far), inset 0 1px 0 rgba(220,220,255,0.30); }
+    100% { box-shadow: 0 0 10px 3px var(--aura), 0 0 28px 8px var(--aura-far), inset 0 1px 0 rgba(220,220,255,0.30); }
+  }
+  .bubble.idle.R.bc { --aura: rgba(180,70,120,0.26); --aura-far: rgba(180,70,120,0.10); animation: auraPulseR 3.2s ease-in-out infinite; }
+  .bubble.idle.R.ba { --aura: rgba(60,150,125,0.26); --aura-far: rgba(60,150,125,0.10); animation: auraPulseR 3.6s ease-in-out infinite; }
+  .bubble.idle.R.bs { --aura: rgba(80,90,210,0.26); --aura-far: rgba(80,90,210,0.10); animation: auraPulseR 4.0s ease-in-out infinite; }
 
   .bubble.idle { animation:none; }
   .bubble.rising { cursor:default; z-index:12; pointer-events:none; }
@@ -178,33 +194,56 @@
   /* At surface */
   .bubble.at-surface {
     cursor:default; z-index:15; pointer-events:none;
-    background:radial-gradient(circle at 34% 28%, rgba(255,255,255,0.92),rgba(175,228,255,0.62)) !important;
     border:none !important;
-    box-shadow:0 6px 32px rgba(0,100,200,0.28) !important;
-    color:#0e2840 !important; text-shadow:none !important; backdrop-filter:blur(8px);
+    box-shadow: 0 6px 28px rgba(0,100,200,0.28) !important;
+    color:#0e2840 !important; text-shadow:none !important; backdrop-filter:blur(6px);
   }
-  .bubble.at-surface.bc  { background:radial-gradient(circle at 34% 28%, rgba(255,232,238,0.95),rgba(238,128,155,0.66)) !important; color:#3a0a18 !important; }
-  .bubble.at-surface.ba  { background:radial-gradient(circle at 34% 28%, rgba(220,255,236,0.95),rgba(75,190,130,0.66)) !important; color:#062e1e !important; }
-  .bubble.at-surface.bs  { background:radial-gradient(circle at 34% 28%, rgba(224,234,255,0.95),rgba(98,140,242,0.66)) !important; color:#080e38 !important; }
-  .bubble.at-surface.bm  { background:radial-gradient(circle at 34% 28%, rgba(235,240,255,0.95),rgba(158,118,222,0.70)) !important; border:none !important; color:#1a0a38 !important; }
-  .bubble.at-surface.bm3 { background:radial-gradient(circle at 34% 28%, rgba(255,242,222,0.95),rgba(178,128,78,0.66)) !important; border:none !important; color:#2a1400 !important; }
+  .bubble.at-surface.bc  { background: radial-gradient(circle at 34% 28%, rgba(255,210,220,0.88), rgba(210,80,110,0.65)) !important; color: #3a0a18 !important; }
+  .bubble.at-surface.ba  { background: radial-gradient(circle at 34% 28%, rgba(200,255,225,0.88), rgba(50,170,105,0.65)) !important; color: #063020 !important; }
+  .bubble.at-surface.bs  { background: radial-gradient(circle at 34% 28%, rgba(210,225,255,0.88), rgba(70,110,220,0.65)) !important; color: #080e38 !important; }
+  .bubble.at-surface.bm  { background: radial-gradient(circle at 34% 28%, rgba(235,240,255,0.95), rgba(160,120,220,0.7)) !important; border: none !important; color: #1a0a38 !important; }
+  .bubble.at-surface.bm3 { background: radial-gradient(circle at 34% 28%, rgba(255,240,220,0.95), rgba(180,130,80,0.65)) !important; border: none !important; color: #2a1400 !important; }
 
   /* Decision buttons */
   .surf-btn {
-    position:fixed; z-index:18;
-    width:64px; height:64px; border-radius:50%; border:none;
-    font-family:'Noto Serif SC',serif; font-size:0.74rem; font-weight:600;
-    cursor:pointer; display:flex; align-items:center; justify-content:center;
-    text-align:center; line-height:1.3;
-    opacity:0; pointer-events:none; transition:opacity 0.3s ease, transform 0.15s ease;
+    position: fixed; z-index: 18;
+    width: 62px; height: 62px; border-radius: 50%; border: none;
+    font-family: 'Noto Serif SC', serif; font-size: 0.74rem; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; line-height: 1.3;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.15s ease;
   }
-  .surf-btn.show { opacity:1; pointer-events:auto; }
-  .surf-btn:hover  { transform:scale(1.12); }
-  .surf-btn:active { transform:scale(0.90); }
+  .surf-btn.show { opacity: 1; pointer-events: auto; }
   #sharedDeny, #sharedAllow, #rqNo, #rqYes {
-    background:radial-gradient(circle at 36% 30%, rgba(255,255,255,0.96),rgba(200,232,255,0.90));
-    color:#0e2840; border:1.5px solid rgba(100,162,222,0.50);
-    box-shadow:0 3px 14px rgba(80,140,222,0.28);
+    background: radial-gradient(circle at 38% 32%, rgba(255,255,255,0.98), rgba(200,215,235,0.88));
+    color: #1a3050; font-weight: 500;
+    border: none;
+    box-shadow:
+      inset 0 1.5px 2px rgba(255,255,255,1),
+      inset 0 -2px 4px rgba(160,180,210,0.5),
+      0 6px 20px rgba(0,20,60,0.35),
+      0 2px 6px rgba(0,10,40,0.25),
+      0 1px 0 rgba(0,0,0,0.12);
+    text-shadow: none;
+  }
+  .surf-btn:hover {
+    background: radial-gradient(circle at 38% 32%, rgba(255,255,255,1), rgba(215,228,248,0.92));
+    transform: scale(1.08) translateY(-2px);
+    box-shadow:
+      inset 0 1.5px 2px rgba(255,255,255,1),
+      inset 0 -2px 4px rgba(160,180,210,0.45),
+      0 10px 28px rgba(0,20,60,0.4),
+      0 3px 8px rgba(0,10,40,0.25);
+  }
+  .surf-btn:active {
+    background: radial-gradient(circle at 38% 32%, rgba(235,240,250,0.98), rgba(190,205,228,0.9));
+    transform: scale(0.96) translateY(2px);
+    box-shadow:
+      inset 0 1px 3px rgba(140,160,200,0.4),
+      inset 0 2px 5px rgba(0,0,0,0.08),
+      0 2px 8px rgba(0,20,60,0.28);
   }
 
   #surfQ {
@@ -308,20 +347,24 @@
   /* ══ TOPIC MODAL ══ */
   #topicOverlay {
     position:fixed; inset:0; z-index:300;
-    background:rgba(4,18,45,0.72);
-    backdrop-filter:blur(14px);
+    background:rgba(150,205,240,0.30);
+    backdrop-filter:blur(4px);
     display:flex; align-items:center; justify-content:center;
     opacity:1; transition:opacity 0.55s ease;
   }
   #topicOverlay.hide { opacity:0; pointer-events:none; }
 
   #topicCard {
-    background:linear-gradient(145deg, rgba(255,255,255,0.14) 0%, rgba(130,200,255,0.08) 100%);
-    border:1px solid rgba(160,220,255,0.28);
+    background:linear-gradient(145deg, rgba(255,255,255,0.62) 0%, rgba(200,230,255,0.32) 100%);
+    border:none;
     border-radius:24px;
     padding:38px 36px 32px;
     width:min(88vw, 360px);
-    box-shadow:0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+    box-shadow:
+      0 30px 70px rgba(20,60,110,0.32),
+      0 12px 28px rgba(20,60,110,0.20),
+      0 4px 10px rgba(20,60,110,0.14),
+      inset 0 -2px 8px rgba(110,170,225,0.20);
     backdrop-filter:blur(20px);
     text-align:center;
     transform:translateY(0px);
@@ -335,44 +378,64 @@
   #topicCard h2 {
     font-family:'Noto Serif SC',serif;
     font-size:1.10rem; font-weight:400; letter-spacing:0.16em;
-    color:rgba(230,248,255,0.95); margin-bottom:8px;
+    color:#0e3050; margin-bottom:8px;
   }
   #topicCard .sub {
     font-size:0.72rem; letter-spacing:0.07em; font-weight:300;
-    color:rgba(155,215,255,0.65); margin-bottom:26px; line-height:1.7;
+    color:rgba(45,85,125,0.72); margin-bottom:26px; line-height:1.7;
   }
   #topicInput {
-    width:100%; background:rgba(255,255,255,0.08);
-    border:1px solid rgba(140,210,255,0.38); border-radius:12px;
-    padding:12px 16px; color:rgba(230,248,255,0.92);
+    width:100%; background:rgba(255,255,255,0.55);
+    border:1px solid rgba(120,185,230,0.5); border-radius:12px;
+    padding:12px 16px; color:#0e3050;
     font-family:'Noto Serif SC',serif; font-size:0.92rem; letter-spacing:0.04em;
-    outline:none; text-align:center; caret-color:rgba(140,210,255,0.9);
-    transition:border-color 0.25s ease, background 0.25s ease;
+    outline:none; text-align:center; caret-color:rgba(60,140,210,0.9);
+    box-shadow: inset 0 2px 5px rgba(40,90,150,0.12);
+    transition:border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
     margin-bottom:20px;
   }
-  #topicInput::placeholder { color:rgba(155,215,255,0.38); }
+  #topicInput::placeholder { color:rgba(60,100,140,0.42); }
   #topicInput:focus {
-    border-color:rgba(140,210,255,0.70);
-    background:rgba(255,255,255,0.12);
+    border-color:rgba(100,175,230,0.80);
+    background:rgba(255,255,255,0.75);
   }
   #topicStart {
     width:100%; padding:13px; border-radius:50px; border:none;
-    background:linear-gradient(135deg, rgba(80,175,255,0.70), rgba(40,110,220,0.80));
+    background:linear-gradient(135deg, #4a9fd4 0%, #4a9fd4 60%, #3ab8a0 100%);
     color:#fff; font-family:'Noto Serif SC',serif;
     font-size:0.88rem; letter-spacing:0.14em; font-weight:600;
-    cursor:pointer; box-shadow:0 4px 20px rgba(40,100,220,0.40);
-    transition:transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    cursor:pointer;
+    position:relative; overflow:hidden;
+    box-shadow:
+      0 4px 14px rgba(42,160,140,0.25),
+      0 2px 6px rgba(0,0,0,0.10),
+      inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: opacity 0.2s ease, transform 0.15s ease, box-shadow 0.18s ease;
   }
-  #topicStart:hover  { transform:scale(1.04); box-shadow:0 6px 26px rgba(40,100,220,0.55); }
-  #topicStart:active { transform:scale(0.96); }
+  #topicStart::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:50%;
+    background:linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%);
+    border-radius:50px 50px 0 0; pointer-events:none;
+  }
+  #topicStart:hover {
+    opacity:0.92; transform:translateY(-1px);
+    box-shadow:
+      0 8px 24px rgba(42,160,140,0.48),
+      0 3px 8px rgba(0,0,0,0.18),
+      inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  #topicStart:active {
+    transform:translateY(1px);
+    box-shadow: 0 3px 10px rgba(42,160,140,0.35);
+  }
 
   #topicSkip {
     display:block; margin-top:14px;
-    font-size:0.68rem; letter-spacing:0.09em; color:rgba(135,198,255,0.45);
+    font-size:0.68rem; letter-spacing:0.09em; color:rgba(45,85,125,0.55);
     cursor:pointer; background:none; border:none;
     transition:color 0.2s ease;
   }
-  #topicSkip:hover { color:rgba(155,215,255,0.70); }
+  #topicSkip:hover { color:rgba(20,60,100,0.85); }
 </style>
 </head>
 <body>
@@ -410,18 +473,18 @@
      style="position:fixed;left:0;width:100%;pointer-events:none;z-index:10;">
   <defs>
     <linearGradient id="wgL" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="rgba(26,130,200,0.94)"/>
-      <stop offset="100%" stop-color="rgba(14,88,158,0)"/>
+      <stop offset="0%" stop-color="rgba(10,80,160,0.9)"/>
+      <stop offset="8%" stop-color="rgba(8,60,120,0)"/>
     </linearGradient>
     <linearGradient id="wgR" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="rgba(18,52,95,0.94)"/>
-      <stop offset="100%" stop-color="rgba(6,18,50,0)"/>
+      <stop offset="0%" stop-color="rgba(9,54,101,0.9)"/>
+      <stop offset="8%" stop-color="rgba(7,40,78,0)"/>
     </linearGradient>
   </defs>
-  <path id="waveL"  fill="url(#wgL)"             opacity="0.96"/>
-  <path id="waveR"  fill="url(#wgR)"             opacity="0.96"/>
-  <path id="waveL2" fill="rgba(55,168,240,0.28)" opacity="0.62"/>
-  <path id="waveR2" fill="rgba(20,55,110,0.32)"   opacity="0.62"/>
+  <path id="waveL"  fill="url(#wgL)"             opacity="0.95"/>
+  <path id="waveR"  fill="url(#wgR)"             opacity="0.95"/>
+  <path id="waveL2" fill="rgba(15,100,190,0.35)" opacity="0.7"/>
+  <path id="waveR2" fill="rgba(18,82,150,0.32)"   opacity="0.7"/>
 </svg>
 
 <div class="scene" id="scene"></div>
@@ -943,47 +1006,54 @@ function positionLabels() {
 // ═══════════════════════════════════════════════════
 //  ANIMATED WAVES — left clear, right murky
 // ═══════════════════════════════════════════════════
-let waveOffset = 0;
+let waveOffset  = 0;
+let waveOffset2 = 0;
+let waveOffset3 = 0;
+
 function drawWaves() {
   const W=vw(), hw=halfW(), wy=waterY(), H=vh();
   const amp=10, amp2=6;
-  waveOffset += 0.012;
+  waveOffset  += 0.012;
+  waveOffset2 += 0.0079;
+  waveOffset3 += 0.0103;
 
-  let dL = `M 0 ${wy+amp}`;
-  for (let x=0; x<=hw; x+=6) {
-    const y = wy + Math.sin((x/W)*Math.PI*4 + waveOffset)*amp
-                 + Math.sin((x/W)*Math.PI*2.5 + waveOffset*1.3)*(amp*0.40);
-    dL += ` L ${x} ${y}`;
-  }
-  dL += ` L ${hw} ${H} L 0 ${H} Z`;
+  // Single continuous wave-height function spanning the FULL width.
+  // Left and right paths both sample THIS SAME function, so the
+  // shape never breaks at the midline — only the fill colour changes.
+  const waveY = (x) => wy
+    + Math.sin((x/W)*Math.PI*3.4 + waveOffset)  * amp*0.60
+    + Math.sin((x/W)*Math.PI*6.1 + waveOffset2) * amp*0.28
+    + Math.sin((x/W)*Math.PI*1.7 + waveOffset3) * amp*0.35;
+
+  let dL = `M 0 ${waveY(0)}`;
+  for (let x=6; x<=hw; x+=6) dL += ` L ${x} ${waveY(x)}`;
+  dL += ` L ${hw} ${waveY(hw)} L ${hw} ${H} L 0 ${H} Z`;
   document.getElementById('waveL').setAttribute('d',dL);
 
-  let dR = `M ${hw} ${wy+amp*0.65}`;
-  for (let x=hw; x<=W; x+=6) {
-    const y = wy + Math.sin((x/W)*Math.PI*4 + waveOffset + 0.9)*amp*0.65
-                 + Math.sin((x/W)*Math.PI*2.5 + waveOffset*1.05)*(amp*0.25);
-    dR += ` L ${x} ${y}`;
-  }
+  let dR = `M ${hw} ${waveY(hw)}`;
+  for (let x=hw+6; x<=W; x+=6) dR += ` L ${x} ${waveY(x)}`;
   dR += ` L ${W} ${H} L ${hw} ${H} Z`;
   document.getElementById('waveR').setAttribute('d',dR);
 
-  let d2L = `M 0 ${wy+amp2}`;
-  for (let x=0; x<=hw; x+=8) {
-    const y = wy + Math.sin((x/W)*Math.PI*5 + waveOffset*1.6+1)*amp2
-                 + Math.cos((x/W)*Math.PI*3  + waveOffset*0.9)*(amp2*0.5);
-    d2L += ` L ${x} ${y}`;
-  }
-  d2L += ` L ${hw} ${wy+38} L 0 ${wy+38} Z`;
+  // Secondary shimmer — same continuous-shape approach, thin highlight
+  // band right at the surface
+  const shimmerY = (x) => wy
+    + Math.sin((x/W)*Math.PI*5 + waveOffset*1.6+1) * amp2
+    + Math.cos((x/W)*Math.PI*3 + waveOffset*0.9)   * (amp2*0.5);
+
+  let d2L = `M 0 ${shimmerY(0)}`;
+  for (let x=8; x<=hw; x+=8) d2L += ` L ${x} ${shimmerY(x)}`;
+  d2L += ` L ${hw} ${shimmerY(hw)} L ${hw} ${wy+18} L 0 ${wy+18} Z`;
   document.getElementById('waveL2').setAttribute('d',d2L);
 
-  let d2R = `M ${hw} ${wy+amp2*0.55}`;
-  for (let x=hw; x<=W; x+=8) {
-    const y = wy + Math.sin((x/W)*Math.PI*5 + waveOffset*1.3+2)*amp2*0.55
-                 + Math.cos((x/W)*Math.PI*3  + waveOffset*0.75)*(amp2*0.32);
-    d2R += ` L ${x} ${y}`;
-  }
-  d2R += ` L ${W} ${wy+38} L ${hw} ${wy+38} Z`;
+  let d2R = `M ${hw} ${shimmerY(hw)}`;
+  for (let x=hw+8; x<=W; x+=8) d2R += ` L ${x} ${shimmerY(x)}`;
+  d2R += ` L ${W} ${wy+18} L ${hw} ${wy+18} Z`;
   document.getElementById('waveR2').setAttribute('d',d2R);
+
+  const svg = document.getElementById('waterSvg');
+  svg.setAttribute('height', `${H}px`);
+  svg.style.top = '0px';
 
   requestAnimationFrame(drawWaves);
 }
