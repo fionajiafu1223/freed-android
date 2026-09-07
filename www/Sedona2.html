@@ -421,7 +421,14 @@ const WALL_MARGIN = 6;
 const DOM_EVERY   = 4;       // update DOM at ~15fps, physics at 60fps
 let   frameCount  = 0;
 
-function physicsTick() {
+let _lastPhysicsTs = null;
+const _TARGET_DT = 1000 / 60;
+
+function physicsTick(now) {
+  if (_lastPhysicsTs === null) _lastPhysicsTs = now;
+  const _rawDt = now - _lastPhysicsTs;
+  _lastPhysicsTs = now;
+  const _t = Math.min(_rawDt / _TARGET_DT, 1);
   const wy = waterY();
   const W  = vw();
   const H  = vh();
@@ -447,7 +454,7 @@ function physicsTick() {
 
     // ── Buoyancy ──
     const depth = (b.py - wy) / (H - wy);
-    b.vy -= BUOYANCY * (0.3 + depth * 1.4);
+    b.vy -= BUOYANCY * (0.3 + depth * 1.4) * _t;
 
     // ── Repulsion: only check neighbouring grid cells ──
     const cx = (b.px / CELL) | 0;
@@ -465,7 +472,7 @@ function physicsTick() {
           const minDist2 = minDist * minDist;
           if (dist2 < minDist2 && dist2 > 0.001) {
             const dist = Math.sqrt(dist2);
-            const force = REPULSION * (minDist - dist) / (minDist * dist);
+            const force = REPULSION * (minDist - dist) / (minDist * dist) * _t;
             b.vx += dx * force;
             b.vy += dy * force;
           }
@@ -476,16 +483,18 @@ function physicsTick() {
     // ── Wall repulsion ──
     const left = r + WALL_MARGIN, right = W - r - WALL_MARGIN;
     const top  = wy + r,          bot   = H - r - WALL_MARGIN;
-    if (b.px < left  + 40) b.vx += WALL_REP / Math.max(1, b.px - left);
-    if (b.px > right - 40) b.vx -= WALL_REP / Math.max(1, right - b.px);
-    if (b.py < top   + 50) b.vy += WALL_REP * 3 / Math.max(1, b.py - top);
-    if (b.py > bot   - 40) b.vy -= WALL_REP / Math.max(1, bot - b.py);
+    if (b.px < left  + 40) b.vx += WALL_REP / Math.max(1, b.px - left)  * _t;
+    if (b.px > right - 40) b.vx -= WALL_REP / Math.max(1, right - b.px) * _t;
+    if (b.py < top   + 50) b.vy += WALL_REP * 3 / Math.max(1, b.py - top) * _t;
+    if (b.py > bot   - 40) b.vy -= WALL_REP / Math.max(1, bot - b.py)   * _t;
 
     // ── Damping + clamp velocity ──
-    b.vx *= DAMPING;
-    b.vy *= DAMPING;
+    const _dampT = Math.pow(DAMPING, _t);
+    b.vx *= _dampT;
+    b.vy *= _dampT;
     const spd2 = b.vx * b.vx + b.vy * b.vy;
-    if (spd2 > 0.36) { const s = 0.6 / Math.sqrt(spd2); b.vx *= s; b.vy *= s; }
+    const _maxSpd = 0.6 * _t;
+    if (spd2 > _maxSpd * _maxSpd) { const s = _maxSpd / Math.sqrt(spd2); b.vx *= s; b.vy *= s; }
 
     // ── Integrate ──
     b.px += b.vx;
@@ -505,6 +514,9 @@ function physicsTick() {
 
   physicsRaf = requestAnimationFrame(physicsTick);
 }
+
+// 页面隐藏时重置时间戳，避免切回来时气泡快速跳动
+document.addEventListener('visibilitychange', () => { if (document.hidden) _lastPhysicsTs = null; });
 
 // Initial placement: pack bubbles without overlap using weighted-surface distribution
 function placeInitial(sz, allBubbles) {
