@@ -162,8 +162,31 @@ body { min-height:100vh; background:transparent; font-family:'Noto Serif SC',ser
   cursor: pointer; transition: opacity 0.2s, transform 0.15s; margin-top: 4px;
 }
 .asst-go-btn:hover { opacity: 0.88; transform: scale(1.02); }
-</style>
-</head>
+.back-btn {
+  position: fixed;
+  top: max(22px, calc(env(safe-area-inset-top, 0px) + 8px));
+  left: 16px;
+  z-index: 100;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 99px;
+  border: none;
+  cursor: pointer;
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(3,80,140,0.85);
+  font-size: 0.82rem;
+  font-family: 'Noto Sans SC', sans-serif;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 12px rgba(0,60,120,0.12);
+  user-select: none;
+  transition: background 0.2s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.68); }
+.back-btn:active { transform: scale(0.96); }
+</style></head>
 <body>
 
 <script>
@@ -391,9 +414,18 @@ function setAsstBubbleColors() {
 
 window.addEventListener('DOMContentLoaded', function() {
   setAsstBubbleColors();
-  document.querySelectorAll('.asst-orb-wrap').forEach((wrap, i) => {
-    setTimeout(() => wrap.classList.add('visible'), 150 + i * 120);
-  });
+  // 从欲望释放页面返回时，直接隐藏三球容器并打开卡点释放面板，
+  // 不触发小球的渐入动画，避免 App 内加载较慢时出现"闪现三球"的现象。
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('openBlockPoint') === '1') {
+    history.replaceState(null, '', window.location.pathname);
+    document.getElementById('asst-layer').style.display = 'none';
+    openBlockPoint();
+  } else {
+    document.querySelectorAll('.asst-orb-wrap').forEach((wrap, i) => {
+      setTimeout(() => wrap.classList.add('visible'), 150 + i * 120);
+    });
+  }
 });
 
 // ── 功能入口 ──
@@ -481,7 +513,7 @@ function getSystemPrompt() {
     + '输出原则：洞察点数量必须随用户输入的字数和信息密度增长，不要设上限。参考：50字以内的简单表达给2-3个精准洞察；100-200字、涉及多个事件或情绪的表达，给5-8个洞察点，确保每一件被提到的事、每一种情绪都至少对应一个洞察，不要遗漏；200字以上、内容层次丰富的表达，可以给到8-12个甚至更多，把用户写下的每一层担忧、每一句自我评判都看见、都回应到。内容越具体越丰富，洞察就应该越多，宁可多覆盖也不要因为怕啰嗦而省略。但同时不要为了凑数量而对同一句话重复解读或牵强附会。每条 quote 不超过 20 字，每条 reason 50-80 字。\n\n'
     + '严格用以下JSON格式回复，不要任何其他内容：\n'
     + '{"points":[{"quote":"短句不超过20字","desire":"control或approval或safety","reason":"深度洞察50-80字"}]}\n\n'
-    + '重要格式要求：quote 和 reason 的内容里，禁止出现任何双引号（中文"" 或英文""都不行）。如果需要引用原话或强调某个词，请用「」代替，例如「想高薪却被恐惧拖垮」，不要用"想高薪却被恐惧拖垮"。这是为了保证JSON格式始终合法。';
+    + '重要格式要求：quote 和 reason 字段的内容中，只允许出现汉字、数字、英文字母、逗号"，"和句号"。"，禁止出现任何其他标点符号或特殊字符，包括但不限于：中英文引号（"" "" 半角单引号）、书名号《》、分号、冒号、问号、感叹号、破折号、括号、省略号、反斜杠。即使原文或想强调的词是英文单词，也不要给它加任何引号或标记，直接把词写出来即可。这是为了保证JSON格式始终合法。';
 }
 
 function escapeHtml(s) {
@@ -597,7 +629,6 @@ async function runAssistant() {
   }
 }
 </script>
-<script src="nav-orb.js"></script>
 <script>
 window.addEventListener('message', function(e) {
   if (e.data === 'closeBeliefs') closeBeliefs();
@@ -615,5 +646,6 @@ if (asstInput) {
   });
 }
 </script>
+<script src="nav-orb.js"></script>
 </body>
 </html>
